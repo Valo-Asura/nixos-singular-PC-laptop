@@ -28,7 +28,7 @@ new commands should use `#asura-xs15`.
 |---|---|
 | Host | `asura-xs15` |
 | Desktop | Hyprland `v0.55.3` from the official Hyprland flake plus Noctalia v5 shell |
-| Lockscreen | Noctalia IPC lock using `screenshots/lockscreen.png`; Hyprlock removed |
+| Lockscreen | Noctalia IPC lock using `screenshots/lockscreen.png`; |
 | File manager | Nautilus, with `DBusActivatable=false` local desktop override |
 | Theme | Dark GTK/libadwaita settings, Papirus-Dark icons, Bibata Classic cursor |
 | Wallpaper | `SUPER+W` runs `asura-wallpaper-panel`, which opens Noctalia's wallpaper panel |
