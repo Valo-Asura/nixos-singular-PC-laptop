@@ -120,10 +120,7 @@ let
       {
         ReadRegister = 207;
         WriteRegister = 231;
-        Sensors = [
-          "@CPU"
-          "@GPU"
-        ];
+        Sensors = [ "@CPU" ];
         TemperatureAlgorithmType = "Max";
         MinSpeedValue = 20;
         MaxSpeedValue = 255;
@@ -176,10 +173,7 @@ let
       {
         ReadRegister = 208;
         WriteRegister = 232;
-        Sensors = [
-          "@CPU"
-          "@GPU"
-        ];
+        Sensors = [ "@CPU" ];
         TemperatureAlgorithmType = "Max";
         MinSpeedValue = 20;
         MaxSpeedValue = 255;
@@ -267,6 +261,7 @@ let
     writes="$(${pkgs.jq}/bin/jq -r '[.FanConfigurations[].WriteRegister] | join(",")' "$model_file")"
     reads="$(${pkgs.jq}/bin/jq -r '[.FanConfigurations[].ReadRegister] | join(",")' "$model_file")"
     algorithms="$(${pkgs.jq}/bin/jq -r '[.FanConfigurations[].TemperatureAlgorithmType] | join(",")' "$model_file")"
+    sensors="$(${pkgs.jq}/bin/jq -r '[.FanConfigurations[].Sensors | join("+")] | join(",")' "$model_file")"
 
     test "$selected" = "$model_file"
     test "$ec_type" = "ec_sys"
@@ -275,6 +270,7 @@ let
     test "$writes" = "231,232"
     test "$reads" = "207,208"
     test "$algorithms" = "Max,Max"
+    test "$sensors" = "@CPU,@CPU"
 
     echo "OK: selected config is absolute"
     echo "OK: EC backend is ec_sys"
@@ -282,7 +278,8 @@ let
     echo "OK: MaxSpeedValue is 255 for both fans"
     echo "OK: CPU/GPU write registers are 231/232"
     echo "OK: CPU/GPU read registers are 207/208"
-    echo "OK: temperature algorithm is Max for both fans"
+    echo "OK: temperature algorithm is Max over CPU sensors for both fans"
+    echo "OK: @GPU is not referenced because this laptop exposes no NBFC GPU hwmon sensor"
     echo "NOTE: GPU current-speed readback can report a negative/low value on this EC."
     echo "      Use Target Fan Speed plus audible airflow for manual GPU fan tests."
     echo
@@ -357,6 +354,11 @@ let
     }
 
     while true; do
+      if ! ${pkgs.systemd}/bin/systemctl is-active --quiet nbfc; then
+        ${pkgs.coreutils}/bin/sleep "$interval"
+        continue
+      fi
+
       temp="$(max_coretemp)"
 
       if [ "$temp" -ge "$hot_c" ] && [ "$manual" -eq 0 ]; then

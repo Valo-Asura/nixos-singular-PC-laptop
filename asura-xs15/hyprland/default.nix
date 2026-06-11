@@ -20,7 +20,6 @@ let
 
   startupCommands = [
     "dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE XDG_SESSION_CLASS XDG_SESSION_ID XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS"
-    "noctalia"
     "asura-video-wallpaper --restore"
     "asura-apply-cursor-theme"
     "asura-monitor-guard --daemon"
@@ -96,7 +95,6 @@ in
         "XDG_SESSION_CLASS,user"
         "LANG,en_IN"
         "MOZ_ENABLE_WAYLAND,1"
-        "NIXOS_OZONE_WL,1"
         "QT_QPA_PLATFORM,wayland;xcb"
         "QT_WAYLAND_DISABLE_WINDOWDECORATION,1"
         "ELECTRON_OZONE_PLATFORM_HINT,auto"

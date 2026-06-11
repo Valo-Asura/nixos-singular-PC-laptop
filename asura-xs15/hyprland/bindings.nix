@@ -2,7 +2,7 @@
 let
   terminal = "${pkgs.foot}/bin/foot";
   browser = "${pkgs.brave}/bin/brave";
-  editor = "code --enable-features=UseOzonePlatform --ozone-platform=wayland";
+  editor = "code --ozone-platform=wayland";
   lock = "/run/current-system/sw/bin/noctalia-safe-lock";
 in
 {
