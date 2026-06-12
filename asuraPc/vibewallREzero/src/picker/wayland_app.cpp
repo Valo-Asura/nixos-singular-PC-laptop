@@ -405,10 +405,45 @@ void WaylandApp::pointer_button(void *data, wl_pointer *, uint32_t, uint32_t, ui
                                 uint32_t state) {
   auto *app = static_cast<WaylandApp *>(data);
   if (button == 0x110 && state == WL_POINTER_BUTTON_STATE_PRESSED) {
+    switch (app->renderer_.action_hit_test(app->pointer_x_, app->pointer_y_)) {
+    case PickerAction::Slice:
+      app->mode_ = DisplayMode::Slice;
+      app->redraw();
+      return;
+    case PickerAction::Grid:
+      app->mode_ = DisplayMode::Grid;
+      app->redraw();
+      return;
+    case PickerAction::Hex:
+      app->mode_ = DisplayMode::Hex;
+      app->redraw();
+      return;
+    case PickerAction::Wallhaven:
+      app->load_wallhaven();
+      return;
+    case PickerAction::Local:
+      app->show_local();
+      return;
+    case PickerAction::Random:
+      app->apply_random();
+      return;
+    case PickerAction::Search:
+      app->search_active_ = true;
+      app->status_ = "TYPE SEARCH";
+      app->redraw();
+      return;
+    case PickerAction::Apply:
+      app->apply_selected();
+      return;
+    case PickerAction::None:
+      break;
+    }
     const int hit = app->renderer_.hit_test(app->pointer_x_, app->pointer_y_);
     if (hit >= 0) {
       app->selected_ = hit;
       app->apply_selected();
+    } else if (!app->renderer_.stage_contains(app->pointer_x_, app->pointer_y_)) {
+      app->running_ = false;
     }
   }
 }

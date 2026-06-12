@@ -243,9 +243,9 @@ void Renderer::update_stage(DisplayMode mode) {
   content_h_ = stage_h_ - 144.0F;
 }
 
-GLuint Renderer::texture_for(const Wallpaper &wallpaper) {
+TextureInfo Renderer::texture_for(const Wallpaper &wallpaper) {
   if (wallpaper.thumb_path.empty()) {
-    return 0;
+    return {};
   }
   if (auto it = textures_.find(wallpaper.thumb_path); it != textures_.end()) {
     return it->second;
@@ -270,11 +270,16 @@ GLuint Renderer::texture_for(const Wallpaper &wallpaper) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, memory);
     g_free(memory);
-    textures_[wallpaper.thumb_path] = texture;
-    return texture;
+    TextureInfo info{
+        .id = texture,
+        .width = image.width(),
+        .height = image.height(),
+    };
+    textures_[wallpaper.thumb_path] = info;
+    return info;
   } catch (const std::exception &err) {
     std::cerr << "texture warning: " << wallpaper.thumb_path << ": " << err.what() << '\n';
-    return 0;
+    return {};
   }
 }
 
@@ -295,16 +300,17 @@ void Renderer::draw_rect(float x, float y, float w, float h, float r, float g, f
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void Renderer::draw_textured_quad(float x, float y, float w, float h, GLuint texture, float alpha) {
+void Renderer::draw_textured_quad(float x, float y, float w, float h, GLuint texture, float alpha,
+                                  float u0, float v0, float u1, float v1) {
   if (texture == 0) {
     draw_rect(x, y, w, h, 0.10F, 0.12F, 0.15F, alpha);
     return;
   }
   const GLfloat vertices[] = {
-      ndc_x(x, width_),     ndc_y(y, height_),     0.0F, 0.0F,
-      ndc_x(x + w, width_), ndc_y(y, height_),     1.0F, 0.0F,
-      ndc_x(x, width_),     ndc_y(y + h, height_), 0.0F, 1.0F,
-      ndc_x(x + w, width_), ndc_y(y + h, height_), 1.0F, 1.0F,
+      ndc_x(x, width_),     ndc_y(y, height_),     u0, v0,
+      ndc_x(x + w, width_), ndc_y(y, height_),     u1, v0,
+      ndc_x(x, width_),     ndc_y(y + h, height_), u0, v1,
+      ndc_x(x + w, width_), ndc_y(y + h, height_), u1, v1,
   };
   glUseProgram(program_);
   glActiveTexture(GL_TEXTURE0);
@@ -316,6 +322,36 @@ void Renderer::draw_textured_quad(float x, float y, float w, float h, GLuint tex
   glEnableVertexAttribArray(pos_loc_);
   glEnableVertexAttribArray(uv_loc_);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+void Renderer::draw_wallpaper_preview(float x, float y, float w, float h, const Wallpaper &wallpaper,
+                                      float alpha) {
+  const TextureInfo texture = texture_for(wallpaper);
+  if (texture.id == 0 || texture.width <= 0 || texture.height <= 0) {
+    draw_textured_quad(x, y, w, h, 0, alpha);
+    draw_text(x + w * 0.5F - 36.0F, y + h * 0.5F - 8.0F, "NO PREVIEW", 1.7F, 0.88F, 0.92F,
+              0.98F, 1.0F);
+    return;
+  }
+
+  float u0 = 0.0F;
+  float v0 = 0.0F;
+  float u1 = 1.0F;
+  float v1 = 1.0F;
+  const float source_aspect = static_cast<float>(texture.width) / static_cast<float>(texture.height);
+  const float target_aspect = w / h;
+  if (source_aspect > target_aspect) {
+    const float visible = target_aspect / source_aspect;
+    const float crop = (1.0F - visible) * 0.5F;
+    u0 = crop;
+    u1 = 1.0F - crop;
+  } else if (source_aspect < target_aspect) {
+    const float visible = source_aspect / target_aspect;
+    const float crop = (1.0F - visible) * 0.5F;
+    v0 = crop;
+    v1 = 1.0F - crop;
+  }
+  draw_textured_quad(x, y, w, h, texture.id, alpha, u0, v0, u1, v1);
 }
 
 void Renderer::draw_polygon(const std::vector<Point> &points, float r, float g, float b, float a) {
@@ -346,6 +382,10 @@ void Renderer::draw_text(float x, float y, const std::string &text, float scale,
     for (int row = 0; row < 7; ++row) {
       for (int col = 0; col < 5; ++col) {
         if ((bits[row] & (1 << (4 - col))) != 0) {
+          if (a > 0.5F) {
+            draw_rect(cursor + (col + 0.8F) * scale, y + (row + 0.8F) * scale, scale * 0.92F,
+                      scale * 0.92F, 0.0F, 0.0F, 0.0F, std::min(0.72F, a));
+          }
           draw_rect(cursor + col * scale, y + row * scale, scale * 0.82F, scale * 0.82F, r, g, b, a);
         }
       }
@@ -357,24 +397,36 @@ void Renderer::draw_text(float x, float y, const std::string &text, float scale,
   }
 }
 
-void Renderer::draw_badge(float x, float y, const std::string &label, bool active) {
+float Renderer::draw_badge(float x, float y, const std::string &label, bool active) {
   const float w = std::max(46.0F, static_cast<float>(label.size()) * 10.0F + 16.0F);
   draw_rect(x, y, w, 24.0F, active ? 0.35F : 0.10F, active ? 0.88F : 0.13F,
             active ? 0.68F : 0.16F, active ? 0.95F : 0.88F);
   draw_text(x + 8.0F, y + 7.0F, label, 1.6F, active ? 0.03F : 0.72F, active ? 0.05F : 0.76F,
             active ? 0.04F : 0.82F, 1.0F);
+  return w;
+}
+
+void Renderer::add_action_region(PickerAction action, float x, float y, float w, float h) {
+  action_regions_.push_back({
+      .action = action,
+      .x = x,
+      .y = y,
+      .w = w,
+      .h = h,
+  });
 }
 
 void Renderer::render(const std::vector<Wallpaper> &wallpapers, int selected, DisplayMode mode,
                       const std::string &query, bool wallhaven_mode, const std::string &status) {
   hit_regions_.clear();
+  action_regions_.clear();
   update_stage(mode);
-  glClearColor(0.015F, 0.018F, 0.023F, 0.46F);
+  glClearColor(0.015F, 0.018F, 0.023F, 0.0F);
   glClear(GL_COLOR_BUFFER_BIT);
   draw_rect(0, 0, static_cast<float>(width_), static_cast<float>(height_), 0.02F, 0.024F, 0.030F,
-            0.30F);
-  draw_rect(stage_x_, stage_y_, stage_w_, stage_h_, 0.035F, 0.043F, 0.054F, 0.96F);
-  draw_rect(stage_x_, stage_y_, stage_w_, 90.0F, 0.065F, 0.076F, 0.092F, 0.98F);
+            0.20F);
+  draw_rect(stage_x_, stage_y_, stage_w_, stage_h_, 0.035F, 0.043F, 0.054F, 0.20F);
+  draw_rect(stage_x_, stage_y_, stage_w_, 90.0F, 0.065F, 0.076F, 0.092F, 0.28F);
   draw_rect(stage_x_, stage_y_ + 90.0F, stage_w_, 2.0F, 0.33F, 0.82F, 0.66F, 0.90F);
   draw_text(stage_x_ + 22.0F, stage_y_ + 18.0F, "VIBEWALL REZERO", 3.0F, 0.95F, 0.74F, 0.25F,
             1.0F);
@@ -384,21 +436,19 @@ void Renderer::render(const std::vector<Wallpaper> &wallpapers, int selected, Di
 
   float nav_x = stage_x_ + 22.0F;
   const float nav_y = stage_y_ + 55.0F;
-  draw_badge(nav_x, nav_y, "1 SLICE", mode == DisplayMode::Slice);
-  nav_x += 86.0F;
-  draw_badge(nav_x, nav_y, "2 GRID", mode == DisplayMode::Grid);
-  nav_x += 78.0F;
-  draw_badge(nav_x, nav_y, "3 HEX", mode == DisplayMode::Hex);
-  nav_x += 72.0F;
-  draw_badge(nav_x, nav_y, "W WALLHAVEN", wallhaven_mode);
-  nav_x += 122.0F;
-  draw_badge(nav_x, nav_y, "L LOCAL", false);
-  nav_x += 82.0F;
-  draw_badge(nav_x, nav_y, "R RANDOM", false);
-  nav_x += 96.0F;
-  draw_badge(nav_x, nav_y, "/ SEARCH", !query.empty());
-  nav_x += 98.0F;
-  draw_badge(nav_x, nav_y, "ENTER APPLY", false);
+  const auto badge = [&](const std::string &label, bool active, PickerAction action) {
+    const float w = draw_badge(nav_x, nav_y, label, active);
+    add_action_region(action, nav_x, nav_y, w, 24.0F);
+    nav_x += w + 10.0F;
+  };
+  badge("1 SLICE", mode == DisplayMode::Slice, PickerAction::Slice);
+  badge("2 GRID", mode == DisplayMode::Grid, PickerAction::Grid);
+  badge("3 HEX", mode == DisplayMode::Hex, PickerAction::Hex);
+  badge("W WALLHAVEN", wallhaven_mode, PickerAction::Wallhaven);
+  badge("L LOCAL", false, PickerAction::Local);
+  badge("R RANDOM", false, PickerAction::Random);
+  badge("/ SEARCH", !query.empty(), PickerAction::Search);
+  badge("ENTER APPLY", false, PickerAction::Apply);
   if (!status.empty()) {
     draw_text(stage_x_ + 320.0F, stage_y_ + 21.0F, status.substr(0, 32), 1.7F, 0.50F, 0.86F,
               0.74F, 1.0F);
@@ -452,14 +502,14 @@ void Renderer::render_grid(const std::vector<Wallpaper> &wallpapers, int selecte
     const auto color = color_from_group(wallpapers[i].color_group);
     draw_rect(x - 5, y - 5, cell_w + 10, cell_h + 10, color[0], color[1], color[2],
               i == selected ? 0.90F : 0.16F);
-    draw_rect(x - 2, y - 2, cell_w + 4, cell_h + 4, 0.025F, 0.030F, 0.040F, 0.94F);
-    draw_textured_quad(x, y, cell_w, cell_h, texture_for(wallpapers[i]), i == selected ? 1.0F : 0.86F);
+    draw_rect(x - 2, y - 2, cell_w + 4, cell_h + 4, 0.025F, 0.030F, 0.040F, 0.36F);
+    draw_wallpaper_preview(x, y, cell_w, cell_h, wallpapers[i], 1.0F);
     draw_rect(x + 6, y + cell_h - 20, 34, 15, 0.02F, 0.03F, 0.04F, 0.82F);
     draw_text(x + 11, y + cell_h - 16, type_label(wallpapers[i].type), 1.1F, 0.50F, 0.86F,
               0.74F, 1.0F);
     if (i == selected) {
-      draw_rect(x, y + cell_h - 28, cell_w, 28, 0.02F, 0.025F, 0.032F, 0.82F);
-      draw_text(x + 50, y + cell_h - 19, short_name(wallpapers[i], 18), 1.5F, 0.94F, 0.96F,
+      draw_rect(x, y + cell_h - 30, cell_w, 30, 0.02F, 0.025F, 0.032F, 0.74F);
+      draw_text(x + 50, y + cell_h - 20, short_name(wallpapers[i], 18), 1.7F, 0.94F, 0.96F,
                 1.0F, 1.0F);
     }
     hit_regions_.push_back({i, {{x, y}, {x + cell_w, y}, {x + cell_w, y + cell_h}, {x, y + cell_h}}});
@@ -485,8 +535,8 @@ void Renderer::render_slice(const std::vector<Wallpaper> &wallpapers, int select
     const float skew = 28.0F;
     const auto color = color_from_group(wallpapers[index].color_group);
     const std::vector<Point> poly = {{x + skew, y}, {x + w, y}, {x + w - skew, y + h}, {x, y + h}};
-    draw_polygon(poly, color[0], color[1], color[2], 0.20F);
-    draw_textured_quad(x + 11, y + 14, w - 22, h - 32, texture_for(wallpapers[index]), 0.54F);
+    draw_polygon(poly, color[0], color[1], color[2], 0.14F);
+    draw_wallpaper_preview(x + 11, y + 14, w - 22, h - 32, wallpapers[index], 1.0F);
     hit_regions_.push_back({index, poly});
   }
   if (selected >= 0 && selected < count) {
@@ -496,8 +546,8 @@ void Renderer::render_slice(const std::vector<Wallpaper> &wallpapers, int select
     const float y = center_y - h * 0.5F;
     const auto color = color_from_group(wallpapers[selected].color_group);
     draw_rect(x - 8, y - 8, w + 16, h + 16, color[0], color[1], color[2], 0.92F);
-    draw_rect(x - 4, y - 4, w + 8, h + 8, 0.025F, 0.030F, 0.038F, 0.98F);
-    draw_textured_quad(x, y, w, h, texture_for(wallpapers[selected]), 1.0F);
+    draw_rect(x - 4, y - 4, w + 8, h + 8, 0.025F, 0.030F, 0.038F, 0.42F);
+    draw_wallpaper_preview(x, y, w, h, wallpapers[selected], 1.0F);
     draw_rect(x, y + h - 36, w, 36, 0.02F, 0.025F, 0.032F, 0.84F);
     draw_text(x + 16, y + h - 24, short_name(wallpapers[selected], 34), 1.8F, 0.96F, 0.97F, 1.0F,
               1.0F);
@@ -542,9 +592,9 @@ void Renderer::render_hex(const std::vector<Wallpaper> &wallpapers, int selected
       }
       draw_polygon(outline, color[0], color[1], color[2], 0.94F);
     }
-    draw_polygon(poly, color[0], color[1], color[2], i == selected ? 0.62F : 0.26F);
-    draw_textured_quad(cx - r * 0.62F, cy - r * 0.46F, r * 1.24F, r * 0.92F,
-                       texture_for(wallpapers[i]), i == selected ? 1.0F : 0.74F);
+    draw_polygon(poly, color[0], color[1], color[2], i == selected ? 0.44F : 0.14F);
+    draw_wallpaper_preview(cx - r * 0.62F, cy - r * 0.46F, r * 1.24F, r * 0.92F,
+                           wallpapers[i], 1.0F);
     if (i == selected) {
       draw_rect(cx - r * 1.18F, cy + r * 0.70F, r * 2.36F, 25.0F, 0.02F, 0.025F, 0.032F, 0.84F);
       draw_text(cx - r * 1.05F, cy + r * 0.80F, short_name(wallpapers[i], 18), 1.4F, 0.96F,
@@ -561,6 +611,19 @@ int Renderer::hit_test(float x, float y) const {
     }
   }
   return -1;
+}
+
+PickerAction Renderer::action_hit_test(float x, float y) const {
+  for (const auto &region : action_regions_) {
+    if (x >= region.x && x <= region.x + region.w && y >= region.y && y <= region.y + region.h) {
+      return region.action;
+    }
+  }
+  return PickerAction::None;
+}
+
+bool Renderer::stage_contains(float x, float y) const {
+  return x >= stage_x_ && x <= stage_x_ + stage_w_ && y >= stage_y_ && y <= stage_y_ + stage_h_;
 }
 
 } // namespace vibewall::picker

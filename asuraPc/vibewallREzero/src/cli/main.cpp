@@ -56,6 +56,17 @@ void ensure_daemon() {
     return;
   } catch (...) {
   }
+
+  (void)run_process({"systemctl", "--user", "start", "vibewallrezero-daemon.service"});
+  for (int i = 0; i < 150; ++i) {
+    usleep(20000);
+    try {
+      (void)send_ipc("status");
+      return;
+    } catch (...) {
+    }
+  }
+
   const auto result = spawn_detached({"vibewall-daemon"});
   if (result.exit_code != 0) {
     throw std::runtime_error("failed to start daemon: " + result.error);

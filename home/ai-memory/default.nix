@@ -219,11 +219,54 @@ let
     enabled = true
     default_tools_approval_mode = "prompt"
 
+    [plugins."github@openai-curated"]
+    enabled = true
+
+    [plugins."notion@openai-curated"]
+    enabled = true
+
     {marker_end}
     """.strip()
         final = (existing + "\n\n" + block + "\n").lstrip()
         mkdir(path.parent)
         path.write_text(final, encoding="utf-8")
+
+    def repair_codex_state():
+        codex_dir = HOME / ".codex"
+        mkdir(codex_dir / "plugins" / "cache")
+        mkdir(codex_dir / "cache")
+        mkdir(codex_dir / "tmp")
+
+        for path in [
+            codex_dir,
+            codex_dir / "plugins",
+            codex_dir / "plugins" / "cache",
+            codex_dir / "cache",
+            codex_dir / "tmp",
+        ]:
+            try:
+                path.chmod(0o700)
+            except OSError:
+                pass
+
+        for root in [codex_dir / "plugins", codex_dir / "cache"]:
+            if not root.exists():
+                continue
+            for current, dirs, files in os.walk(root):
+                for name in dirs + files:
+                    item = Path(current) / name
+                    if item.is_symlink() and not item.exists():
+                        try:
+                            item.unlink()
+                        except OSError:
+                            pass
+
+        for path in [codex_dir / "auth.json", codex_dir / "config.toml"]:
+            if path.exists() and not path.is_symlink():
+                try:
+                    path.chmod(0o600)
+                except OSError:
+                    pass
 
     def ensure_sqlite():
         mkdir(DB.parent)
@@ -328,8 +371,10 @@ let
             conn.close()
 
     def sync_agents():
+        repair_codex_state()
         write_text(HOME / ".codex" / "AGENTS.md", AGENT_INSTRUCTIONS)
         merge_codex_config(HOME / ".codex" / "config.toml")
+        repair_codex_state()
 
         write_text(HOME / ".cursor" / "rules" / "ai-unified-memory.mdc", AGENT_INSTRUCTIONS)
         merge_json_key(HOME / ".cursor" / "mcp.json", "mcpServers", CURSOR_SERVERS)

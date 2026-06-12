@@ -21,6 +21,7 @@
   mpvpaper,
   matugen,
   procps,
+  systemd,
 }:
 
 stdenv.mkDerivation {
@@ -70,6 +71,7 @@ stdenv.mkDerivation {
             matugen
             mpvpaper
             procps
+            systemd
           ]
         }"
     done

@@ -26,8 +26,19 @@ nix eval --raw /etc/nixos#nixosConfigurations.asura-xs15.config.boot.kernelPacka
 nix eval /etc/nixos#nixosConfigurations.asura-xs15.config.boot.initrd.kernelModules
 grep -n 'wallpaper = "/etc/nixos/screenshots/lockscreen.png"' /etc/nixos/asura-xs15/noctaliaShell/settings.toml
 command -v xdman
+command -v codex
 xdg-mime query default x-scheme-handler/xdm-app
 xdg-mime query default x-scheme-handler/xdm+app
+systemctl --user is-active xdman.service
+test -d /opt/xdman/chrome-extension
+grep -R -- '--load-extension=/opt/xdman/chrome-extension' \
+  ~/.local/share/applications ~/.config/BraveSoftware ~/.config/google-chrome ~/.config/chromium
+grep -n 'plugins."github@openai-curated"' ~/.codex/config.toml
+grep -n 'plugins."notion@openai-curated"' ~/.codex/config.toml
+vibewall close
+vibewall toggle
+sleep 1
+vibewall close
 test ! -e /run/current-system/sw/bin/hyprlock
 test ! -e /run/current-system/sw/bin/wofi
 systemd-analyze
@@ -59,6 +70,11 @@ Expected values:
 | NVIDIA boot params | no local `nvidia-drm.modeset` or `nvidia-drm.fbdev` in `boot.kernelParams` |
 | Lockscreen wallpaper | `/etc/nixos/screenshots/lockscreen.png` |
 | XDM scheme handlers | `xdm-app.desktop` |
+| XDM browser helper | `/opt/xdman/chrome-extension` exists; Brave/Chrome/Chromium launchers load it |
+| XDM bridge | `xdman.service` active in the user graphical session |
+| Codex CLI | `/run/current-system/sw/bin/codex` exists after rebuild |
+| Codex plugins | generated `~/.codex/config.toml` keeps GitHub and Notion plugin blocks |
+| Vibewall toggle | first `vibewall toggle` starts daemon/picker; close cleans picker |
 | Removed launchers | no Hyprlock, no Wofi |
 | Boot critical path | `nvidia-persistenced.service` should not gate `graphical.target` after reboot |
 | NVIDIA persistence | service disabled for boot pull-in, delayed timer enabled |

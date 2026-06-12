@@ -263,6 +263,7 @@ in
       wget
       git
       gh
+      codex
       jq
       eza
       bat
@@ -334,4 +335,16 @@ in
   systemd.tmpfiles.rules = [
     "L+ /opt/xdman - - - - ${xdmanGtk}/opt/xdman"
   ];
+
+  systemd.user.services.xdman = {
+    description = "Xtreme Download Manager desktop bridge";
+    after = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    wantedBy = [ "graphical-session.target" ];
+    serviceConfig = {
+      ExecStart = "${xdmanGtk}/bin/xdman";
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+  };
 }

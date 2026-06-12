@@ -35,19 +35,28 @@ void install_signal_handlers() {
 }
 
 void reap_picker() {
-  if (picker_pid <= 0) {
-    return;
-  }
   int status = 0;
-  const pid_t result = waitpid(picker_pid, &status, WNOHANG);
-  if (result == picker_pid || (result < 0 && errno == ECHILD)) {
+  while (true) {
+    const pid_t result = waitpid(-1, &status, WNOHANG);
+    if (result <= 0) {
+      break;
+    }
+    if (result == picker_pid) {
+      picker_pid = -1;
+    }
+  }
+  if (picker_pid > 0 && kill(picker_pid, 0) != 0 && errno == ESRCH) {
     picker_pid = -1;
   }
 }
 
-void open_picker() {
+bool picker_is_running() {
   reap_picker();
-  if (picker_pid > 0 && kill(picker_pid, 0) == 0) {
+  return picker_pid > 0 && kill(picker_pid, 0) == 0;
+}
+
+void open_picker() {
+  if (picker_is_running()) {
     return;
   }
   const pid_t pid = fork();
@@ -66,10 +75,23 @@ void close_picker() {
   if (picker_pid > 0) {
     kill(picker_pid, SIGTERM);
     int status = 0;
-    (void)waitpid(picker_pid, &status, 0);
+    for (int i = 0; i < 30; ++i) {
+      const pid_t result = waitpid(picker_pid, &status, WNOHANG);
+      if (result == picker_pid || (result < 0 && errno == ECHILD)) {
+        picker_pid = -1;
+        break;
+      }
+      usleep(10000);
+    }
+    if (picker_pid > 0) {
+      kill(picker_pid, SIGKILL);
+      (void)waitpid(picker_pid, &status, 0);
+    }
     picker_pid = -1;
   }
   run_process({"pkill", "-x", "vibewall-picker"});
+  run_process({"pkill", "-f", "vibewall-picker"});
+  reap_picker();
 }
 
 std::string handle_command(const std::string &cmd, Database &db, const AppConfig &config) {
@@ -86,7 +108,7 @@ std::string handle_command(const std::string &cmd, Database &db, const AppConfig
     return "closed\n";
   }
   if (cmd == "toggle") {
-    if (picker_pid > 0 && kill(picker_pid, 0) == 0) {
+    if (picker_is_running()) {
       close_picker();
       return "closed\n";
     }

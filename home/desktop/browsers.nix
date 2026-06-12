@@ -1,6 +1,31 @@
 # Browser Configuration and Theming
 { pkgs, ... }:
 
+let
+  xdmExtensionPath = "/opt/xdman/chrome-extension";
+  browserMimeTypes = [
+    "application/xhtml+xml"
+    "text/html"
+    "x-scheme-handler/about"
+    "x-scheme-handler/http"
+    "x-scheme-handler/https"
+    "x-scheme-handler/unknown"
+  ];
+  chromiumPolicy = ''
+    {
+      "RestoreOnStartup": 1,
+      "ExtensionInstallSources": [
+        "file://${xdmExtensionPath}/*"
+      ],
+      "ExtensionSettings": {
+        "*": {
+          "installation_mode": "allowed"
+        }
+      }
+    }
+  '';
+in
+
 {
   programs.firefox = {
     enable = true;
@@ -82,7 +107,9 @@
 
   programs.brave = {
     enable = true;
-    commandLineArgs = [ ];
+    commandLineArgs = [
+      "--load-extension=${xdmExtensionPath}"
+    ];
   };
 
   xdg.mimeApps = {
@@ -110,33 +137,54 @@
     pkgs.google-chrome
   ];
 
-  xdg.configFile."google-chrome/policies/managed/session-restore.json".text = ''
-    {
-      "RestoreOnStartup": 1,
-      "ExtensionInstallSources": [
-        "file:///opt/xdman/chrome-extension/*"
-      ]
-    }
-  '';
+  xdg.desktopEntries.brave-browser = {
+    name = "Brave Web Browser";
+    genericName = "Web Browser";
+    exec = "${pkgs.brave}/bin/brave --load-extension=${xdmExtensionPath} %U";
+    icon = "brave-browser";
+    terminal = false;
+    categories = [
+      "Network"
+      "WebBrowser"
+    ];
+    mimeType = browserMimeTypes;
+    settings.StartupWMClass = "brave-browser";
+  };
 
-  xdg.configFile."chromium/policies/managed/session-restore.json".text = ''
-    {
-      "RestoreOnStartup": 1,
-      "ExtensionInstallSources": [
-        "file:///opt/xdman/chrome-extension/*"
-      ]
-    }
-  '';
+  xdg.desktopEntries.google-chrome = {
+    name = "Google Chrome";
+    genericName = "Web Browser";
+    exec = "${pkgs.google-chrome}/bin/google-chrome-stable --load-extension=${xdmExtensionPath} %U";
+    icon = "google-chrome";
+    terminal = false;
+    categories = [
+      "Network"
+      "WebBrowser"
+    ];
+    mimeType = browserMimeTypes;
+    settings.StartupWMClass = "google-chrome";
+  };
 
-  xdg.configFile."BraveSoftware/Brave-Browser/policies/managed/session-restore.json".text =
-    ''
-      {
-        "RestoreOnStartup": 1,
-        "ExtensionInstallSources": [
-          "file:///opt/xdman/chrome-extension/*"
-        ]
-      }
-    '';
+  xdg.desktopEntries.chromium-browser = {
+    name = "Chromium";
+    genericName = "Web Browser";
+    exec = "${pkgs.chromium}/bin/chromium --load-extension=${xdmExtensionPath} %U";
+    icon = "chromium";
+    terminal = false;
+    categories = [
+      "Network"
+      "WebBrowser"
+    ];
+    mimeType = browserMimeTypes;
+    settings.StartupWMClass = "chromium-browser";
+  };
+
+  xdg.configFile."google-chrome/policies/managed/xdm-integration.json".text = chromiumPolicy;
+
+  xdg.configFile."chromium/policies/managed/xdm-integration.json".text = chromiumPolicy;
+
+  xdg.configFile."BraveSoftware/Brave-Browser/policies/managed/xdm-integration.json".text =
+    chromiumPolicy;
 
   xdg.configFile."helium/policies/managed/session-restore.json".text = ''
     {

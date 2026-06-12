@@ -43,8 +43,9 @@ new commands should use `#asura-xs15`.
 | Boot GPU policy | Intel `i915` loads in initrd; NVIDIA stays out of initrd/modules-load and explicit `nvidia-drm.*` boot params |
 | Performance | CachyOS kernel, `scx_lavd`, `ananicy-cpp` with CachyOS rules, BBR, zram, irqbalance, delayed NVIDIA persistenced, delayed cache warm |
 | Power | `thermald` plus `tuned`; TLP disabled |
-| Downloads | Xtreme Download Manager GTK `8.0.29` pre-release plus Firefox add-on and `xdm-app:` handlers |
+| Downloads | Xtreme Download Manager GTK `8.0.29` pre-release, user-session bridge, Firefox add-on, Chromium helper, and `xdm-app:` handlers |
 | AI memory | Shared root at `/home/asura/.config/ai-unified-memory`; facts are system-only |
+| Codex | Declarative `pkgs.codex` plus generated GitHub/Notion plugin config after rebuild |
 
 ## Daily Commands
 
@@ -139,6 +140,14 @@ Important carry-overs:
   I/O spikes during first login.
 - Desktop cache warming is delayed and capped; it no longer reads package
   closures immediately after login.
+- `vibewall toggle` starts the systemd user daemon first, so the first
+  `SUPER+W` press opens the picker; clicking outside the centered stage closes
+  it.
+- Nautilus floats centered for quick file checks.
+- XDM runs as a user session bridge and Brave/Chrome/Chromium launchers load
+  `/opt/xdman/chrome-extension`; Firefox gets the AMO add-on declaratively.
+- Codex plugin declarations live in the generated `~/.codex/config.toml` block
+  so rebuilds keep GitHub/Notion plugins enabled.
 - The `rescue-no-nvidia` boot specialization keeps the old rescue path
   declarative: multi-user target, Plymouth disabled, and temporary NVIDIA
   blacklist only for that entry.
@@ -146,7 +155,8 @@ Important carry-overs:
   route through Noctalia IPC.
 - Wofi and Hyprlock are not active modules.
 - Chromium-family XDM integration uses the bundled extension folder at
-  `/opt/xdman/chrome-extension`; Firefox gets the AMO add-on declaratively.
+  `/opt/xdman/chrome-extension`, local desktop launchers add
+  `--load-extension`, and Firefox gets the AMO add-on declaratively.
 
 ## Security Notes
 

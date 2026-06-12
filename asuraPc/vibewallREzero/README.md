@@ -10,6 +10,11 @@ Tauri, Electron, or WebKit.
 - Tiny daemon plus short-lived native picker.
 - Native Wayland layer-shell overlay with OpenGL ES rendering.
 - Three reference-inspired modes: slice carousel, grid, and hex.
+- Systemd-backed `vibewall toggle` startup, so the first `SUPER+W` press opens
+  the picker instead of only waking the daemon.
+- Click outside the centered picker stage to close.
+- Full-opacity wallpaper previews with aspect-ratio cover cropping; only the
+  shell dim layer is translucent.
 - SQLite wallpaper database with tags, favourites, filters, colour groups, and
   last-used restore state.
 - Image thumbnails through libvips and video thumbnails through ffmpeg.
@@ -55,7 +60,17 @@ vibewall wallhaven search "city night" --page 1
 | `R` | Apply random wallpaper |
 | `/` | Edit search |
 | `Backspace` | Delete search char |
-| `Escape` | Close |
+| `Escape` / outside click | Close |
+
+## Screenshots
+
+| Slice | Grid |
+|---|---|
+| ![Slice picker](screenshots/vibewallrezero-slice.png) | ![Grid picker](screenshots/vibewallrezero-grid.png) |
+
+| Hex | Video wallpaper |
+|---|---|
+| ![Hex picker](screenshots/vibewallrezero-hex.png) | ![Video wallpaper applied](screenshots/vibewallrezero-video-applied.png) |
 
 ## NixOS
 
@@ -73,3 +88,10 @@ Run:
 ```bash
 benchmark.sh
 ```
+
+## Framework Boundary
+
+This project intentionally does not use Qt, QML, Quickshell, GTK, Tauri,
+Electron, WebKit, Steam Workshop, Wallpaper Engine scenes, or local AI tagging.
+The UI process is native Wayland/EGL/OpenGL ES and short-lived; the daemon stays
+small and IPC-only.
