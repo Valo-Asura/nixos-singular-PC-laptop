@@ -2,7 +2,7 @@
 
 This system uses Noctalia as the active shell, but wallpaper selection is handled
 by `vibewallREzero`, a native C++23 Wayland picker/daemon under
-`/etc/nixos/asuraPc/vibewallREzero`.
+`/etc/nixos/asura-xs15/vibewallREzero`.
 
 Images apply through Noctalia IPC:
 
@@ -49,6 +49,11 @@ Wallhaven browser:
 | Hex selector | `screenshots/vibewallrezero-hex.png` |
 | Mosaic | `screenshots/vibewallrezero-mosaic.png` |
 | Wallhaven browser | `screenshots/vibewallrezero-wallhaven.png` |
+| Transparent overlay | `screenshots/vibewallrezero-transparent-overlay.png` |
+
+The picker uses a transparent Wayland layer-shell surface. It does not paint a
+full-screen wallpaper or dim layer; the active workspace and focused app remain
+visible behind the centered toolbar/cards.
 
 The picker toolbar exposes local and Wallhaven sources:
 
@@ -83,6 +88,7 @@ Apply an image or video:
 ```bash
 vibewall apply /home/asura/Wallpaper/random_wallpaper.jpg
 vibewall apply /home/asura/Wallpaper/chill.mp4
+noctalia msg wallpaper-get
 ```
 
 The last wallpaper is stored in the SQLite settings table and restored by
@@ -98,7 +104,7 @@ Hyprland on login. Video state is also mirrored for legacy helpers at:
 |---|---|
 | `/home/asura/Wallpaper` | Main image/video wallpaper directory |
 | `/etc/nixos/asura-xs15/noctaliaShell/settings.toml` | Declarative Noctalia wallpaper and lockscreen settings |
-| `/etc/nixos/asuraPc/vibewallREzero` | Native picker, daemon, CLI, tests, and Nix module |
+| `/etc/nixos/asura-xs15/vibewallREzero` | Native picker, daemon, CLI, tests, and Nix module |
 | `/etc/nixos/asura-xs15/hyprland/bindings.nix` | Nix-owned Hyprland keybind source |
 | `/etc/nixos/screenshots/lockscreen.png` | Noctalia lockscreen wallpaper |
 
@@ -121,6 +127,8 @@ Tested proof on 2026-06-12:
 |---|---|
 | Local scan | `images=34 videos=9 errors=0` |
 | Picker modes | Slice, grid, hex, mosaic, and Wallhaven screenshots captured with `grim` |
+| Transparent overlay | `screenshots/vibewallrezero-transparent-overlay.png` shows active VS Code workspace visible behind the centered picker |
+| Image apply | Built package applied `/home/asura/Wallpaper/radha-krishna-5120x2880-14416.png`; `noctalia msg wallpaper-get` returned the same path |
 | Wallhaven | CLI search returns results; browser opens cached previews immediately; stale bad previews are skipped |
 | Daemon toggle | `picker_pid` opens then returns to `-1` after close |
 | Video apply | `mpvpaper` starts for video and is stopped after image restore |

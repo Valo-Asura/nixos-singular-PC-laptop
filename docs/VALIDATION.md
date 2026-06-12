@@ -41,6 +41,9 @@ sleep 1
 vibewall close
 vibewall wallhaven search "pixel art" --page 1
 timeout 8s vibewall picker --wallhaven || test "$?" = 124
+vibewall apply /home/asura/Wallpaper/radha-krishna-5120x2880-14416.png
+test "$(noctalia msg wallpaper-get)" = "/home/asura/Wallpaper/radha-krishna-5120x2880-14416.png"
+timeout 8s vibewall picker --mode grid || test "$?" = 124
 vibewall-benchmark
 test ! -e /run/current-system/sw/bin/hyprlock
 test ! -e /run/current-system/sw/bin/wofi
@@ -78,6 +81,8 @@ Expected values:
 | Codex CLI | `/run/current-system/sw/bin/codex` exists after rebuild |
 | Codex plugins | generated `~/.codex/config.toml` keeps GitHub and Notion plugin blocks |
 | Vibewall toggle | first `vibewall toggle` starts daemon/picker; close cleans picker |
+| Vibewall transparent overlay | active workspace remains visible behind centered toolbar/cards; proof screenshot is `screenshots/vibewallrezero-transparent-overlay.png` |
+| Vibewall image apply | `vibewall apply` returns `ok` and `noctalia msg wallpaper-get` returns the requested path |
 | Vibewall Wallhaven | cached browser opens; `D`/`DOWNLOAD` saves selected remote wallpaper and `Enter`/`APPLY` downloads then applies |
 | Vibewall benchmark | daemon stays small, picker is event-driven at idle |
 | Removed launchers | no Hyprlock, no Wofi |

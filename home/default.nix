@@ -3,11 +3,14 @@
 
 {
   imports = [
+    ./application.nix
+    ./hyprland.nix
+    ./theming.nix
+    ./browser
+    ./aimemory.nix
     ./programs
-    ./desktop
     ./shell
     ./vscode
-    ./ai-memory
     ./templates
   ];
 

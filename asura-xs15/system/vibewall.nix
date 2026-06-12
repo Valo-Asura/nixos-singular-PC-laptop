@@ -1,6 +1,6 @@
 {
   imports = [
-    ../../asuraPc/vibewallREzero/nix/module.nix
+    ../vibewallREzero/nix/module.nix
   ];
 
   programs.vibewallREzero.enable = true;

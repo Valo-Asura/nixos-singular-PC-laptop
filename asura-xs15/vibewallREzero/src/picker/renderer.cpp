@@ -299,20 +299,22 @@ void Renderer::update_stage(DisplayMode mode) {
   stage_h_ = screen_h;
 
   const float side_margin = std::clamp(screen_w * 0.075F, 52.0F, 140.0F);
-  content_x_ = side_margin;
-  content_y_ = 128.0F;
-  content_w_ = std::max(320.0F, screen_w - side_margin * 2.0F);
-  content_h_ = std::max(240.0F, screen_h - content_y_ - 62.0F);
+  float max_content_w = 1320.0F;
+  content_y_ = 150.0F;
   if (mode == DisplayMode::Slice) {
-    content_y_ = std::max(134.0F, screen_h * 0.22F);
-    content_h_ = std::max(360.0F, screen_h - content_y_ - 40.0F);
+    max_content_w = 1540.0F;
+    content_y_ = std::max(150.0F, screen_h * 0.23F);
   } else if (mode == DisplayMode::Hex) {
-    content_y_ = 116.0F;
-    content_h_ = std::max(260.0F, screen_h - 238.0F);
+    max_content_w = 1180.0F;
+    content_y_ = 138.0F;
   } else if (mode == DisplayMode::Mosaic) {
-    content_y_ = 126.0F;
-    content_h_ = std::max(280.0F, screen_h - content_y_ - 60.0F);
+    max_content_w = 1260.0F;
+    content_y_ = 150.0F;
   }
+  const float available_w = std::max(320.0F, screen_w - side_margin * 2.0F);
+  content_w_ = std::min(available_w, max_content_w);
+  content_x_ = (screen_w - content_w_) * 0.5F;
+  content_h_ = std::max(240.0F, screen_h - content_y_ - 86.0F);
 }
 
 TextureInfo Renderer::texture_for(const Wallpaper &wallpaper) {
@@ -672,7 +674,7 @@ void Renderer::render_toolbar(const std::vector<Wallpaper> &wallpapers, DisplayM
       std::min(static_cast<float>(width_) - 60.0F, wallhaven_mode ? 1280.0F : 1180.0F);
   const float panel_h = wallhaven_mode ? 106.0F : 90.0F;
   const float x = (static_cast<float>(width_) - panel_w) * 0.5F;
-  const float y = 32.0F;
+  const float y = 58.0F;
   draw_rect(x, y, panel_w, panel_h, 0.020F, 0.034F, 0.040F, 0.34F);
   draw_rect(x, y + panel_h - 2.0F, panel_w, 2.0F, 0.40F, 0.95F, 0.74F, 0.82F);
 
@@ -769,14 +771,12 @@ void Renderer::render(const std::vector<Wallpaper> &wallpapers, int selected, Di
                       const std::optional<WallpaperType> &type_filter,
                       const std::optional<ColorGroup> &color_filter, bool favorites_only,
                       const std::string &background_path) {
+  (void)background_path;
   hit_regions_.clear();
   action_regions_.clear();
   update_stage(mode);
-  glClearColor(0.015F, 0.018F, 0.023F, 1.0F);
+  glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
   glClear(GL_COLOR_BUFFER_BIT);
-  draw_background(background_path);
-  draw_rect(0, 0, static_cast<float>(width_), static_cast<float>(height_), 0.02F, 0.024F, 0.030F,
-            0.48F);
   render_toolbar(wallpapers, mode, query, wallhaven_mode, status, type_filter, color_filter,
                  favorites_only);
 
@@ -805,9 +805,9 @@ void Renderer::render(const std::vector<Wallpaper> &wallpapers, int selected, Di
 
 void Renderer::render_grid(const std::vector<Wallpaper> &wallpapers, int selected) {
   const float gap = 7.0F;
-  const int cols = width_ >= 1700 ? 6 : (width_ >= 1280 ? 5 : 4);
+  const int cols = width_ >= 1500 ? 5 : (width_ >= 1100 ? 4 : 3);
   const int visible_rows = height_ >= 920 ? 4 : 3;
-  const float cell_w = std::min(330.0F, (content_w_ - gap * (cols - 1)) / cols);
+  const float cell_w = std::min(260.0F, (content_w_ - gap * (cols - 1)) / cols);
   const float cell_h = cell_w * 0.56F;
   const float grid_w = cols * cell_w + (cols - 1) * gap;
   const int selected_row = std::max(0, selected / cols);
@@ -978,8 +978,8 @@ void Renderer::render_hex(const std::vector<Wallpaper> &wallpapers, int selected
 
 void Renderer::render_mosaic(const std::vector<Wallpaper> &wallpapers, int selected) {
   const float gap = 7.0F;
-  const int cols = width_ >= 1700 ? 6 : 5;
-  const float base_w = (content_w_ - gap * (cols - 1)) / cols;
+  const int cols = width_ >= 1500 ? 5 : 4;
+  const float base_w = std::min(260.0F, (content_w_ - gap * (cols - 1)) / cols);
   const float base_h = base_w * 0.54F;
   const int selected_row = std::max(0, selected / cols);
   const int start_row = std::max(0, selected_row - 2);

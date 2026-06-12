@@ -13,7 +13,7 @@ namespace vibewall {
 
 namespace {
 constexpr const char *kUserAgent =
-    "vibewallREzero/0.1 (Wayland native wallpaper picker; +https://github.com/Valo-Asura/vibewallREzero)";
+    "vibewall/0.1 (Wayland native wallpaper picker; +https://github.com/Valo-Asura/vibewall)";
 
 size_t write_string(char *ptr, size_t size, size_t nmemb, void *userdata) {
   auto *out = static_cast<std::string *>(userdata);

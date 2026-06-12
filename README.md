@@ -18,6 +18,10 @@
 | :--- | :--- |
 | ![Vibewall Mosaic](screenshots/vibewallrezero-mosaic.png) | ![Wallhaven Browser](screenshots/vibewallrezero-wallhaven.png) |
 
+| Transparent Active Workspace Overlay |
+| :--- |
+| ![Vibewall transparent overlay](screenshots/vibewallrezero-transparent-overlay.png) |
+
 ## Install
 
 ```bash
@@ -42,7 +46,7 @@ new commands should use `#asura-xs15`.
 | Wallpaper | `SUPER+W` and `SUPER+SHIFT+W` open native `vibewallREzero`; images apply through Noctalia IPC, videos through `mpvpaper` |
 | Fan control | NBFC-Linux `0.5.2` plus NBFC-GTK `0.4.1` |
 | Fan profile | Declarative two-fan `Colorful X15 AT 22` config with `MaxSpeedValue = 255`, max-sensor ramping, and emergency thermal guard |
-| Plymouth | Local `circle_hud` theme from `asura-xs15/backup/plymouth/circle_hud` |
+| Plymouth | Local `circle_hud` theme from `asura-xs15/plymouth/circle_hud` |
 | Kernel | CachyOS `7.0.11` from `nix-cachyos-kernel/release` |
 | Boot GPU policy | Intel `i915` loads in initrd; NVIDIA stays out of initrd/modules-load and explicit `nvidia-drm.*` boot params |
 | Performance | CachyOS kernel, `scx_lavd`, `ananicy-cpp` with CachyOS rules, BBR, zram, irqbalance, delayed NVIDIA persistenced, delayed cache warm |
@@ -75,10 +79,11 @@ vibewall picker --wallhaven   # open cached Wallhaven browser directly
 ├── hosts/                  # Flake host declarations
 ├── system/                 # Thin shared NixOS defaults/import wrapper
 ├── asura-xs15/             # Laptop-specific declarative config
-│   ├── backup/plymouth/    # Local Plymouth theme source
+│   ├── plymouth/           # Local Plymouth theme source
 │   ├── hyprland/           # Nix-owned Hyprland config, rules, keybinds
 │   ├── noctaliaShell/      # Noctalia settings and shell-managed app defaults
 │   ├── scripts/            # Home Manager helper scripts
+│   ├── vibewallREzero/     # Native C++23 wallpaper picker/daemon package
 │   └── system/             # Flat one-file NixOS host modules
 │       ├── default.nix
 │       ├── boot.nix
@@ -90,15 +95,28 @@ vibewall picker --wallhaven   # open cached Wallhaven browser directly
 │       ├── services.nix
 │       ├── theming.nix
 │       └── users.nix
-├── asuraPc/vibewallREzero/ # Native C++23 wallpaper picker/daemon package
 ├── home/                   # Home Manager user configuration
+│   ├── application.nix     # Desktop entries, Nautilus, MIME defaults
+│   ├── hyprland.nix        # Home Manager import for host Hyprland config
+│   ├── theming.nix         # GTK/libadwaita/Qt dark theme and cursor
+│   ├── aimemory.nix        # Shared system-scoped AI memory wiring
+│   ├── default.nix         # Home Manager import root
+│   ├── browser/
+│   │   ├── brave.nix
+│   │   ├── chrome.nix
+│   │   ├── firefox.nix
+│   │   └── helium.nix
+│   ├── programs/
+│   ├── shell/
+│   ├── templates/
+│   └── vscode/
 ├── docs/                   # Validation and workflow docs
 └── screenshots/            # README screenshots
 ```
 
 Rule: one-file modules stay as `.nix` files. Folders are only for real
-multi-file domains such as `hyprland/`, `noctaliaShell/`, `scripts/`, and
-`backup/plymouth/`.
+multi-file domains such as `hyprland/`, `noctaliaShell/`, `scripts/`,
+`vibewallREzero/`, `browser/`, and `plymouth/`.
 
 ## Docs
 

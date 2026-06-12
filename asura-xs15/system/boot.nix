@@ -8,7 +8,7 @@ let
   circleHudPlymouth = pkgs.stdenvNoCC.mkDerivation {
     pname = "circle-hud-plymouth-theme";
     version = "local";
-    src = ../backup/plymouth/circle_hud;
+    src = ../plymouth/circle_hud;
 
     dontConfigure = true;
     dontBuild = true;
@@ -24,7 +24,7 @@ let
       [Plymouth Theme]
       Name=circle_hud
       Description=Asura XS15 local circle HUD boot theme
-      Comment=Local declarative copy from /etc/nixos/asura-xs15/backup/plymouth/circle_hud
+      Comment=Local declarative copy from /etc/nixos/asura-xs15/plymouth/circle_hud
       ModuleName=script
 
       [script]

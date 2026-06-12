@@ -3,6 +3,6 @@
 
 {
   imports = [
-    ../../../asura-xs15/hyprland
+    ../asura-xs15/hyprland
   ];
 }

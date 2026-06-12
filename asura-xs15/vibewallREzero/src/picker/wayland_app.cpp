@@ -52,7 +52,7 @@ EGLConfig choose_config(EGLDisplay display) {
                           EGL_BLUE_SIZE,
                           8,
                           EGL_ALPHA_SIZE,
-                          0,
+                          8,
                           EGL_RENDERABLE_TYPE,
                           EGL_OPENGL_ES2_BIT,
                           EGL_NONE};
@@ -464,12 +464,6 @@ void WaylandApp::layer_configure(void *data, zwlr_layer_surface_v1 *surface, uin
   zwlr_layer_surface_v1_ack_configure(surface, serial);
   app->width_ = width == 0 ? 1280 : static_cast<int>(width);
   app->height_ = height == 0 ? 760 : static_cast<int>(height);
-  if (app->compositor_ != nullptr && app->surface_ != nullptr) {
-    wl_region *opaque = wl_compositor_create_region(app->compositor_);
-    wl_region_add(opaque, 0, 0, app->width_, app->height_);
-    wl_surface_set_opaque_region(app->surface_, opaque);
-    wl_region_destroy(opaque);
-  }
   if (app->egl_window_ != nullptr) {
     wl_egl_window_resize(app->egl_window_, app->width_, app->height_, 0, 0);
     app->renderer_.resize(app->width_, app->height_);
@@ -613,7 +607,7 @@ void WaylandApp::pointer_button(void *data, wl_pointer *, uint32_t, uint32_t, ui
     if (hit >= 0) {
       app->selected_ = hit;
       if (app->wallpapers_[hit].type == WallpaperType::Wallhaven) {
-        app->status_ = "WEB SELECTED";
+        app->status_ = "WEB SELECTED - ENTER APPLY - D DOWNLOAD";
         app->redraw();
       } else {
         app->apply_selected();
