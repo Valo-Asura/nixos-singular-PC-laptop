@@ -51,23 +51,23 @@ in
     etc."xdg/mime/defaults.list".text = ''
       [Default Applications]
       inode/directory=org.gnome.Nautilus.desktop
-      application/zip=org.kde.ark.desktop
-      application/x-zip-compressed=org.kde.ark.desktop
-      application/x-7z-compressed=org.kde.ark.desktop
-      application/x-rar=org.kde.ark.desktop
-      application/vnd.rar=org.kde.ark.desktop
-      application/x-tar=org.kde.ark.desktop
-      application/x-compressed-tar=org.kde.ark.desktop
-      application/x-bzip-compressed-tar=org.kde.ark.desktop
-      application/x-bzip2-compressed-tar=org.kde.ark.desktop
-      application/x-xz-compressed-tar=org.kde.ark.desktop
-      application/x-gzip=org.kde.ark.desktop
-      application/gzip=org.kde.ark.desktop
-      application/x-bzip2=org.kde.ark.desktop
-      application/x-xz=org.kde.ark.desktop
-      application/zstd=org.kde.ark.desktop
-      application/x-lz4=org.kde.ark.desktop
-      application/x-iso9660-image=org.kde.ark.desktop
+      application/zip=xarchiver.desktop
+      application/x-zip-compressed=xarchiver.desktop
+      application/x-7z-compressed=xarchiver.desktop
+      application/x-rar=xarchiver.desktop
+      application/vnd.rar=xarchiver.desktop
+      application/x-tar=xarchiver.desktop
+      application/x-compressed-tar=xarchiver.desktop
+      application/x-bzip-compressed-tar=xarchiver.desktop
+      application/x-bzip2-compressed-tar=xarchiver.desktop
+      application/x-xz-compressed-tar=xarchiver.desktop
+      application/x-gzip=xarchiver.desktop
+      application/gzip=xarchiver.desktop
+      application/x-bzip2=xarchiver.desktop
+      application/x-xz=xarchiver.desktop
+      application/zstd=xarchiver.desktop
+      application/x-lz4=xarchiver.desktop
+      application/x-iso9660-image=xarchiver.desktop
     '';
   };
 }

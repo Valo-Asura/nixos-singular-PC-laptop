@@ -198,6 +198,7 @@ in
 
       layerrule = [
         "match:namespace notifications, blur 1, ignore_alpha 0.69"
+        "match:namespace control-center, no_anim 1, blur 1, ignore_alpha 0.5"
         "match:namespace launcher, no_anim 1, blur 1, ignore_alpha 0.5"
         "match:namespace overview, no_anim 1"
         "match:namespace session, blur 1"

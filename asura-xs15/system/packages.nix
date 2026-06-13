@@ -97,6 +97,7 @@ let
     gtk3
     libayatana-appindicator
     libnotify
+    librsvg
     lttng-ust_2_12
     openssl
     pango
@@ -137,27 +138,37 @@ let
     '';
 
     installPhase = ''
-      runHook preInstall
+            runHook preInstall
 
-      mkdir -p "$out"
-      cp -a source/opt "$out/"
-      mkdir -p "$out/share"
-      cp -a source/usr/share/. "$out/share/"
+            mkdir -p "$out"
+            cp -a source/opt "$out/"
+            mkdir -p "$out/share"
+            cp -a source/usr/share/. "$out/share/"
 
-      mkdir -p "$out/bin"
-      rm -f "$out/bin/xdman"
-      makeWrapper "$out/opt/xdman/xdm-app" "$out/bin/xdman" \
-        --set GTK_USE_PORTAL 1 \
-        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath xdmanRuntimeLibs}"
+            mkdir -p "$out/bin"
+            rm -f "$out/bin/xdman"
+            makeWrapper "$out/opt/xdman/xdm-app" "$out/bin/xdman" \
+              --set GTK_USE_PORTAL 1 \
+              --set GDK_PIXBUF_MODULE_FILE "${pkgs.librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" \
+              --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath xdmanRuntimeLibs}"
 
-      substituteInPlace "$out/share/applications/xdm-app.desktop" \
-        --replace-fail "env GTK_USE_PORTAL=1 /opt/xdman/xdm-app" "$out/bin/xdman" \
-        --replace-fail "/opt/xdman/xdm-logo.svg" "$out/opt/xdman/xdm-logo.svg"
-      substituteInPlace "$out/share/applications/xdm-app.desktop" \
-        --replace-fail "MimeType=application/xdm-app;x-scheme-handler/xdm-app;" \
-        "MimeType=application/xdm-app;x-scheme-handler/xdm-app;x-scheme-handler/xdm+app;"
+            substituteInPlace "$out/share/applications/xdm-app.desktop" \
+              --replace-fail "env GTK_USE_PORTAL=1 /opt/xdman/xdm-app" "$out/bin/xdman" \
+              --replace-fail "/opt/xdman/xdm-logo.svg" "$out/opt/xdman/xdm-logo.svg"
+            substituteInPlace "$out/share/applications/xdm-app.desktop" \
+              --replace-fail "MimeType=application/xdm-app;x-scheme-handler/xdm-app;" \
+              "MimeType=application/xdm-app;x-scheme-handler/xdm-app;x-scheme-handler/xdm+app;"
+            substituteInPlace "$out/share/applications/xdm-app.desktop" \
+              --replace-fail "Categories=Network;" "Categories=Network;FileTransfer;GTK;" \
+              --replace-fail "StartupNotify=true" "StartupNotify=false"
+      printf '%s\n' \
+        'StartupWMClass=xdm-app' \
+        'DBusActivatable=false' \
+        >> "$out/share/applications/xdm-app.desktop"
+            mkdir -p "$out/share/pixmaps"
+            ln -sf "$out/opt/xdman/xdm-logo.svg" "$out/share/pixmaps/xdm-logo.svg"
 
-      runHook postInstall
+            runHook postInstall
     '';
 
     meta = {
@@ -192,7 +203,6 @@ in
 
       # File Management & NTFS Support
       xarchiver
-      kdePackages.ark
       nautilus
       gnome-disk-utility
       pcmanfm-qt
@@ -263,9 +273,6 @@ in
       gh
       codex
       jq
-      eza
-      bat
-      fd
       ripgrep
       nixfmt
       nil
@@ -312,7 +319,6 @@ in
       # Terminal enhancements
       btop
       tree
-      fzf
       curl
       yq
 
@@ -337,10 +343,15 @@ in
     after = [ "graphical-session.target" ];
     partOf = [ "graphical-session.target" ];
     wantedBy = [ "graphical-session.target" ];
+    unitConfig = {
+      StartLimitBurst = 3;
+      StartLimitIntervalSec = 30;
+    };
     serviceConfig = {
       ExecStart = "${xdmanGtk}/bin/xdman";
       Restart = "on-failure";
       RestartSec = 5;
+      Environment = "GDK_PIXBUF_MODULE_FILE=${pkgs.librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache";
     };
   };
 }

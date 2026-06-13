@@ -43,6 +43,7 @@ in
   # Keep the VM stack installed, but do not start libvirtd at boot. The system
   # sockets activate libvirt/virtlogd/virtlockd when virt-manager or virsh is used.
   systemd.services = {
+    libvirt-guests.wantedBy = lib.mkForce [ ];
     libvirtd.wantedBy = lib.mkForce [ ];
     virtlogd.wantedBy = lib.mkForce [ ];
     virtlockd.wantedBy = lib.mkForce [ ];

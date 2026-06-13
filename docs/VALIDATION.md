@@ -20,12 +20,17 @@ timeout 8s nbfc-gtk --fans || test "$?" = 124
 gsettings get org.gnome.desktop.interface color-scheme
 gsettings get org.gnome.desktop.interface gtk-theme
 xdg-mime query default inode/directory
+xdg-mime query default application/zip
+xdg-mime query default application/x-7z-compressed
+xdg-mime query default application/x-compressed-tar
+nix eval --impure --expr 'let flake = builtins.getFlake "/etc/nixos"; cfg = flake.nixosConfigurations.asura-xs15.config; in builtins.elem "${flake.nixosConfigurations.asura-xs15.pkgs.kdePackages.ark}" cfg.environment.systemPackages'
 nix eval /etc/nixos#nixosConfigurations.asura-xs15.config.home-manager.users.asura.wayland.windowManager.hyprland.configType
 nix eval --raw /etc/nixos#nixosConfigurations.asura-xs15.config.programs.hyprland.package.version
 nix eval --raw /etc/nixos#nixosConfigurations.asura-xs15.config.boot.kernelPackages.kernel.version
 nix eval /etc/nixos#nixosConfigurations.asura-xs15.config.boot.initrd.kernelModules
 grep -n 'wallpaper = "/etc/nixos/screenshots/lockscreen.png"' /etc/nixos/asura-xs15/noctaliaShell/settings.toml
 command -v xdman
+timeout 8s xdman || test "$?" = 124
 command -v codex
 xdg-mime query default x-scheme-handler/xdm-app
 xdg-mime query default x-scheme-handler/xdm+app
@@ -41,6 +46,7 @@ ai-memory-mcp-status
 test -f ~/.config/ai-unified-memory/mcp/config.sqlite-opt-in.json
 systemctl --user is-enabled asura-video-wallpaper-battery-guard.timer
 systemctl is-enabled libvirtd.service || true
+systemctl is-enabled libvirt-guests.service || true
 systemctl is-enabled libvirtd.socket
 systemctl is-enabled virtlogd.socket
 systemctl is-enabled virtlockd.socket
@@ -78,6 +84,8 @@ Expected values:
 | NBFC max speed | `255` for CPU and GPU fans |
 | NBFC-GTK | launches and stays alive until timeout; old failure was missing GTK typelibs |
 | Directory MIME | `org.gnome.Nautilus.desktop` |
+| Archive MIME | `xarchiver.desktop` |
+| Archive app ownership | Ark eval returns `false`; Xarchiver is the only archive UI in system packages |
 | GNOME color scheme | `prefer-dark` |
 | Hyprland config type | `"hyprlang"` |
 | Hyprland version | `0.55.3+date=2026-06-07_fe5fe79` |
@@ -87,12 +95,12 @@ Expected values:
 | Lockscreen wallpaper | `/etc/nixos/screenshots/lockscreen.png` |
 | XDM scheme handlers | `xdm-app.desktop` |
 | XDM browser helper | `/opt/xdman/chrome-extension` exists; Brave/Chrome/Chromium launchers load it |
-| XDM bridge | `xdman.service` active in the user graphical session |
+| XDM bridge | `xdman.service` active in the user graphical session; `timeout 8s xdman` reaches timeout instead of crashing on SVG icon loading |
 | Codex CLI | `/run/current-system/sw/bin/codex` exists after rebuild |
 | Codex plugins | generated `~/.codex/config.toml` keeps GitHub and Notion plugin blocks |
 | AI memory MCP | default editor config includes `ai-memory-files`; SQLite MCP is only in opt-in config |
 | Video wallpaper battery guard | user timer enabled; `mpvpaper` is suspended on battery |
-| VM stack | `libvirtd.service` is not enabled; libvirt sockets are enabled for on-demand VM use |
+| VM stack | `libvirtd.service` and `libvirt-guests.service` are not enabled; libvirt sockets are enabled for on-demand VM use |
 | Bluetooth tray | base BlueZ stays available; Blueman tray/OBEX service is disabled |
 | Vibewall toggle | first `vibewall toggle` starts daemon/picker; close cleans picker |
 | Vibewall transparent overlay | active workspace remains visible behind centered toolbar/cards; proof screenshot is `screenshots/vibewallrezero-transparent-overlay.png` |

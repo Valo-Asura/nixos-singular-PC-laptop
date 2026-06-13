@@ -11,12 +11,7 @@
     eza # Better ls replacement
     bat # Better cat replacement
     fd # Better find replacement
-    direnv # Environment management
     fastfetch # System info tool (used by `ff` alias)
-    atuin # Shell history management
-    zoxide # Smart cd replacement
-    fzf # Fuzzy finder
-    starship # Prompt (managed separately)
     bottom # System monitor (used by `btm` alias and monitor function)
   ];
 

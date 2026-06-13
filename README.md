@@ -41,7 +41,7 @@ new commands should use `#asura-xs15`.
 | Host | `asura-xs15` |
 | Desktop | Hyprland `v0.55.3` from the official Hyprland flake plus Noctalia v5 shell |
 | Lockscreen | Noctalia IPC lock using `screenshots/lockscreen.png`; |
-| File manager | Nautilus, with `DBusActivatable=false` local desktop override |
+| File manager | Nautilus default, PCManFM-Qt available, admin launchers/scripts, Xarchiver as the only archive UI |
 | Theme | Dark GTK/libadwaita settings, Papirus-Dark icons, Bibata Modern Amber cursor at 24 px |
 | Wallpaper | `SUPER+W` and `SUPER+SHIFT+W` open native `vibewallREzero`; images apply through Noctalia IPC, videos through `mpvpaper`, and video wallpaper is suspended on battery |
 | Fan control | NBFC-Linux `0.5.2` plus NBFC-GTK `0.4.1` |
@@ -49,9 +49,9 @@ new commands should use `#asura-xs15`.
 | Plymouth | Local `circle_hud` theme from `asura-xs15/plymouth/circle_hud` |
 | Kernel | CachyOS `7.0.11` from `nix-cachyos-kernel/release` |
 | Boot GPU policy | Intel `i915` loads in initrd; NVIDIA stays out of initrd/modules-load and explicit `nvidia-drm.*` boot params |
-| Performance | CachyOS kernel, `scx_lavd`, `ananicy-cpp` with CachyOS rules, BBR, zram, irqbalance, delayed NVIDIA persistenced, delayed cache warm, socket-activated VM stack |
+| Performance | CachyOS kernel, `scx_lavd`, `ananicy-cpp` CachyOS rules, BBR, zram, irqbalance, delayed NVIDIA persistenced/cache warm, socket-only VM stack |
 | Power | `thermald` plus `tuned`; TLP disabled |
-| Downloads | Xtreme Download Manager GTK `8.0.29` pre-release, user-session bridge, Firefox add-on, Chromium helper, and `xdm-app:` handlers |
+| Downloads | Xtreme Download Manager GTK `8.0.29` pre-release with SVG pixbuf loader fix, user bridge, Firefox add-on, Chromium helper, and `xdm-app:` handlers |
 | AI memory | Shared root at `/home/asura/.config/ai-unified-memory`; filesystem MCP is default, SQLite MCP is opt-in/lazy, facts are system-only |
 | Codex | Declarative `pkgs.codex` plus generated GitHub/Notion plugin config after rebuild |
 
@@ -74,6 +74,8 @@ ai-memory-mcp-status          # show live AI memory MCP processes/RSS
 ai-memory-mcp-stop            # stop current AI memory MCP workers
 asura-ai-memory paths         # print shared memory + opt-in MCP config paths
 asura-video-wallpaper-stop    # stop mpvpaper and clear video wallpaper state
+xdman                         # launch Xtreme Download Manager; launcher uses the same wrapper
+xarchiver ARCHIVE             # open archives; Nautilus/PCManFM-Qt route archive MIME here
 ```
 
 ## Repository Structure
@@ -146,6 +148,17 @@ On 2026-06-12 that path was not present locally, so the current tuning is based
 on the durable CachyOS findings already captured in shared system memory plus
 live `systemd-analyze` data from this NixOS boot.
 
+Current measured comparison on 2026-06-13:
+
+| Area | CachyOS target behavior | Current NixOS state |
+|---|---|---|
+| Kernel/scheduler | Cachy kernel plus sched-ext responsiveness | CachyOS kernel `7.0.11`, `scx_lavd`, `ananicy-cpp` CachyOS rules |
+| GUI boot blocker | No early NVIDIA initramfs load on hybrid laptop | Intel `i915` only in initrd; NVIDIA delayed, not gating `graphical.target` |
+| Userspace boot | Fast graphical handoff | `graphical.target` reached in about `3.6s` userspace; firmware dominates total boot |
+| Runtime helpers | Avoid always-running unused services | AI memory SQLite MCP lazy, Blueman off, libvirt/libvirt-guests socket/on-demand |
+| Video wallpaper | Keep optional because it costs RAM/CPU | `mpvpaper` measured about `98 MiB RSS` and `6.7% CPU`; battery guard suspends it |
+| Wallpaper picker | Tiny daemon, short-lived UI | daemon about `5.2 MiB RSS`; picker about `250 MiB RSS` only while open |
+
 Important carry-overs:
 
 - Colorful XS 22 / X15 XS hardware naming.
@@ -159,6 +172,9 @@ Important carry-overs:
   target, but its current-speed readback can stay negative/low on this EC, so
   use target speed plus airflow/noise for manual GPU fan confirmation.
 - Nautilus is the intended file manager.
+- Xarchiver is the intended and only archive UI; Ark is not installed in
+  `environment.systemPackages`, and archive MIME defaults point to
+  `xarchiver.desktop`.
 - CachyOS boot hangs were caused by forced early NVIDIA initramfs loading and
   explicit early DRM setup; this config keeps NVIDIA out of
   `boot.initrd.kernelModules`, keeps NVIDIA out of systemd modules-load, and
@@ -172,8 +188,9 @@ Important carry-overs:
 - Existing AI memory MCP workers can be reclaimed with `ai-memory-mcp-stop`.
 - `nvidia-persistenced` remains available for NVML/monitoring, but starts from
   a delayed timer so it does not block `graphical.target`.
-- `libvirtd`, `virtlogd`, and `virtlockd` are socket activated; VM tooling stays
-  installed without starting the VM stack on every boot.
+- `libvirtd`, `libvirt-guests`, `virtlogd`, and `virtlockd` are socket/on-demand
+  oriented; VM tooling stays installed without starting the VM stack on every
+  boot.
 - Base BlueZ Bluetooth remains enabled, but Blueman's legacy tray/OBEX session
   stack is disabled because Noctalia owns the visible Bluetooth UI.
 - `mpvpaper` video wallpaper is blocked/suspended on battery unless
@@ -188,6 +205,8 @@ Important carry-overs:
 - Nautilus floats centered for quick file checks.
 - XDM runs as a user session bridge and Brave/Chrome/Chromium launchers load
   `/opt/xdman/chrome-extension`; Firefox gets the AMO add-on declaratively.
+  The GTK package wrapper exports the `librsvg` pixbuf loader so XDM can render
+  its SVG icons instead of aborting during launcher startup.
 - Codex plugin declarations live in the generated `~/.codex/config.toml` block
   so rebuilds keep GitHub/Notion plugins enabled.
 - The `rescue-no-nvidia` boot specialization keeps the old rescue path

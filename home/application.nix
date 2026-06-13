@@ -2,7 +2,7 @@
 { lib, ... }:
 
 let
-  ark = "org.kde.ark.desktop";
+  xarchiver = "xarchiver.desktop";
   nautilus = "org.gnome.Nautilus.desktop";
   loupe = "org.gnome.Loupe.desktop";
   okular = "org.kde.okular.desktop";
@@ -59,7 +59,7 @@ let
     searchhHidden=true
 
     [System]
-    Archiver=org.kde.ark
+    Archiver=xarchiver
     FallbackIconThemeName=Papirus-Dark
     OnlyUserTemplates=false
     SIUnit=false
@@ -92,23 +92,23 @@ let
   '';
 
   archiveDefaults = {
-    "application/zip" = ark;
-    "application/x-zip-compressed" = ark;
-    "application/x-7z-compressed" = ark;
-    "application/x-rar" = ark;
-    "application/vnd.rar" = ark;
-    "application/x-tar" = ark;
-    "application/x-compressed-tar" = ark;
-    "application/x-bzip-compressed-tar" = ark;
-    "application/x-bzip2-compressed-tar" = ark;
-    "application/x-xz-compressed-tar" = ark;
-    "application/x-gzip" = ark;
-    "application/gzip" = ark;
-    "application/x-bzip2" = ark;
-    "application/x-xz" = ark;
-    "application/zstd" = ark;
-    "application/x-lz4" = ark;
-    "application/x-iso9660-image" = ark;
+    "application/zip" = xarchiver;
+    "application/x-zip-compressed" = xarchiver;
+    "application/x-7z-compressed" = xarchiver;
+    "application/x-rar" = xarchiver;
+    "application/vnd.rar" = xarchiver;
+    "application/x-tar" = xarchiver;
+    "application/x-compressed-tar" = xarchiver;
+    "application/x-bzip-compressed-tar" = xarchiver;
+    "application/x-bzip2-compressed-tar" = xarchiver;
+    "application/x-xz-compressed-tar" = xarchiver;
+    "application/x-gzip" = xarchiver;
+    "application/gzip" = xarchiver;
+    "application/x-bzip2" = xarchiver;
+    "application/x-xz" = xarchiver;
+    "application/zstd" = xarchiver;
+    "application/x-lz4" = xarchiver;
+    "application/x-iso9660-image" = xarchiver;
   };
 
   viewerDefaults = {
@@ -199,6 +199,81 @@ in
     '';
   };
 
+  xdg.dataFile."applications/org.gnome.Nautilus.Admin.desktop" = {
+    force = true;
+    text = ''
+      [Desktop Entry]
+      Name=Files (Admin)
+      Comment=Open a root-owned file view through GVFS admin
+      Exec=nautilus admin:///
+      TryExec=nautilus
+      DBusActivatable=false
+      Terminal=false
+      Type=Application
+      StartupNotify=true
+      Categories=GNOME;GTK;Utility;Core;FileManager;
+      StartupWMClass=org.gnome.Nautilus
+    '';
+  };
+
+  xdg.dataFile."applications/pcmanfm-qt-admin.desktop" = {
+    force = true;
+    text = ''
+      [Desktop Entry]
+      Name=PCManFM-Qt (Admin)
+      Comment=Open PCManFM-Qt with a polkit prompt
+      Exec=/home/asura/.local/bin/pcmanfm-qt-admin %U
+      TryExec=/home/asura/.local/bin/pcmanfm-qt-admin
+      Terminal=false
+      Type=Application
+      StartupNotify=true
+      Categories=Qt;Utility;Core;FileManager;
+      StartupWMClass=pcmanfm-qt
+    '';
+  };
+
+  xdg.dataFile."applications/xdman.desktop" = {
+    force = true;
+    text = ''
+      [Desktop Entry]
+      Version=1.0
+      Type=Application
+      Name=Xtreme Download Manager
+      GenericName=Download Manager
+      Comment=Open Xtreme Download Manager
+      Exec=xdman %U
+      TryExec=xdman
+      Icon=xdm-logo
+      Terminal=false
+      Categories=Network;FileTransfer;GTK;
+      MimeType=application/xdm-app;x-scheme-handler/xdm-app;x-scheme-handler/xdm+app;
+      StartupNotify=false
+      StartupWMClass=xdm-app
+      DBusActivatable=false
+    '';
+  };
+
+  xdg.dataFile."applications/xdm-app.desktop" = {
+    force = true;
+    text = ''
+      [Desktop Entry]
+      Version=1.0
+      Type=Application
+      Name=XDM
+      GenericName=Download Manager
+      Comment=Open Xtreme Download Manager
+      Exec=xdman %U
+      TryExec=xdman
+      Icon=xdm-logo
+      Terminal=false
+      Categories=Network;FileTransfer;GTK;
+      MimeType=application/xdm-app;x-scheme-handler/xdm-app;x-scheme-handler/xdm+app;
+      StartupNotify=false
+      StartupWMClass=xdm-app
+      DBusActivatable=false
+    '';
+  };
+
   xdg.mimeApps = {
     enable = true;
     defaultApplications = desktopDefaults;
@@ -222,8 +297,52 @@ in
     show_hidden=1
   '';
 
+  home.file.".local/share/nautilus/scripts/Open Archive with Xarchiver" = {
+    executable = true;
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+      selected="''${NAUTILUS_SCRIPT_SELECTED_FILE_PATHS:-}"
+      if [ -z "$selected" ]; then
+        selected="''${NAUTILUS_SCRIPT_CURRENT_URI:-.}"
+      fi
+      while IFS= read -r path; do
+        [ -n "$path" ] || continue
+        xarchiver "$path" >/dev/null 2>&1 &
+      done <<< "$selected"
+    '';
+  };
 
-  # Keep Xarchiver usable as a fallback even though Ark is the default archive app.
+  home.file.".local/share/nautilus/scripts/Open Current Folder as Admin" = {
+    executable = true;
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+      target="''${NAUTILUS_SCRIPT_CURRENT_URI:-admin:///}"
+      case "$target" in
+        file://*) exec nautilus "admin://''${target#file://}" ;;
+        /*) exec nautilus "admin://$target" ;;
+        *) exec nautilus admin:/// ;;
+      esac
+    '';
+  };
+
+  home.file.".local/bin/pcmanfm-qt-admin" = {
+    executable = true;
+    text = ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+      exec pkexec env \
+        DISPLAY="''${DISPLAY:-}" \
+        WAYLAND_DISPLAY="''${WAYLAND_DISPLAY:-}" \
+        XDG_RUNTIME_DIR="''${XDG_RUNTIME_DIR:-}" \
+        DBUS_SESSION_BUS_ADDRESS="''${DBUS_SESSION_BUS_ADDRESS:-}" \
+        XAUTHORITY="''${XAUTHORITY:-}" \
+        pcmanfm-qt "$@"
+    '';
+  };
+
+  # Xarchiver is the single archive UI; Nautilus and PCManFM-Qt both route to it.
   home.file.".config/xarchiver/xarchiverrc".text = ''
     [xarchiver]
     preferred_format=0
