@@ -1,5 +1,11 @@
 # Noctalia Shell Integration & Custom Configs
-{ inputs, pkgs, config, lib, ... }:
+{
+  inputs,
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 
 let
   system = pkgs.stdenv.hostPlatform.system;
@@ -21,12 +27,6 @@ in
   environment.systemPackages = [
     noctaliaPackage
     noctaliaSafeLock
-    pkgs.tmux
-    pkgs.zed-editor
-    pkgs.neovim
-    pkgs.fastfetch
-    pkgs.fish
-    pkgs.starship
   ];
 
   services = {

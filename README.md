@@ -43,16 +43,16 @@ new commands should use `#asura-xs15`.
 | Lockscreen | Noctalia IPC lock using `screenshots/lockscreen.png`; |
 | File manager | Nautilus, with `DBusActivatable=false` local desktop override |
 | Theme | Dark GTK/libadwaita settings, Papirus-Dark icons, Bibata Modern Amber cursor at 24 px |
-| Wallpaper | `SUPER+W` and `SUPER+SHIFT+W` open native `vibewallREzero`; images apply through Noctalia IPC, videos through `mpvpaper` |
+| Wallpaper | `SUPER+W` and `SUPER+SHIFT+W` open native `vibewallREzero`; images apply through Noctalia IPC, videos through `mpvpaper`, and video wallpaper is suspended on battery |
 | Fan control | NBFC-Linux `0.5.2` plus NBFC-GTK `0.4.1` |
 | Fan profile | Declarative two-fan `Colorful X15 AT 22` config with `MaxSpeedValue = 255`, max-sensor ramping, and emergency thermal guard |
 | Plymouth | Local `circle_hud` theme from `asura-xs15/plymouth/circle_hud` |
 | Kernel | CachyOS `7.0.11` from `nix-cachyos-kernel/release` |
 | Boot GPU policy | Intel `i915` loads in initrd; NVIDIA stays out of initrd/modules-load and explicit `nvidia-drm.*` boot params |
-| Performance | CachyOS kernel, `scx_lavd`, `ananicy-cpp` with CachyOS rules, BBR, zram, irqbalance, delayed NVIDIA persistenced, delayed cache warm |
+| Performance | CachyOS kernel, `scx_lavd`, `ananicy-cpp` with CachyOS rules, BBR, zram, irqbalance, delayed NVIDIA persistenced, delayed cache warm, socket-activated VM stack |
 | Power | `thermald` plus `tuned`; TLP disabled |
 | Downloads | Xtreme Download Manager GTK `8.0.29` pre-release, user-session bridge, Firefox add-on, Chromium helper, and `xdm-app:` handlers |
-| AI memory | Shared root at `/home/asura/.config/ai-unified-memory`; facts are system-only |
+| AI memory | Shared root at `/home/asura/.config/ai-unified-memory`; filesystem MCP is default, SQLite MCP is opt-in/lazy, facts are system-only |
 | Codex | Declarative `pkgs.codex` plus generated GitHub/Notion plugin config after rebuild |
 
 ## Daily Commands
@@ -70,6 +70,10 @@ vibewall apply FILE           # apply an image via Noctalia or a video via mpvpa
 vibewall restore              # restore last wallpaper on Hyprland login
 vibewall wallhaven search "anime landscape" --page 1
 vibewall picker --wallhaven   # open cached Wallhaven browser directly
+ai-memory-mcp-status          # show live AI memory MCP processes/RSS
+ai-memory-mcp-stop            # stop current AI memory MCP workers
+asura-ai-memory paths         # print shared memory + opt-in MCP config paths
+asura-video-wallpaper-stop    # stop mpvpaper and clear video wallpaper state
 ```
 
 ## Repository Structure
@@ -107,6 +111,11 @@ vibewall picker --wallhaven   # open cached Wallhaven browser directly
 │   │   ├── firefox.nix
 │   │   └── helium.nix
 │   ├── programs/
+│   │   ├── git/
+│   │   ├── neovim/
+│   │   ├── scripts/
+│   │   ├── terminal/
+│   │   └── tmux/
 │   ├── shell/
 │   ├── templates/
 │   └── vscode/
@@ -157,8 +166,18 @@ Important carry-overs:
 - CachyOS-style responsiveness is declarative here: CachyOS kernel,
   `scx_lavd`, `ananicy-cpp` with CachyOS rules, `irqbalance`, BBR, zram, and
   TuneD profiles.
+- AI memory MCP defaults are intentionally light: editor configs get the
+  filesystem server only; SQLite MCP opt-in configs are generated under
+  `/home/asura/.config/ai-unified-memory/mcp/`.
+- Existing AI memory MCP workers can be reclaimed with `ai-memory-mcp-stop`.
 - `nvidia-persistenced` remains available for NVML/monitoring, but starts from
   a delayed timer so it does not block `graphical.target`.
+- `libvirtd`, `virtlogd`, and `virtlockd` are socket activated; VM tooling stays
+  installed without starting the VM stack on every boot.
+- Base BlueZ Bluetooth remains enabled, but Blueman's legacy tray/OBEX session
+  stack is disabled because Noctalia owns the visible Bluetooth UI.
+- `mpvpaper` video wallpaper is blocked/suspended on battery unless
+  `ASURA_ALLOW_VIDEO_WALLPAPER_ON_BATTERY=1` is set for a manual run.
 - Nix GC/optimise timers do not catch up missed daily runs at boot, avoiding
   I/O spikes during first login.
 - Desktop cache warming is delayed and capped; it no longer reads package

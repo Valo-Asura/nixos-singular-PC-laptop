@@ -35,6 +35,16 @@ grep -R -- '--load-extension=/opt/xdman/chrome-extension' \
   ~/.local/share/applications ~/.config/BraveSoftware ~/.config/google-chrome ~/.config/chromium
 grep -n 'plugins."github@openai-curated"' ~/.codex/config.toml
 grep -n 'plugins."notion@openai-curated"' ~/.codex/config.toml
+grep -n 'ai-memory-files' ~/.codex/config.toml
+! grep -n 'mcp_servers.ai-memory-sqlite' ~/.codex/config.toml
+ai-memory-mcp-status
+test -f ~/.config/ai-unified-memory/mcp/config.sqlite-opt-in.json
+systemctl --user is-enabled asura-video-wallpaper-battery-guard.timer
+systemctl is-enabled libvirtd.service || true
+systemctl is-enabled libvirtd.socket
+systemctl is-enabled virtlogd.socket
+systemctl is-enabled virtlockd.socket
+systemctl is-enabled blueman.service || true
 vibewall close
 vibewall toggle
 sleep 1
@@ -80,6 +90,10 @@ Expected values:
 | XDM bridge | `xdman.service` active in the user graphical session |
 | Codex CLI | `/run/current-system/sw/bin/codex` exists after rebuild |
 | Codex plugins | generated `~/.codex/config.toml` keeps GitHub and Notion plugin blocks |
+| AI memory MCP | default editor config includes `ai-memory-files`; SQLite MCP is only in opt-in config |
+| Video wallpaper battery guard | user timer enabled; `mpvpaper` is suspended on battery |
+| VM stack | `libvirtd.service` is not enabled; libvirt sockets are enabled for on-demand VM use |
+| Bluetooth tray | base BlueZ stays available; Blueman tray/OBEX service is disabled |
 | Vibewall toggle | first `vibewall toggle` starts daemon/picker; close cleans picker |
 | Vibewall transparent overlay | active workspace remains visible behind centered toolbar/cards; proof screenshot is `screenshots/vibewallrezero-transparent-overlay.png` |
 | Vibewall image apply | `vibewall apply` returns `ok` and `noctalia msg wallpaper-get` returns the requested path |

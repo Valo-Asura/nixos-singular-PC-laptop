@@ -1,6 +1,6 @@
 {
   "servers": {
-    "aiMemoryFiles": {
+    "ai-memory-files": {
       "type": "stdio",
       "sandboxEnabled": true,
       "command": "npx",
@@ -8,16 +8,6 @@
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "/home/asura/.config/ai-unified-memory"
-      ]
-    },
-    "aiMemorySqlite": {
-      "type": "stdio",
-      "sandboxEnabled": true,
-      "command": "uvx",
-      "args": [
-        "mcp-server-sqlite",
-        "--db-path",
-        "/home/asura/.config/ai-unified-memory/memory/history.db"
       ]
     }
   }

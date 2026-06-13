@@ -1,5 +1,5 @@
 # Local virtual machine host for testing other operating systems.
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 let
   vmEnvInfo = pkgs.writeShellScriptBin "vm-env-info" ''
@@ -38,6 +38,22 @@ in
     };
 
     spiceUSBRedirection.enable = true;
+  };
+
+  # Keep the VM stack installed, but do not start libvirtd at boot. The system
+  # sockets activate libvirt/virtlogd/virtlockd when virt-manager or virsh is used.
+  systemd.services = {
+    libvirtd.wantedBy = lib.mkForce [ ];
+    virtlogd.wantedBy = lib.mkForce [ ];
+    virtlockd.wantedBy = lib.mkForce [ ];
+  };
+
+  systemd.sockets = {
+    libvirtd.wantedBy = lib.mkForce [ "sockets.target" ];
+    "libvirtd-ro".wantedBy = lib.mkForce [ "sockets.target" ];
+    "libvirtd-admin".wantedBy = lib.mkForce [ "sockets.target" ];
+    virtlogd.wantedBy = lib.mkForce [ "sockets.target" ];
+    virtlockd.wantedBy = lib.mkForce [ "sockets.target" ];
   };
 
   environment.systemPackages = with pkgs; [

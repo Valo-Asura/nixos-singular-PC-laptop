@@ -19,7 +19,9 @@
 
   services = {
     blueman = {
-      enable = true;
+      # Noctalia owns the Bluetooth UI. Keep BlueZ enabled in hardware.nix,
+      # but avoid the legacy Blueman tray/OBEX processes at login.
+      enable = lib.mkForce false;
     };
     dbus = {
       enable = true;

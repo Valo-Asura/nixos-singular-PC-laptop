@@ -176,7 +176,6 @@ in
     (with pkgs; [
       # System Info & Terminal
       zsh
-      fish
 
       # System Tools
       polkit
@@ -236,7 +235,6 @@ in
       pavucontrol
       pulseaudio
       pwvucontrol
-      easyeffects
       v4l-utils
 
       # Hyprland Panel Dependencies
@@ -269,8 +267,6 @@ in
       bat
       fd
       ripgrep
-      direnv
-      nix-direnv
       nixfmt
       nil
       nixd

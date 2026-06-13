@@ -6,6 +6,7 @@
     ./git
     ./terminal
     # ./neovim
+    ./tmux
     # ./fastfetch
     ./scripts
   ];

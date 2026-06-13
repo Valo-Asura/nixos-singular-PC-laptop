@@ -26,11 +26,10 @@
 
   environment.systemPackages = with pkgs; [
     (writeShellScriptBin "steam-safe" ''
-      set -euo pipefail
-      cd "$HOME"
-      exec ${util-linux}/bin/setpriv --ambient-caps -all --inh-caps -all /run/current-system/sw/bin/steam "$@"
-    '')
-    gamescope
+              set -euo pipefail
+              cd "$HOME"
+              exec ${util-linux}/bin/setpriv --ambient-caps -all --inh-caps -all /run/current-system/sw/bin/steam "$@"
+            '')
     mangohud
     protonup-qt
     steam-run

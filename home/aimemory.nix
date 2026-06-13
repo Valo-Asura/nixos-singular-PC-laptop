@@ -77,8 +77,8 @@ let
     };
   };
 
-  cursorServers = {
-    aiMemoryFiles = {
+  mcpServers = {
+    "ai-memory-files" = {
       command = "npx";
       args = [
         "-y"
@@ -86,7 +86,7 @@ let
         memoryRoot
       ];
     };
-    aiMemorySqlite = {
+    "ai-memory-sqlite" = {
       command = "uvx";
       args = [
         "mcp-server-sqlite"
@@ -96,6 +96,14 @@ let
     };
   };
 
+  activeMcpServers = {
+    "ai-memory-files" = mcpServers."ai-memory-files";
+  };
+
+  lazyMcpServers = {
+    "ai-memory-sqlite" = mcpServers."ai-memory-sqlite";
+  };
+
   vscodeServers = lib.mapAttrs (
     _: server:
     {
@@ -103,14 +111,34 @@ let
       sandboxEnabled = true;
     }
     // server
-  ) cursorServers;
+  ) activeMcpServers;
+
+  vscodeLazyServers = lib.mapAttrs (
+    _: server:
+    {
+      type = "stdio";
+      sandboxEnabled = true;
+    }
+    // server
+  ) lazyMcpServers;
 
   mcpBase = {
-    servers = {
-      ai-memory-files = cursorServers.aiMemoryFiles;
-      ai-memory-sqlite = cursorServers.aiMemorySqlite;
-    };
+    servers = activeMcpServers;
   };
+
+  mcpSqliteOptIn = {
+    servers = activeMcpServers // lazyMcpServers;
+  };
+
+  staleMcpServerKeys = [
+    "aiMemoryFiles"
+    "aiMemorySqlite"
+    "ai-memory-sqlite"
+    "asura-ai-memory"
+    "asura-ai-memory-files"
+    "asura-qdrant-memory"
+    "asura-memorix"
+  ];
 
   manifest = {
     version = 1;
@@ -140,6 +168,45 @@ let
     };
   };
 
+  aiMemoryMcpStatus = pkgs.writeShellScriptBin "ai-memory-mcp-status" ''
+    ps -eo pid,rss,pcpu,comm,args --sort=-rss \
+      | ${pkgs.ripgrep}/bin/rg -i 'mcp-server|modelcontextprotocol|ai-memory|uvx' || true
+  '';
+
+  aiMemoryMcpStop = pkgs.writeShellScriptBin "ai-memory-mcp-stop" ''
+    set -euo pipefail
+
+    ${pkgs.procps}/bin/pkill -f "mcp-server-sqlite --db-path ${memoryDb}" >/dev/null 2>&1 || true
+    ${pkgs.procps}/bin/pkill -f "@modelcontextprotocol/server-filesystem ${memoryRoot}" >/dev/null 2>&1 || true
+    ${pkgs.procps}/bin/pkill -f "mcp-server-filesystem ${memoryRoot}" >/dev/null 2>&1 || true
+  '';
+
+  asuraAiMemory = pkgs.writeShellScriptBin "asura-ai-memory" ''
+    set -euo pipefail
+
+    case "''${1:-status}" in
+      status)
+        echo "root: ${memoryRoot}"
+        echo "db:   ${memoryDb}"
+        echo
+        exec ai-memory-mcp-status
+        ;;
+      stop-mcp)
+        exec ai-memory-mcp-stop
+        ;;
+      paths)
+        echo "${memoryRoot}"
+        echo "${memoryDb}"
+        echo "${memoryRoot}/mcp/config.base.json"
+        echo "${memoryRoot}/mcp/config.sqlite-opt-in.json"
+        ;;
+      *)
+        echo "usage: asura-ai-memory [status|stop-mcp|paths]" >&2
+        exit 2
+        ;;
+    esac
+  '';
+
   syncScript = pkgs.writeText "sync-ai-unified-memory.py" ''
     import json
     import os
@@ -154,9 +221,12 @@ let
     AGENT_INSTRUCTIONS = ${builtins.toJSON agentInstructions}
     FACTS_SEED = json.loads(${builtins.toJSON (builtins.toJSON factsSeed)})
     MCP_BASE = json.loads(${builtins.toJSON (builtins.toJSON mcpBase)})
-    CURSOR_SERVERS = json.loads(${builtins.toJSON (builtins.toJSON cursorServers)})
+    MCP_SQLITE_OPT_IN = json.loads(${builtins.toJSON (builtins.toJSON mcpSqliteOptIn)})
+    CURSOR_SERVERS = json.loads(${builtins.toJSON (builtins.toJSON activeMcpServers)})
     VSCODE_SERVERS = json.loads(${builtins.toJSON (builtins.toJSON vscodeServers)})
+    VSCODE_LAZY_SERVERS = json.loads(${builtins.toJSON (builtins.toJSON vscodeLazyServers)})
     MANIFEST = json.loads(${builtins.toJSON (builtins.toJSON manifest)})
+    STALE_MCP_SERVER_KEYS = json.loads(${builtins.toJSON (builtins.toJSON staleMcpServerKeys)})
 
     def mkdir(path):
         path.mkdir(parents=True, exist_ok=True)
@@ -185,11 +255,13 @@ let
         mkdir(path.parent)
         path.write_text(text, encoding="utf-8")
 
-    def merge_json_key(path, key, servers):
+    def merge_json_key(path, key, servers, remove=None):
         data = load_json(path)
         current = data.get(key)
         if not isinstance(current, dict):
             current = {}
+        for name in remove or []:
+            current.pop(name, None)
         current.update(servers)
         data[key] = current
         write_json(path, data)
@@ -213,11 +285,9 @@ let
     enabled = true
     default_tools_approval_mode = "prompt"
 
-    [mcp_servers.ai-memory-sqlite]
-    command = "uvx"
-    args = ["mcp-server-sqlite", "--db-path", "{DB}"]
-    enabled = true
-    default_tools_approval_mode = "prompt"
+    # SQLite MCP is intentionally opt-in to avoid long-lived Python/uvx MCP
+    # processes in every editor session. Use {ROOT}/mcp/config.sqlite-opt-in.json
+    # when an agent needs the heavier SQLite server.
 
     [plugins."github@openai-curated"]
     enabled = true
@@ -306,6 +376,8 @@ let
         mkdir(ROOT / "projects")
         write_text(ROOT / "AGENTS.md", AGENT_INSTRUCTIONS)
         write_json(ROOT / "mcp" / "config.base.json", MCP_BASE)
+        write_json(ROOT / "mcp" / "config.sqlite-opt-in.json", MCP_SQLITE_OPT_IN)
+        write_json(ROOT / "mcp" / "vscode.sqlite-opt-in.json", {"servers": {**VSCODE_SERVERS, **VSCODE_LAZY_SERVERS}})
         write_json(ROOT / "agents.json", MANIFEST)
 
         facts_path = ROOT / "memory" / "facts.json"
@@ -377,19 +449,19 @@ let
         repair_codex_state()
 
         write_text(HOME / ".cursor" / "rules" / "ai-unified-memory.mdc", AGENT_INSTRUCTIONS)
-        merge_json_key(HOME / ".cursor" / "mcp.json", "mcpServers", CURSOR_SERVERS)
+        merge_json_key(HOME / ".cursor" / "mcp.json", "mcpServers", CURSOR_SERVERS, STALE_MCP_SERVER_KEYS)
 
         write_text(HOME / ".kiro" / "steering" / "AGENTS.md", AGENT_INSTRUCTIONS)
-        merge_json_key(HOME / ".kiro" / "settings" / "mcp.json", "mcpServers", CURSOR_SERVERS)
+        merge_json_key(HOME / ".kiro" / "settings" / "mcp.json", "mcpServers", CURSOR_SERVERS, STALE_MCP_SERVER_KEYS)
 
         write_text(HOME / ".antigravity" / "rules" / "ai-unified-memory.md", AGENT_INSTRUCTIONS)
-        merge_json_key(HOME / ".antigravity" / "mcp.json", "mcpServers", CURSOR_SERVERS)
+        merge_json_key(HOME / ".antigravity" / "mcp.json", "mcpServers", CURSOR_SERVERS, STALE_MCP_SERVER_KEYS)
         write_text(HOME / ".config" / "Antigravity" / "User" / "AGENTS.md", AGENT_INSTRUCTIONS)
-        merge_json_key(HOME / ".config" / "Antigravity" / "User" / "mcp.json", "servers", VSCODE_SERVERS)
+        merge_json_key(HOME / ".config" / "Antigravity" / "User" / "mcp.json", "servers", VSCODE_SERVERS, STALE_MCP_SERVER_KEYS)
 
-        merge_json_key(HOME / ".config" / "Code" / "User" / "mcp.json", "servers", VSCODE_SERVERS)
-        merge_json_key(HOME / ".config" / "Cursor" / "User" / "mcp.json", "servers", VSCODE_SERVERS)
-        merge_json_key(HOME / ".config" / "Kiro" / "User" / "mcp.json", "servers", VSCODE_SERVERS)
+        merge_json_key(HOME / ".config" / "Code" / "User" / "mcp.json", "servers", VSCODE_SERVERS, STALE_MCP_SERVER_KEYS)
+        merge_json_key(HOME / ".config" / "Cursor" / "User" / "mcp.json", "servers", VSCODE_SERVERS, STALE_MCP_SERVER_KEYS)
+        merge_json_key(HOME / ".config" / "Kiro" / "User" / "mcp.json", "servers", VSCODE_SERVERS, STALE_MCP_SERVER_KEYS)
 
         write_text(HOME / ".warp" / "ai-unified-memory.md", AGENT_INSTRUCTIONS)
         write_json(HOME / ".warp-terminal" / "ai-unified-memory.json", MANIFEST)
@@ -402,6 +474,9 @@ let
 in
 {
   home.packages = with pkgs; [
+    asuraAiMemory
+    aiMemoryMcpStatus
+    aiMemoryMcpStop
     nodejs
     sqlite
     uv

@@ -48,6 +48,29 @@ let
     wallpaper_dir="''${ASURA_WALLPAPER_DIR:-$HOME/Wallpaper}"
     output="''${ASURA_WALLPAPER_OUTPUT:-*}"
 
+    kill_mpvpaper() {
+      ${pkgs.procps}/bin/pkill -x mpvpaper >/dev/null 2>&1 || true
+      ${pkgs.procps}/bin/pkill -f "mpvpaper --fork --auto-stop" >/dev/null 2>&1 || true
+      ${pkgs.procps}/bin/pkill -f "/mpvpaper .*--layer background" >/dev/null 2>&1 || true
+    }
+
+    on_battery() {
+      saw_mains=0
+      mains_online=0
+      for supply in /sys/class/power_supply/*; do
+        [ -r "$supply/type" ] || continue
+        case "$(${pkgs.coreutils}/bin/cat "$supply/type" 2>/dev/null || true)" in
+          Mains|AC|USB|USB_C|USB_PD)
+            saw_mains=1
+            if [ "$(${pkgs.coreutils}/bin/cat "$supply/online" 2>/dev/null || echo 0)" = "1" ]; then
+              mains_online=1
+            fi
+            ;;
+        esac
+      done
+      [ "$saw_mains" = "1" ] && [ "$mains_online" = "0" ]
+    }
+
     find_video() {
       ${pkgs.findutils}/bin/find "$wallpaper_dir" -maxdepth 2 -type f \
         \( -iname '*.mp4' -o -iname '*.webm' -o -iname '*.mkv' -o -iname '*.mov' \) \
@@ -60,9 +83,21 @@ let
         video="$(${pkgs.coreutils}/bin/cat "$state_file")"
         ;;
       --stop)
-        ${pkgs.procps}/bin/pkill -x mpvpaper >/dev/null 2>&1 || true
+        kill_mpvpaper
         ${pkgs.coreutils}/bin/rm -f "$state_file"
         noctalia msg config-reload >/dev/null 2>&1 || true
+        exit 0
+        ;;
+      --suspend)
+        kill_mpvpaper
+        noctalia msg config-reload >/dev/null 2>&1 || true
+        exit 0
+        ;;
+      --battery-guard)
+        if on_battery; then
+          kill_mpvpaper
+          noctalia msg config-reload >/dev/null 2>&1 || true
+        fi
         exit 0
         ;;
       ""|--pick)
@@ -78,9 +113,15 @@ let
       exit 1
     fi
 
+    if [ "''${ASURA_ALLOW_VIDEO_WALLPAPER_ON_BATTERY:-0}" != "1" ] && on_battery; then
+      kill_mpvpaper
+      ${notify} "Video wallpaper paused" "Battery power detected; static wallpaper stays active."
+      exit 0
+    fi
+
     ${pkgs.coreutils}/bin/mkdir -p "$state_dir"
     ${pkgs.coreutils}/bin/printf '%s\n' "$video" > "$state_file"
-    ${pkgs.procps}/bin/pkill -x mpvpaper >/dev/null 2>&1 || true
+    kill_mpvpaper
 
     exec ${pkgs.mpvpaper}/bin/mpvpaper \
       --fork \
@@ -93,6 +134,10 @@ let
 
   asuraVideoWallpaperStop = pkgs.writeShellScriptBin "asura-video-wallpaper-stop" ''
     exec asura-video-wallpaper --stop
+  '';
+
+  asuraVideoWallpaperBatteryGuard = pkgs.writeShellScriptBin "asura-video-wallpaper-battery-guard" ''
+    exec asura-video-wallpaper --battery-guard
   '';
 
   asuraMonitorGuard = pkgs.writeShellScriptBin "asura-monitor-guard" ''
@@ -186,8 +231,28 @@ in
     asuraFileManager
     asuraMonitorGuard
     asuraVideoWallpaper
+    asuraVideoWallpaperBatteryGuard
     asuraVideoWallpaperStop
     asuraWallpaperPanel
     clipboard
   ];
+
+  systemd.user.services.asura-video-wallpaper-battery-guard = {
+    Unit.Description = "Stop mpvpaper video wallpaper on battery";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${asuraVideoWallpaperBatteryGuard}/bin/asura-video-wallpaper-battery-guard";
+    };
+  };
+
+  systemd.user.timers.asura-video-wallpaper-battery-guard = {
+    Unit.Description = "Periodic video wallpaper battery guard";
+    Timer = {
+      OnBootSec = "45s";
+      OnUnitActiveSec = "60s";
+      AccuracySec = "15s";
+      Unit = "asura-video-wallpaper-battery-guard.service";
+    };
+    Install.WantedBy = [ "timers.target" ];
+  };
 }

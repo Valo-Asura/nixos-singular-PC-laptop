@@ -25,36 +25,7 @@
       "type": "registry"
     }
   },
-  "context_servers": {
-    "asura-ai-memory": {
-      "source": "custom",
-      "command": {
-        "path": "/home/asura/.local/bin/asura-ai-memory-mcp",
-        "args": []
-      }
-    },
-    "asura-ai-memory-files": {
-      "source": "custom",
-      "command": {
-        "path": "/home/asura/.local/bin/asura-ai-memory-files-mcp",
-        "args": []
-      }
-    },
-    "asura-qdrant-memory": {
-      "source": "custom",
-      "command": {
-        "path": "/home/asura/.local/bin/asura-mcp-qdrant",
-        "args": []
-      }
-    },
-    "asura-memorix": {
-      "source": "custom",
-      "command": {
-        "path": "/home/asura/.local/bin/asura-mcp-memorix",
-        "args": []
-      }
-    }
-  },
+  "context_servers": {},
   "file_scan_exclusions": [
     "**/.git",
     "**/.svn",

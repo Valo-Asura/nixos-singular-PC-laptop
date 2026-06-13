@@ -16,6 +16,14 @@ Videos apply through `mpvpaper`:
 mpvpaper --fork --auto-stop --layer background --mpv-options "no-audio loop hwdec=auto-safe profile=fast" "*" /path/to/video
 ```
 
+The Nix-managed `asura-video-wallpaper` wrapper blocks or suspends video
+wallpaper while the laptop is on battery. A user timer runs every minute and
+calls the same guard. Manual override for a one-off run:
+
+```bash
+ASURA_ALLOW_VIDEO_WALLPAPER_ON_BATTERY=1 asura-video-wallpaper /path/to/video.mp4
+```
+
 ## Keybinds
 
 | Keybind | Action |
@@ -113,6 +121,8 @@ Hyprland on login. Video state is also mirrored for legacy helpers at:
 ```bash
 command -v vibewall
 command -v mpvpaper
+systemctl --user is-enabled asura-video-wallpaper-battery-guard.timer
+systemctl --user start asura-video-wallpaper-battery-guard.service
 vibewall scan
 vibewall toggle
 vibewall apply /home/asura/Wallpaper/random_wallpaper.jpg
@@ -132,3 +142,4 @@ Tested proof on 2026-06-12:
 | Wallhaven | CLI search returns results; browser opens cached previews immediately; stale bad previews are skipped |
 | Daemon toggle | `picker_pid` opens then returns to `-1` after close |
 | Video apply | `mpvpaper` starts for video and is stopped after image restore |
+| Battery guard | `asura-video-wallpaper-battery-guard.timer` is enabled and suspends `mpvpaper` on battery |
