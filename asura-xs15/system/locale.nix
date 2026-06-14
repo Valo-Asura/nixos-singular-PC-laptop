@@ -3,9 +3,13 @@
 
 {
   time.timeZone = "Asia/Kolkata";
-  
+
   i18n = {
-    defaultLocale = "en_IN";
+    defaultLocale = "en_US.UTF-8";
+    supportedLocales = [
+      "en_US.UTF-8/UTF-8"
+      "en_IN/UTF-8"
+    ];
     extraLocaleSettings = {
       LC_ADDRESS = "en_IN";
       LC_IDENTIFICATION = "en_IN";

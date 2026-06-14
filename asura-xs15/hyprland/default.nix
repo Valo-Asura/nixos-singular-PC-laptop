@@ -93,7 +93,7 @@ in
         "XDG_CURRENT_DESKTOP,Hyprland"
         "XDG_SESSION_DESKTOP,Hyprland"
         "XDG_SESSION_CLASS,user"
-        "LANG,en_IN"
+        "LANG,en_US.UTF-8"
         "MOZ_ENABLE_WAYLAND,1"
         "QT_QPA_PLATFORM,wayland;xcb"
         "QT_WAYLAND_DISABLE_WINDOWDECORATION,1"

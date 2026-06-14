@@ -30,11 +30,13 @@ nix eval --raw /etc/nixos#nixosConfigurations.asura-xs15.config.boot.kernelPacka
 nix eval /etc/nixos#nixosConfigurations.asura-xs15.config.boot.initrd.kernelModules
 grep -n 'wallpaper = "/etc/nixos/screenshots/lockscreen.png"' /etc/nixos/asura-xs15/noctaliaShell/settings.toml
 command -v xdman
-timeout 8s xdman || test "$?" = 124
+command -v xdm-open
 command -v codex
+command -v asura-screen-record-toggle
 xdg-mime query default x-scheme-handler/xdm-app
 xdg-mime query default x-scheme-handler/xdm+app
-systemctl --user is-active xdman.service
+systemctl --user is-enabled xdman.service || true
+systemctl --user is-active xdman.service || true
 test -d /opt/xdman/chrome-extension
 grep -R -- '--load-extension=/opt/xdman/chrome-extension' \
   ~/.local/share/applications ~/.config/BraveSoftware ~/.config/google-chrome ~/.config/chromium
@@ -95,7 +97,8 @@ Expected values:
 | Lockscreen wallpaper | `/etc/nixos/screenshots/lockscreen.png` |
 | XDM scheme handlers | `xdm-app.desktop` |
 | XDM browser helper | `/opt/xdman/chrome-extension` exists; Brave/Chrome/Chromium launchers load it |
-| XDM bridge | `xdman.service` active in the user graphical session; `timeout 8s xdman` reaches timeout instead of crashing on SVG icon loading |
+| XDM browser monitor | `xdman.service` is not enabled at boot; browser extension/protocol handlers remain installed and `xdm-open` starts XDM on demand |
+| Screen recorder | `asura-screen-record-toggle` exists; Noctalia left quick-action and `SUPER+SHIFT+R` call it |
 | Codex CLI | `/run/current-system/sw/bin/codex` exists after rebuild |
 | Codex plugins | generated `~/.codex/config.toml` keeps GitHub and Notion plugin blocks |
 | AI memory MCP | default editor config includes `ai-memory-files`; SQLite MCP is only in opt-in config |

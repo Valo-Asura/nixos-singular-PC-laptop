@@ -7,9 +7,6 @@
     mouse = true;
     terminal = "screen-256color";
     extraConfig = ''
-      # Disable the default welcome message
-      set -g quiet on
-
       # Set prefix to Ctrl+a
       unbind C-b
       set-option -g prefix C-a

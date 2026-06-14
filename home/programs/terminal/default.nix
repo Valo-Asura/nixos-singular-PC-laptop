@@ -510,11 +510,14 @@ in
       '';
     };
 
-    # Automatically load fastfetch on startup
+    # Keep terminal startup fast. Run `ff`/`fastfetch-smart` explicitly, or set
+    # ASURA_SHOW_SHELL_BANNER=1 for a temporary banner.
     fish_greeting = {
       body = ''
-        fastfetch-smart
-        echo ""
+        if test "$ASURA_SHOW_SHELL_BANNER" = "1"
+          fastfetch-smart
+          echo ""
+        end
       '';
     };
 

@@ -19,12 +19,9 @@ alias fastfetch="fastfetch --processing-timeout 200 -c ~/.config/fastfetch/confi
 alias ff="fastfetch"
 
 function fish_greeting
-    test -n "$ASURA_SKIP_FASTFETCH"; and return
-    if not set -q TMUX
-        and command -v tmux >/dev/null
-        return
+    if test "$ASURA_SHOW_SHELL_BANNER" = "1"
+        fastfetch
     end
-    fastfetch
 end
 
 string match -q "$TERM_PROGRAM" "kiro" and . (kiro --locate-shell-integration-path fish)
@@ -37,9 +34,4 @@ alias cmt="codex-mem threads"
 alias cml="codex-mem logs"
 alias cms="codex-mem raw-search"
 
-# Auto-start tmux in interactive shells
-if status is-interactive
-    and not set -q TMUX
-    and command -v tmux >/dev/null
-    exec tmux -u
-end
+# Start tmux explicitly with `tmux`. Avoid auto-exec so Foot opens instantly.

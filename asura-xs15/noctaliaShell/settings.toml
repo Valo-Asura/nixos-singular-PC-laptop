@@ -78,7 +78,7 @@ order = [ "dynamic_island", "left_bar" ]
     auto_hide = true
     background_opacity = 0.88
     capsule = false
-    center = [ "screenshot_btn", "open_screenshots_btn", "record_btn", "screen_recorder", "open_recordings_btn", "google_lens_btn" ]
+    center = [ "screenshot_btn", "open_screenshots_btn", "record_btn", "open_recordings_btn", "google_lens_btn" ]
     end = []
     margin_edge = 8
     margin_ends = 400
@@ -227,7 +227,7 @@ source = "community"
 wallpaper_scheme = "muted"
 
     [theme.templates]
-    builtin_ids = [ "hyprland", "foot" ]
+    builtin_ids = [ "hyprland" ]
 
 [wallpaper]
 directory = "/home/asura/Wallpaper"
@@ -323,17 +323,11 @@ stat = "ram_pct"
 type = "sysmon"
 
 [widget.record_btn]
-command = "noctalia msg scripted-widget screen_recorder focused toggle"
+command = "asura-screen-record-toggle"
 glyph = "video"
 scale = 1.3500000000000001
 tooltip = "Toggle Screen Recording"
 type = "custom_button"
-
-[widget.screen_recorder]
-directory = "/home/asura/Videos/Screenrecords"
-scale = 1.3500000000000001
-script = "scripts/screen_recorder.lua"
-type = "scripted"
 
 [widget.screenshot_btn]
 command = "noctalia msg screenshot-region"

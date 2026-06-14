@@ -185,13 +185,51 @@ let
   # gtk_widget_get_scale_factor single-instance mutex bug in xdm 8.0.29).
   xdmOpen = pkgs.writeShellScriptBin "xdm-open" ''
     set -euo pipefail
-    # Stop the systemd service so it doesn't restart immediately
-    systemctl --user stop xdman.service 2>/dev/null || true
-    # Kill any lingering process
-    pkill -x xdm-app 2>/dev/null || true
-    sleep 0.3
-    # Pass any URL/file arguments through (for browser-extension integration)
+    # XDM has no true headless monitor mode. Keep browser integration on-demand:
+    # desktop/protocol launches start the GTK app only when a browser calls it.
+    if pgrep -x xdm-app >/dev/null 2>&1; then
+      if [ "$#" -eq 0 ]; then
+        ${pkgs.hyprland}/bin/hyprctl dispatch focuswindow class:xdm-app >/dev/null 2>&1 || true
+        exit 0
+      fi
+      exec ${xdmanGtk}/bin/xdman "$@"
+    fi
     exec ${xdmanGtk}/bin/xdman "$@"
+  '';
+
+  asuraScreenRecordToggle = pkgs.writeShellScriptBin "asura-screen-record-toggle" ''
+    set -euo pipefail
+
+    export PATH="${
+      lib.makeBinPath [
+        pkgs.coreutils
+        pkgs.procps
+        pkgs.wf-recorder
+        pkgs.libnotify
+      ]
+    }:$PATH"
+
+    runtime_dir="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    pidfile="$runtime_dir/asura-screen-record.pid"
+    out_dir="$HOME/Videos/Screenrecords"
+    mkdir -p "$out_dir"
+
+    if [ -s "$pidfile" ]; then
+      pid="$(cat "$pidfile")"
+      if kill -0 "$pid" 2>/dev/null; then
+        kill -INT "$pid" 2>/dev/null || true
+        rm -f "$pidfile"
+        notify-send "Screen recording saved" "$out_dir" --icon=media-record || true
+        exit 0
+      fi
+      rm -f "$pidfile"
+    fi
+
+    file="$out_dir/recording-$(date +%Y%m%d-%H%M%S).mp4"
+    notify-send "Screen recording started" "$file" --icon=media-record || true
+    wf-recorder -f "$file" >/tmp/asura-screen-record.log 2>&1 &
+    echo "$!" > "$pidfile"
+    disown
   '';
 
   hyprmod = pkgs.callPackage ./hyprmod.nix { };
@@ -325,6 +363,7 @@ in
       whatsappWebDesktop
       xdmanGtk
       xdmOpen
+      asuraScreenRecordToggle
       piper # Linux GUI for Logitech G304/G305 DPI and button profiles
       solaar # Logitech receiver and wireless device manager
       mongodb-compass
@@ -354,10 +393,10 @@ in
   ];
 
   systemd.user.services.xdman = {
-    description = "Xtreme Download Manager desktop bridge";
+    description = "Xtreme Download Manager on-demand browser bridge";
     after = [ "graphical-session.target" ];
     partOf = [ "graphical-session.target" ];
-    wantedBy = [ "graphical-session.target" ];
+    wantedBy = lib.mkForce [ ];
     unitConfig = {
       StartLimitBurst = 3;
       StartLimitIntervalSec = 60;

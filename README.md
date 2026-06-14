@@ -76,6 +76,8 @@ asura-ai-memory paths         # print shared memory + opt-in MCP config paths
 asura-video-wallpaper-stop    # stop mpvpaper and clear video wallpaper state
 xdman                         # launch Xtreme Download Manager; launcher uses the same wrapper
 xarchiver ARCHIVE             # open archives; Nautilus/PCManFM-Qt route archive MIME here
+asura-screen-record-toggle    # toggle wf-recorder into ~/Videos/Screenrecords
+ASURA_SHOW_SHELL_BANNER=1 foot # optional fastfetch banner; default Foot startup is quiet/fast
 ```
 
 ## Repository Structure
@@ -203,10 +205,14 @@ Important carry-overs:
   `SUPER+W` press opens the picker; clicking outside the centered stage closes
   it.
 - Nautilus floats centered for quick file checks.
-- XDM runs as a user session bridge and Brave/Chrome/Chromium launchers load
-  `/opt/xdman/chrome-extension`; Firefox gets the AMO add-on declaratively.
-  The GTK package wrapper exports the `librsvg` pixbuf loader so XDM can render
-  its SVG icons instead of aborting during launcher startup.
+- XDM no longer opens its GTK app at boot. Browser integration stays declared
+  through the bundled `/opt/xdman/chrome-extension`, Chromium-family launchers,
+  and the Firefox AMO add-on; the app starts on explicit launcher/protocol use.
+  The wrapper exports the `librsvg` pixbuf loader so XDM can render SVG icons.
+- Foot startup is kept quiet by default: no automatic tmux exec and no automatic
+  fastfetch unless `ASURA_SHOW_SHELL_BANNER=1` is set.
+- Screen recording is a declared `asura-screen-record-toggle` wrapper around
+  `wf-recorder`, used by the Noctalia left quick-action and `SUPER+SHIFT+R`.
 - Codex plugin declarations live in the generated `~/.codex/config.toml` block
   so rebuilds keep GitHub/Notion plugins enabled.
 - The `rescue-no-nvidia` boot specialization keeps the old rescue path
