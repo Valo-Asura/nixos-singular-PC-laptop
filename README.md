@@ -43,7 +43,7 @@ new commands should use `#asura-xs15`.
 | Lockscreen | Noctalia IPC lock using `screenshots/lockscreen.png`; |
 | File manager | Nautilus default, PCManFM-Qt available, admin launchers/scripts, Xarchiver as the only archive UI |
 | Theme | Dark GTK/libadwaita settings, Papirus-Dark icons, Bibata Modern Amber cursor at 24 px |
-| Wallpaper | `SUPER+W` and `SUPER+SHIFT+W` open native `vibewallREzero`; images apply through Noctalia IPC, videos through `mpvpaper`, and video wallpaper is suspended on battery |
+| Wallpaper | `SUPER+W` and `SUPER+SHIFT+W` open native `vibewallREzero`; images apply through Noctalia IPC, videos through `mpvpaper`, live-video switches stop `hyprpaper`, and video wallpaper is suspended on battery |
 | Fan control | NBFC-Linux `0.5.2` plus NBFC-GTK `0.4.1` |
 | Fan profile | Declarative two-fan `Colorful X15 AT 22` config with `MaxSpeedValue = 255`, max-sensor ramping, and emergency thermal guard |
 | Plymouth | Local `circle_hud` theme from `asura-xs15/plymouth/circle_hud` |
@@ -202,13 +202,17 @@ Important carry-overs:
   stack is disabled because Noctalia owns the visible Bluetooth UI.
 - `mpvpaper` video wallpaper is blocked/suspended on battery unless
   `ASURA_ALLOW_VIDEO_WALLPAPER_ON_BATTERY=1` is set for a manual run.
+- Live video wallpaper switches explicitly stop `hyprpaper.service` plus
+  `hyprpaper`/wrapper processes before starting `mpvpaper`, so static and live
+  wallpaper renderers do not fight each other.
 - Nix GC/optimise timers do not catch up missed daily runs at boot, avoiding
   I/O spikes during first login.
 - Desktop cache warming is delayed and capped; it no longer reads package
   closures immediately after login.
 - `vibewall toggle` starts the systemd user daemon first, so the first
   `SUPER+W` press opens the picker; clicking outside the centered stage closes
-  it.
+  it. The daemon reaps picker children on `SIGCHLD`, so closed pickers should
+  not linger as zombies and affect later toggles.
 - Nautilus floats centered for quick file checks.
 - XDM no longer opens its GTK app at boot. Browser integration stays declared
   through the bundled `/opt/xdman/chrome-extension`, Chromium-family launchers,

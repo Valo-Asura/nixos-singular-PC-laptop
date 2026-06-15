@@ -54,6 +54,12 @@ let
       ${pkgs.procps}/bin/pkill -f "/mpvpaper .*--layer background" >/dev/null 2>&1 || true
     }
 
+    kill_hyprpaper() {
+      ${pkgs.systemd}/bin/systemctl --user stop hyprpaper.service >/dev/null 2>&1 || true
+      ${pkgs.procps}/bin/pkill -x hyprpaper >/dev/null 2>&1 || true
+      ${pkgs.procps}/bin/pkill -x .hyprpaper-wrapp >/dev/null 2>&1 || true
+    }
+
     on_battery() {
       saw_mains=0
       mains_online=0
@@ -122,6 +128,7 @@ let
     ${pkgs.coreutils}/bin/mkdir -p "$state_dir"
     ${pkgs.coreutils}/bin/printf '%s\n' "$video" > "$state_file"
     kill_mpvpaper
+    kill_hyprpaper
 
     exec ${pkgs.mpvpaper}/bin/mpvpaper \
       --fork \

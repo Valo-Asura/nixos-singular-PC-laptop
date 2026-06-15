@@ -112,9 +112,10 @@ Expected values:
 | Codex plugins | generated `~/.codex/config.toml` keeps GitHub and Notion plugin blocks |
 | AI memory MCP | default editor config includes `ai-memory-files`; SQLite MCP is only in opt-in config |
 | Video wallpaper battery guard | user timer enabled; `mpvpaper` is suspended on battery |
+| Video renderer ownership | applying a video wallpaper stops `hyprpaper.service`/`hyprpaper` before starting `mpvpaper`; restoring an image stops `mpvpaper` |
 | VM stack | `libvirtd.service` and `libvirt-guests.service` are not enabled; libvirt sockets are enabled for on-demand VM use |
 | Bluetooth tray | base BlueZ stays available; Blueman tray/OBEX service is disabled |
-| Vibewall toggle | first `vibewall toggle` starts daemon/picker; close cleans picker |
+| Vibewall toggle | first `vibewall toggle` starts daemon/picker; close cleans picker; daemon reaps picker child exits on `SIGCHLD` |
 | Vibewall transparent overlay | active workspace remains visible behind centered toolbar/cards; proof screenshot is `screenshots/vibewallrezero-transparent-overlay.png` |
 | Vibewall image apply | `vibewall apply` returns `ok` and `noctalia msg wallpaper-get` returns the requested path |
 | Vibewall Wallhaven | cached browser opens immediately; WEB page loading runs in the background; `D`/`DOWNLOAD` saves selected remote wallpaper and `Enter`/`APPLY` downloads then applies |
