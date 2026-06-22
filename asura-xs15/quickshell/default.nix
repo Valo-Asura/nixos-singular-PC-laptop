@@ -13,7 +13,28 @@ let
   ricelinShellRoot = ./profiles/ricelin;
   dotfilesShellRoot = ./profiles/dotfiles;
   tideIslandSource = ./profiles/tide-island;
+  vibeshellRoot = ./profiles/vibeshell;
+  nandoroidRoot = ./profiles/nandoroid;
   waybarRoot = ../waybar;
+  colorshellRyoRoot = ../ags-v3-colorshell-ryo;
+  vibeshellPhosphorIcons = import "${vibeshellRoot}/nix/packages/phosphor-icons.nix" {
+    inherit pkgs;
+  };
+  vibeshellFonts = pkgs.symlinkJoin {
+    name = "asura-vibeshell-fonts";
+    paths = [
+      vibeshellPhosphorIcons
+      pkgs.nerd-fonts.jetbrains-mono
+      pkgs.nerd-fonts.symbols-only
+    ];
+  };
+  vibeshellFontconfig = pkgs.writeTextDir "etc/fonts/conf.d/99-asura-vibeshell-fonts.conf" ''
+    <?xml version="1.0"?>
+    <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+    <fontconfig>
+      <dir>${vibeshellFonts}/share/fonts</dir>
+    </fontconfig>
+  '';
   noctaliaPackage = inputs.noctalia.packages.${system}.default;
   hyprlandPackage = config.programs.hyprland.package;
 
@@ -273,6 +294,155 @@ let
     text = builtins.readFile "${waybarRoot}/scripts/workspaces.sh";
   };
 
+  asuraVibeshell = pkgs.writeShellApplication {
+    name = "asura-vibeshell";
+    runtimeInputs =
+      with pkgs;
+      [
+        bash
+        brightnessctl
+        coreutils
+        dbus
+        findutils
+        fontconfig
+        gawk
+        glib
+        gnugrep
+        grim
+        hyprpicker
+        jq
+        libnotify
+        matugen
+        mpvpaper
+        networkmanager
+        hicolor-icon-theme
+        papirus-icon-theme
+        playerctl
+        procps
+        pulseaudio
+        quickshell
+        slurp
+        util-linux
+        wl-clipboard
+        wlogout
+        xdg-utils
+      ]
+      ++ [
+        hyprlandPackage
+        vibeshellFonts
+        vibeshellPhosphorIcons
+      ];
+    text = ''
+      export VIBESHELL_QS="${pkgs.quickshell}/bin/qs"
+      export QS_ICON_THEME="''${QS_ICON_THEME:-Papirus-Dark}"
+      export VIBESHELL_WEATHER_LOCATION="''${VIBESHELL_WEATHER_LOCATION:-Rishikesh, Uttarakhand, India}"
+      export VIBESHELL_WEATHER_COORDS="''${VIBESHELL_WEATHER_COORDS:-30.0869,78.2676}"
+      export FONTCONFIG_PATH="${vibeshellFontconfig}/etc/fonts:${pkgs.fontconfig.out}/etc/fonts:''${FONTCONFIG_PATH:-}"
+      export XDG_DATA_DIRS="${vibeshellFonts}/share:${pkgs.papirus-icon-theme}/share:${pkgs.hicolor-icon-theme}/share:${pkgs.gtk3}/share:${pkgs.shared-mime-info}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
+      exec ${vibeshellRoot}/cli.sh "$@"
+    '';
+  };
+
+  asuraNandoroid = pkgs.writeShellApplication {
+    name = "asura-nandoroid";
+    runtimeInputs =
+      with pkgs;
+      [
+        bash
+        bluez
+        brightnessctl
+        coreutils
+        dbus
+        findutils
+        gawk
+        glib
+        gnugrep
+        grim
+        imagemagick
+        jq
+        libnotify
+        matugen
+        networkmanager
+        pavucontrol
+        playerctl
+        procps
+        pulseaudio
+        quickshell
+        slurp
+        util-linux
+        wireplumber
+        wl-clipboard
+        xdg-utils
+      ]
+      ++ [ hyprlandPackage ];
+    text = ''
+      export QS_ICON_THEME="''${QS_ICON_THEME:-Papirus-Dark}"
+      export XDG_DATA_DIRS="${pkgs.gtk3}/share:${pkgs.shared-mime-info}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
+
+      case "''${1:-}" in
+        launcher|spotlight|notifications|quicksettings|systemmonitor|overview|session|dashboard|quickactions|settings)
+          target="$1"
+          method="''${2:-toggle}"
+          shift 2 || true
+          exec qs -c nandoroid ipc call "$target" "$method" "$@"
+          ;;
+        wallpaper)
+          target="$1"
+          method="''${2:-openDesktop}"
+          shift 2 || true
+          exec qs -c nandoroid ipc call "$target" "$method" "$@"
+          ;;
+        pomodoro)
+          target="$1"
+          method="''${2:-start}"
+          shift 2 || true
+          exec qs -c nandoroid ipc call "$target" "$method" "$@"
+          ;;
+        "")
+          exec qs -c nandoroid
+          ;;
+        *)
+          exec qs -c nandoroid "$@"
+          ;;
+      esac
+    '';
+  };
+
+  colorshellRyoPackage = inputs.colorshell-ryo.packages.${system}.colorshell;
+
+  asuraColorshellRyo = pkgs.writeShellApplication {
+    name = "asura-colorshell-ryo";
+    runtimeInputs =
+      with pkgs;
+      [
+        bluez
+        brightnessctl
+        coreutils
+        grim
+        hyprlandPackage
+        jq
+        libnotify
+        networkmanager
+        pavucontrol
+        playerctl
+        procps
+        pulseaudio
+        slurp
+        socat
+        util-linux
+        wireplumber
+        wl-clipboard
+        wlogout
+        xdg-utils
+      ]
+      ++ [ colorshellRyoPackage ];
+    text = ''
+      export XDG_DATA_DIRS="${pkgs.gtk4}/share:${pkgs.gtk3}/share:${pkgs.shared-mime-info}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
+      export GIO_EXTRA_MODULES="${pkgs.dconf.lib}/lib/gio/modules:''${GIO_EXTRA_MODULES:-}"
+      exec ${colorshellRyoPackage}/bin/colorshell "$@"
+    '';
+  };
+
   quickShellSwitch = pkgs.writeShellApplication {
     name = "asura-quickshell-switch";
     runtimeInputs = with pkgs; [
@@ -304,6 +474,11 @@ let
           "@CAELESTIA_SHELL_BIN@"
           "@TIDE_ISLAND_BIN@"
           "@ASURA_ISLAND_PATH@"
+          "@VIBESHELL_BIN@"
+          "@VIBESHELL_PATH@"
+          "@NANDOROID_BIN@"
+          "@NANDOROID_PATH@"
+          "@COLORSHELL_RYO_BIN@"
           "@WAYBAR_BIN@"
           "@NOCTALIA_BIN@"
         ]
@@ -313,6 +488,11 @@ let
           "${caelestiaShell}/bin/caelestia-shell"
           "${tideIsland}/bin/tide-island"
           "/home/asura/Projects/asura-island-shell"
+          "${asuraVibeshell}/bin/asura-vibeshell"
+          "/etc/xdg/quickshell/vibeshell"
+          "${asuraNandoroid}/bin/asura-nandoroid"
+          "/etc/xdg/quickshell/nandoroid"
+          "${asuraColorshellRyo}/bin/asura-colorshell-ryo"
           "${asuraWaybar}/bin/asura-waybar"
           "${noctaliaPackage}/bin/noctalia"
         ]
@@ -331,7 +511,9 @@ let
         procps
         quickshell
       ])
-      ++ [ hyprlandPackage ];
+      ++ [
+        hyprlandPackage
+      ];
     text =
       builtins.replaceStrings
         [
@@ -340,6 +522,11 @@ let
           "@RICELIN_QUICKSHELL_PATH@"
           "@TIDE_ISLAND_PATH@"
           "@ASURA_ISLAND_PATH@"
+          "@VIBESHELL_BIN@"
+          "@VIBESHELL_PATH@"
+          "@NANDOROID_BIN@"
+          "@NANDOROID_PATH@"
+          "@COLORSHELL_RYO_BIN@"
           "@NOCTALIA_BIN@"
         ]
         [
@@ -348,6 +535,11 @@ let
           "/etc/xdg/quickshell/ricelin"
           "${tideIsland}/share/tide-island"
           "/home/asura/Projects/asura-island-shell"
+          "${asuraVibeshell}/bin/asura-vibeshell"
+          "/etc/xdg/quickshell/vibeshell"
+          "${asuraNandoroid}/bin/asura-nandoroid"
+          "/etc/xdg/quickshell/nandoroid"
+          "${asuraColorshellRyo}/bin/asura-colorshell-ryo"
           "${noctaliaPackage}/bin/noctalia"
         ]
         (builtins.readFile ./scripts/asura-shell-launcher);
@@ -360,10 +552,14 @@ in
     asuraWaybar
     asuraWaybarSysbar
     asuraWaybarWorkspaces
+    asuraVibeshell
+    asuraNandoroid
+    asuraColorshellRyo
     pkgs.quickshell
     pkgs.waybar
     quickShellSwitch
     shellLauncher
+    asuraColorshellRyo
     tideIsland
   ];
 
@@ -372,6 +568,8 @@ in
     "xdg/quickshell/ricelin".source = ricelinShellRoot;
     "xdg/quickshell/dotfiles".source = dotfilesShellRoot;
     "xdg/quickshell/tide-island".source = "${tideIsland}/share/tide-island";
+    "xdg/quickshell/vibeshell".source = vibeshellRoot;
+    "xdg/quickshell/nandoroid".source = nandoroidRoot;
     "xdg/waybar-asura".source = waybarRoot;
   };
 
@@ -382,6 +580,9 @@ in
       asuraWaybar
       asuraWaybarSysbar
       asuraWaybarWorkspaces
+      asuraVibeshell
+      asuraNandoroid
+      asuraColorshellRyo
     ];
 
     systemd.user.services.noctalia.Service.KillMode = lib.mkForce "process";
@@ -393,6 +594,9 @@ in
       dotfiles
       tide-island
       asura-island
+      vibeshell
+      nandoroid
+      colorshell-ryo
       waybar
     '';
   };

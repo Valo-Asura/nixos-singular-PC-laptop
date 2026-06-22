@@ -9,6 +9,11 @@ dotfiles_path="@DOTFILES_QUICKSHELL_PATH@"
 ricelin_path="@RICELIN_QUICKSHELL_PATH@"
 tide_island_path="@TIDE_ISLAND_PATH@"
 asura_island_path="@ASURA_ISLAND_PATH@"
+vibeshell_bin="@VIBESHELL_BIN@"
+vibeshell_path="@VIBESHELL_PATH@"
+nandoroid_bin="@NANDOROID_BIN@"
+nandoroid_path="@NANDOROID_PATH@"
+colorshell_ryo_bin="@COLORSHELL_RYO_BIN@"
 noctalia_bin="@NOCTALIA_BIN@"
 
 notify() {
@@ -56,6 +61,31 @@ open_asura_island() {
   qs_call "$asura_island_path" asuraIsland launcher
 }
 
+open_vibeshell() {
+  if [ -p /tmp/vibeshell_ipc.pipe ]; then
+    if printf '%s\n' notch-launcher | timeout 0.25s tee /tmp/vibeshell_ipc.pipe >/dev/null 2>&1; then
+      return 0
+    fi
+
+    rm -f /tmp/vibeshell_ipc.pipe 2>/dev/null || true
+  fi
+
+  "$vibeshell_bin" run notch-launcher
+}
+
+open_nandoroid() {
+  "$nandoroid_bin" launcher toggle
+}
+
+open_colorshell_ryo() {
+  if "$colorshell_ryo_bin" runner >/dev/null 2>&1; then
+    return 0
+  fi
+  setsid -f "$colorshell_ryo_bin" >/tmp/asura-colorshell-ryo.log 2>&1
+  sleep 0.7
+  "$colorshell_ryo_bin" runner >/dev/null 2>&1
+}
+
 open_noctalia() {
   exec "$noctalia_bin" msg panel-toggle launcher "$@"
 }
@@ -86,6 +116,15 @@ case "$profile" in
   asura-island|island)
     open_asura_island || open_noctalia "$@"
     ;;
+  vibeshell|vibe)
+    open_vibeshell || open_noctalia "$@"
+    ;;
+  nandoroid|nandroid)
+    open_nandoroid || open_noctalia "$@"
+    ;;
+  colorshell-ryo|colorshell|ryo)
+    open_colorshell_ryo || open_noctalia "$@"
+    ;;
   waybar)
     open_waybar
     ;;
@@ -99,6 +138,12 @@ case "$profile" in
       open_ricelin
     elif pgrep -u "$(id -u)" -af 'qs|quickshell' 2>/dev/null | grep -q "$asura_island_path"; then
       open_asura_island
+    elif pgrep -u "$(id -u)" -af 'qs|quickshell' 2>/dev/null | grep -q "$vibeshell_path"; then
+      open_vibeshell
+    elif pgrep -u "$(id -u)" -af 'qs|quickshell' 2>/dev/null | grep -q "$nandoroid_path"; then
+      open_nandoroid
+    elif busctl --user list 2>/dev/null | awk '$1 == "io.github.retrozinndev.Colorshell" { found = 1 } END { exit found ? 0 : 1 }'; then
+      open_colorshell_ryo
     else
       open_noctalia "$@"
     fi

@@ -19,6 +19,7 @@
       url = "github:nix-community/stylix/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    colorshell-ryo.url = "path:./asura-xs15/ags-v3-colorshell-ryo";
 
     #hyprland plugins and related tools. These are not strictly necessary, but I use them and it's more convenient to have them here than to install them separately.
     hyprpaper.url = "github:hyprwm/hyprpaper";

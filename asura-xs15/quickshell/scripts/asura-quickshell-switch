@@ -5,11 +5,18 @@ profile="${1:-status}"
 uid="$(id -u)"
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/asura-shell"
 state_file="$state_dir/current"
+caffeine_file="$state_dir/caffeine"
+caffeine_unit="asura-caffeine-inhibit.service"
 ricelin_path="@RICELIN_QUICKSHELL_PATH@"
 dotfiles_path="@DOTFILES_QUICKSHELL_PATH@"
 caelestia_bin="@CAELESTIA_SHELL_BIN@"
 tide_island_bin="@TIDE_ISLAND_BIN@"
 asura_island_path="@ASURA_ISLAND_PATH@"
+vibeshell_bin="@VIBESHELL_BIN@"
+vibeshell_path="@VIBESHELL_PATH@"
+nandoroid_bin="@NANDOROID_BIN@"
+nandoroid_path="@NANDOROID_PATH@"
+colorshell_ryo_bin="@COLORSHELL_RYO_BIN@"
 waybar_bin="@WAYBAR_BIN@"
 noctalia_bin="@NOCTALIA_BIN@"
 
@@ -19,6 +26,73 @@ notify() {
   if command -v notify-send >/dev/null 2>&1; then
     notify-send -a asura-shell-switch "$@" 2>/dev/null || true
   fi
+}
+
+caffeine_wanted() {
+  [ "$(cat "$caffeine_file" 2>/dev/null || true)" = "on" ]
+}
+
+caffeine_active() {
+  systemctl --user is-active --quiet "$caffeine_unit" 2>/dev/null \
+    || pgrep -u "$uid" -f 'systemd-inhibit --what=idle:sleep:handle-lid-switch --who=asura-shell-switch' >/dev/null 2>&1
+}
+
+caffeine_start() {
+  local quiet="${1:-0}"
+  printf '%s\n' on > "$caffeine_file"
+
+  if ! caffeine_active; then
+    systemctl --user reset-failed "$caffeine_unit" >/dev/null 2>&1 || true
+    systemd-run --user \
+      --unit="${caffeine_unit%.service}" \
+      --description="Asura shell caffeine inhibitor" \
+      --collect \
+      --quiet \
+      systemd-inhibit \
+        --what=idle:sleep:handle-lid-switch \
+        --who=asura-shell-switch \
+        --why="Asura shell caffeine mode is enabled across shell switches" \
+        --mode=block \
+        sleep infinity \
+      >/dev/null 2>&1 || {
+        pkill -u "$uid" -f 'systemd-inhibit --what=idle:sleep:handle-lid-switch --who=asura-shell-switch' 2>/dev/null || true
+        setsid -f systemd-inhibit \
+          --what=idle:sleep:handle-lid-switch \
+          --who=asura-shell-switch \
+          --why="Asura shell caffeine mode is enabled across shell switches" \
+          --mode=block \
+          sleep infinity \
+          >/tmp/asura-caffeine-inhibit.log 2>&1
+      }
+  fi
+
+  [ "$quiet" = 1 ] || notify "Caffeine mode on" "Idle, sleep, and lid-switch sleep are inhibited across shell switches."
+}
+
+caffeine_stop() {
+  printf '%s\n' off > "$caffeine_file"
+  systemctl --user stop "$caffeine_unit" >/dev/null 2>&1 || true
+  pkill -u "$uid" -f 'systemd-inhibit --what=idle:sleep:handle-lid-switch --who=asura-shell-switch' 2>/dev/null || true
+  notify "Caffeine mode off" "Normal idle and sleep behavior restored."
+}
+
+caffeine_toggle() {
+  if caffeine_wanted || caffeine_active; then
+    caffeine_stop
+  else
+    caffeine_start
+  fi
+}
+
+ensure_caffeine() {
+  if caffeine_wanted; then
+    caffeine_start 1
+  fi
+}
+
+select_profile() {
+  printf '%s\n' "$1" > "$state_file"
+  ensure_caffeine
 }
 
 kill_qs_matching() {
@@ -78,8 +152,64 @@ stop_asura_island() {
   kill_qs_matching "$asura_island_path|asura-island-shell"
 }
 
+stop_vibeshell() {
+  pkill -u "$uid" -f '/tmp/vibeshell_ipc.pipe' 2>/dev/null || true
+  pkill -u "$uid" -f 'systemd-inhibit --what=idle:sleep:handle-lid-switch --who=Vibeshell' 2>/dev/null || true
+  kill_qs_matching "$vibeshell_path|Vibeshell|vibeshell"
+  rm -f /tmp/vibeshell_ipc.pipe 2>/dev/null || true
+}
+
+stop_nandoroid() {
+  kill_qs_matching "$nandoroid_path|nandoroid"
+}
+
 stop_waybar() {
-  pkill -u "$uid" -x waybar 2>/dev/null || true
+  local pids
+  pids="$(
+    ps -u "$uid" -o pid=,args= \
+      | awk '/waybar/ && /waybar-asura/ { print $1 }' \
+      || true
+  )"
+  [ -n "$pids" ] || return 0
+
+  while read -r pid; do
+    [ -n "$pid" ] || continue
+    kill "$pid" 2>/dev/null || true
+  done <<< "$pids"
+
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    local alive=""
+    while read -r pid; do
+      [ -n "$pid" ] || continue
+      if kill -0 "$pid" 2>/dev/null; then
+        alive=1
+        break
+      fi
+    done <<< "$pids"
+    [ -z "$alive" ] && return 0
+    sleep 0.1
+  done
+
+  while read -r pid; do
+    [ -n "$pid" ] || continue
+    kill -KILL "$pid" 2>/dev/null || true
+  done <<< "$pids"
+}
+
+stop_colorshell_ryo() {
+  local owner
+
+  owner="$(
+    busctl --user list 2>/dev/null \
+      | awk '$1 == "io.github.retrozinndev.Colorshell" { print $2; exit }' \
+      || true
+  )"
+  if [ -n "$owner" ] && [ "$owner" != "$$" ]; then
+    kill "$owner" 2>/dev/null || true
+  fi
+
+  pkill -u "$uid" -x colorshell 2>/dev/null || true
+  pkill -u "$uid" -x asura-colorshell-ryo 2>/dev/null || true
 }
 
 stop_quickshell_profiles() {
@@ -88,6 +218,9 @@ stop_quickshell_profiles() {
   stop_dotfiles
   stop_tide_island
   stop_asura_island
+  stop_vibeshell
+  stop_nandoroid
+  stop_colorshell_ryo
   stop_waybar
 }
 
@@ -119,7 +252,7 @@ start_noctalia() {
   elif ! pgrep -u "$uid" -x noctalia >/dev/null 2>&1; then
     start_detached "$noctalia_bin"
   fi
-  printf '%s\n' noctalia > "$state_file"
+  select_profile noctalia
   notify "Noctalia selected" "Stable Hyprland shell is active."
 }
 
@@ -127,7 +260,7 @@ start_caelestia() {
   stop_quickshell_profiles
   stop_noctalia
   start_detached "$caelestia_bin"
-  printf '%s\n' caelestia > "$state_file"
+  select_profile caelestia
   notify "Caelestia selected" "Experimental Quickshell profile is active under Hyprland."
 }
 
@@ -135,7 +268,7 @@ start_ricelin() {
   stop_quickshell_profiles
   stop_noctalia
   start_detached qs -p "$ricelin_path/pill"
-  printf '%s\n' ricelin > "$state_file"
+  select_profile ricelin
   notify "Ricelin selected" "Experimental pill Quickshell profile is active."
 }
 
@@ -143,7 +276,7 @@ start_dotfiles() {
   stop_quickshell_profiles
   stop_noctalia
   start_detached qs -p "$dotfiles_path"
-  printf '%s\n' dotfiles > "$state_file"
+  select_profile dotfiles
   notify "Dotfiles selected" "Imported dotfiles Quickshell profile is active."
 }
 
@@ -151,7 +284,7 @@ start_tide_island() {
   stop_quickshell_profiles
   stop_noctalia
   start_detached "$tide_island_bin"
-  printf '%s\n' tide-island > "$state_file"
+  select_profile tide-island
   notify "Tide Island selected" "Dynamic Island Quickshell profile is active."
 }
 
@@ -159,23 +292,51 @@ start_asura_island() {
   stop_quickshell_profiles
   stop_noctalia
   start_detached qs -p "$asura_island_path"
-  printf '%s\n' asura-island > "$state_file"
+  select_profile asura-island
   notify "Asura Island selected" "Standalone Dynamic Island shell is active."
+}
+
+start_vibeshell() {
+  stop_quickshell_profiles
+  stop_noctalia
+  start_detached "$vibeshell_bin"
+  select_profile vibeshell
+  notify "VibeShell selected" "Imported VibeShell Quickshell profile is active."
+}
+
+start_nandoroid() {
+  stop_quickshell_profiles
+  stop_noctalia
+  start_detached "$nandoroid_bin"
+  select_profile nandoroid
+  notify "Nandoroid selected" "Imported Nandoroid Quickshell profile is active."
+}
+
+start_colorshell_ryo() {
+  stop_quickshell_profiles
+  stop_noctalia
+  start_detached "$colorshell_ryo_bin"
+  select_profile colorshell-ryo
+  notify "Colorshell Ryo selected" "AGS 3.1/Astal Colorshell profile is active."
 }
 
 start_waybar() {
   stop_quickshell_profiles
   stop_noctalia
   start_detached "$waybar_bin"
-  printf '%s\n' waybar > "$state_file"
+  select_profile waybar
   notify "Waybar selected" "Imported Waybar bar is active."
 }
 
 status() {
   printf 'selected=%s\n' "$(cat "$state_file" 2>/dev/null || printf noctalia)"
+  printf 'caffeine=%s active=%s\n' "$(cat "$caffeine_file" 2>/dev/null || printf off)" "$(caffeine_active && printf yes || printf no)"
   printf 'session=%s/%s\n' "${XDG_CURRENT_DESKTOP:-unknown}" "${XDG_SESSION_TYPE:-unknown}"
   printf 'processes:\n'
-  pgrep -u "$uid" -a 'noctalia|caelestia-shell|tide-island|waybar|qs|quickshell' 2>/dev/null || true
+  pgrep -u "$uid" -a 'noctalia|caelestia-shell|tide-island|waybar|asura-colorshell-ryo|colorshell|qs|quickshell' 2>/dev/null || true
+  busctl --user list 2>/dev/null \
+    | awk '$1 == "io.github.retrozinndev.Colorshell" { printf "%s %s %s\n", $2, $3, $1 }' \
+    || true
 }
 
 case "$profile" in
@@ -197,12 +358,33 @@ case "$profile" in
   asura-island|island)
     start_asura_island
     ;;
+  vibeshell|vibe)
+    start_vibeshell
+    ;;
+  nandoroid|nandroid)
+    start_nandoroid
+    ;;
+  colorshell-ryo|colorshell|ryo)
+    start_colorshell_ryo
+    ;;
   waybar)
     start_waybar
     ;;
+  caffeine-on|caffeine|awake-on|awake)
+    caffeine_start
+    ;;
+  caffeine-off|awake-off)
+    caffeine_stop
+    ;;
+  caffeine-toggle|awake-toggle)
+    caffeine_toggle
+    ;;
+  caffeine-status|awake-status)
+    printf 'caffeine=%s active=%s\n' "$(cat "$caffeine_file" 2>/dev/null || printf off)" "$(caffeine_active && printf yes || printf no)"
+    ;;
   stop-quickshell)
     stop_quickshell_profiles
-    printf '%s\n' noctalia > "$state_file"
+    select_profile noctalia
     ;;
   stop)
     stop_quickshell_profiles
@@ -223,7 +405,14 @@ profiles:
   dotfiles          Experimental imported dotfiles Quickshell profile
   tide-island       Experimental Tide Island dynamic island profile
   asura-island      Standalone asura-island-shell profile from ~/Projects
+  vibeshell         Imported VibeShell profile
+  nandoroid         Imported Nandoroid shell profile
+  colorshell-ryo    AGS 3.1/Astal Colorshell Ryo profile
   waybar            Imported Waybar bar profile
+  caffeine-on       Keep the machine awake across shell switches
+  caffeine-off      Restore normal idle/sleep behavior
+  caffeine-toggle   Toggle persistent shell-switch caffeine mode
+  caffeine-status   Show persistent caffeine state
   stop-quickshell   Stop optional Quickshell profiles and keep Noctalia selected
   stop              Stop managed shell processes
   status            Show selected profile and live shell processes

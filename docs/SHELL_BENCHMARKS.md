@@ -1,6 +1,6 @@
 # Hyprland Shell Profile Checks
 
-Updated: 2026-06-19 11:34 IST
+Updated: 2026-06-21 11:58 IST
 
 Host: `asura-xs15`
 
@@ -29,6 +29,9 @@ from the desktop, so comparisons use direct process RSS.
 | Dotfiles | `/etc/xdg/quickshell/dotfiles` | `qs ipc ... call qsIpc toggleAppLauncher` | Experimental |
 | Ricelin pill | `/etc/xdg/quickshell/ricelin/pill` | `qs ipc ... call pill launcher <monitor>` | Experimental |
 | Caelestia | `/etc/xdg/quickshell/caelestia` | `caelestia shell drawers toggle launcher` | Experimental |
+| VibeShell | `/etc/xdg/quickshell/vibeshell` | `asura-vibeshell launcher` through `asura-shell-launcher` | Experimental Ricelin-inspired morphing notch shell |
+| Nandoroid | `/etc/xdg/quickshell/nandoroid` | `asura-nandoroid launcher` through `asura-shell-launcher` | Experimental, imported Quickshell shell |
+| Colorshell Ryo | `/etc/nixos/asura-xs15/ags-v3-colorshell-ryo` | `colorshell runner` through `asura-shell-launcher` | Experimental AGS 3.1/Astal shell imported from `colorshell-ryo` |
 
 `SUPER+A` remains profile-aware through `asura-shell-launcher`. Bare
 `SUPER_L`/`SUPER_R` release opens the Noctalia app launcher directly.
@@ -47,17 +50,23 @@ CPU is sampled from `/proc/<pid>/stat` after the shell has settled, where
 |---:|---|---:|---:|---:|---:|---:|---:|---|---|---|
 | 1 | Waybar import | 1 | 4000 | 91.5 | 0.000 | 91.5 | 0.000 | 6614/15687 | 2.12 2.48 2.45 | [waybar-vertical-pill-proof-20260619.png](../screenshots/waybar-vertical-pill-proof-20260619.png) |
 | 2 | Noctalia v5 | 1 | live | 144.1 | 2.000 | 168.6 | 2.000 | 6627/15687 | 2.15 2.50 2.46 | [bench-shell-noctalia-working-20260619-113414.png](../screenshots/bench-shell-noctalia-working-20260619-113414.png) |
-| 3 | Dotfiles | 1 | 4012 | 316.7 | 28.333 | 334.0 | 16.000 | 6897/15687 | 2.76 2.60 2.49 | [bench-shell-dotfiles-working-20260619-113414.png](../screenshots/bench-shell-dotfiles-working-20260619-113414.png) |
-| 4 | Tide Island | 1 | 4011 | 333.0 | 0.333 | 333.3 | 0.333 | 6700/15687 | 2.35 2.51 2.47 | [bench-shell-tide-island-working-20260619-113414.png](../screenshots/bench-shell-tide-island-working-20260619-113414.png) |
-| 5 | Ricelin pill | 1 | 4012 | 435.7 | 7.333 | 436.6 | 22.000 | 6982/15687 | 3.19 2.71 2.53 | [bench-shell-ricelin-working-20260619-113414.png](../screenshots/bench-shell-ricelin-working-20260619-113414.png) |
-| 6 | Caelestia | 1 | 4014 | 609.4 | 4.333 | 605.4 | 14.000 | 6865/15687 | 2.93 2.67 2.52 | [bench-shell-caelestia-working-20260619-113414.png](../screenshots/bench-shell-caelestia-working-20260619-113414.png) |
+| 3 | Colorshell Ryo | 2 | 4000 | 280.6 | 0.104 | 280.6 | 0.104 | 4820/15687 | 1.86 2.15 2.17 | [colorshell-ryo-still-works-20260621.png](../screenshots/colorshell-ryo-still-works-20260621.png) |
+| 4 | Dotfiles | 1 | 4012 | 316.7 | 28.333 | 334.0 | 16.000 | 6897/15687 | 2.76 2.60 2.49 | [bench-shell-dotfiles-working-20260619-113414.png](../screenshots/bench-shell-dotfiles-working-20260619-113414.png) |
+| 5 | Tide Island | 1 | 4011 | 333.0 | 0.333 | 333.3 | 0.333 | 6700/15687 | 2.35 2.51 2.47 | [bench-shell-tide-island-working-20260619-113414.png](../screenshots/bench-shell-tide-island-working-20260619-113414.png) |
+| 6 | VibeShell | 1 | 5000 | 405.0 | 0.938 | 405.0 | 0.938 | 4820/15687 | 1.86 2.15 2.17 | [vibeshell-launcher-20260621.png](../screenshots/vibeshell-launcher-20260621.png) |
+| 7 | Ricelin pill | 1 | 4012 | 435.7 | 7.333 | 436.6 | 22.000 | 6982/15687 | 3.19 2.71 2.53 | [bench-shell-ricelin-working-20260619-113414.png](../screenshots/bench-shell-ricelin-working-20260619-113414.png) |
+| 8 | Caelestia | 1 | 4014 | 609.4 | 4.333 | 605.4 | 14.000 | 6865/15687 | 2.93 2.67 2.52 | [bench-shell-caelestia-working-20260619-113414.png](../screenshots/bench-shell-caelestia-working-20260619-113414.png) |
 
 Result: Waybar is the lightest imported bar, but it is not a full shell.
 Selecting Waybar now stops Noctalia and other optional shell processes like the
 other switch profiles. Noctalia remains the recommended default full desktop
 shell. Tide Island is
 viable as an opt-in dynamic island profile because it settled at low CPU after
-startup. Dotfiles, Ricelin, and Caelestia are heavier experiments.
+startup. Colorshell Ryo is the lightest retained imported full-shell
+experiment in the 2026-06-21 spot check. VibeShell is visually richer and
+heavier than Colorshell, and now carries the Ricelin-inspired morphing notch
+and Ame bead experiment.
+Dotfiles, Ricelin, and Caelestia are heavier experiments.
 
 ## Proof Screenshots
 
@@ -73,6 +82,13 @@ after each capture.
 | Dotfiles launcher | [bench-shell-dotfiles-working-20260619-113414.png](../screenshots/bench-shell-dotfiles-working-20260619-113414.png) |
 | Ricelin launcher | [bench-shell-ricelin-working-20260619-113414.png](../screenshots/bench-shell-ricelin-working-20260619-113414.png) |
 | Caelestia launcher | [bench-shell-caelestia-working-20260619-113414.png](../screenshots/bench-shell-caelestia-working-20260619-113414.png) |
+| VibeShell rest notch | [vibeshell-rest-notch-20260621.png](../screenshots/vibeshell-rest-notch-20260621.png) |
+| VibeShell hover morph | [vibeshell-hover-morph-20260621.png](../screenshots/vibeshell-hover-morph-20260621.png) |
+| VibeShell Ricelin-style launcher | [vibeshell-launcher-20260621.png](../screenshots/vibeshell-launcher-20260621.png) |
+| VibeShell dashboard surface | [vibeshell-dashboard-20260621.png](../screenshots/vibeshell-dashboard-20260621.png) |
+| VibeShell power menu | [vibeshell-power-menu-20260621.png](../screenshots/vibeshell-power-menu-20260621.png) |
+| Colorshell Ryo runner/control surface | [colorshell-ryo-still-works-20260621.png](../screenshots/colorshell-ryo-still-works-20260621.png) |
+| Noctalia restored after tests | [noctalia-restored-20260621.png](../screenshots/noctalia-restored-20260621.png) |
 
 ## Validation
 
@@ -96,7 +112,7 @@ nix build /etc/nixos#nixosConfigurations.asura-xs15.config.system.build.toplevel
 Latest successful toplevel:
 
 ```text
-/nix/store/8ajdydm15dg48fnlxa598zg6lnx5gmg7-nixos-system-asura-xs15-26.11.20260616.567a49d
+/nix/store/7zm5kpr1r55qi1gqw8g7nkl97mk2apyz-nixos-system-asura-xs15-26.11.20260616.567a49d
 ```
 
 ## Commands
@@ -109,6 +125,9 @@ asura-quickshell-switch tide-island
 asura-quickshell-switch caelestia
 asura-quickshell-switch ricelin
 asura-quickshell-switch dotfiles
+asura-quickshell-switch colorshell-ryo
+asura-quickshell-switch vibeshell
+asura-quickshell-switch nandoroid
 asura-quickshell-switch stop-quickshell
 ```
 
