@@ -7,6 +7,7 @@ state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/asura-shell"
 state_file="$state_dir/current"
 caffeine_file="$state_dir/caffeine"
 caffeine_unit="asura-caffeine-inhibit.service"
+default_profile="${ASURA_SHELL_DEFAULT:-vibeshell}"
 ricelin_path="@RICELIN_QUICKSHELL_PATH@"
 dotfiles_path="@DOTFILES_QUICKSHELL_PATH@"
 caelestia_bin="@CAELESTIA_SHELL_BIN@"
@@ -330,7 +331,7 @@ start_waybar() {
 }
 
 status() {
-  printf 'selected=%s\n' "$(cat "$state_file" 2>/dev/null || printf noctalia)"
+  printf 'selected=%s\n' "$(cat "$state_file" 2>/dev/null || printf '%s' "$default_profile")"
   printf 'caffeine=%s active=%s\n' "$(cat "$caffeine_file" 2>/dev/null || printf off)" "$(caffeine_active && printf yes || printf no)"
   printf 'session=%s/%s\n' "${XDG_CURRENT_DESKTOP:-unknown}" "${XDG_SESSION_TYPE:-unknown}"
   printf 'processes:\n'
@@ -340,7 +341,23 @@ status() {
     || true
 }
 
+start_selected() {
+  local selected
+  selected="$(cat "$state_file" 2>/dev/null || printf '%s' "$default_profile")"
+
+  case "$selected" in
+    ""|default|status|stop|stop-quickshell|caffeine-*)
+      selected="$default_profile"
+      ;;
+  esac
+
+  exec "$0" "$selected"
+}
+
 case "$profile" in
+  autostart|start-selected|selected)
+    start_selected
+    ;;
   noctalia|noctalia-v5|default)
     start_noctalia
     ;;
@@ -385,7 +402,7 @@ case "$profile" in
     ;;
   stop-quickshell)
     stop_quickshell_profiles
-    select_profile noctalia
+    select_profile "$default_profile"
     ;;
   stop)
     stop_quickshell_profiles
@@ -400,13 +417,14 @@ case "$profile" in
 usage: asura-quickshell-switch <profile>
 
 profiles:
+  autostart         Start saved shell selection, defaulting to VibeShell
+  vibeshell         Default VibeShell Quickshell profile
   noctalia          Stable Noctalia v5 Hyprland shell
   caelestia         Experimental Caelestia Quickshell profile
   ricelin           Experimental Ricelin pill Quickshell profile
   dotfiles          Experimental imported dotfiles Quickshell profile
   tide-island       Experimental Tide Island dynamic island profile
   asura-island      Standalone asura-island-shell profile from ~/Projects
-  vibeshell         Imported VibeShell profile
   nandoroid         Imported Nandoroid shell profile
   colorshell-ryo    AGS 3.1/Astal Colorshell Ryo profile
   waybar            Imported Waybar bar profile

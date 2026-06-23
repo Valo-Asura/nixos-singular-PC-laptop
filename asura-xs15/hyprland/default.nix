@@ -25,6 +25,7 @@ let
     "asura-apply-cursor-theme"
     "asura-monitor-guard --daemon"
     "easyeffects --gapplication-service"
+    "asura-quickshell-switch autostart"
   ];
 
   # Old hand-written Lua config paths. These are not active config; Home

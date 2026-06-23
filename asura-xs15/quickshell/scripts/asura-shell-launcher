@@ -2,7 +2,7 @@
 set -euo pipefail
 
 state_file="${XDG_STATE_HOME:-$HOME/.local/state}/asura-shell/current"
-profile="$(cat "$state_file" 2>/dev/null || printf noctalia)"
+profile="$(cat "$state_file" 2>/dev/null || printf vibeshell)"
 mode="${1:-launcher}"
 
 caelestia_bin="@CAELESTIA_BIN@"

@@ -1034,17 +1034,21 @@ Item {
             Repeater {
                 model: Math.min(5, BluetoothService.friendlyDeviceList.length)
 
-                delegate: PanelRow {
-                    required property int index
-                    readonly property var device: BluetoothService.friendlyDeviceList[index]
-                    icon: device.connected ? Icons.bluetoothConnected : Icons.bluetooth
-                    title: device.name || "Bluetooth device"
-                    subtitle: device.connected ? "Connected" : (device.paired ? "Paired" : "Available")
-                    value: device.batteryAvailable ? String(device.battery) + "%" : ""
-                    active: device.connected
-                    onTriggered: device.connected ? BluetoothService.disconnectDevice(device.address) : BluetoothService.connectDevice(device.address)
-                }
-            }
+	                delegate: PanelRow {
+	                    required property int index
+	                    readonly property var device: BluetoothService.friendlyDeviceList[index]
+	                    icon: device && device.connected ? Icons.bluetoothConnected : Icons.bluetooth
+	                    title: device && device.name ? device.name : "Bluetooth device"
+	                    subtitle: device && device.connected ? "Connected" : (device && device.paired ? "Paired" : "Available")
+	                    value: device && device.batteryAvailable ? String(device.battery) + "%" : ""
+	                    active: device ? device.connected : false
+	                    onTriggered: {
+	                        if (!device)
+	                            return;
+	                        device.connected ? BluetoothService.disconnectDevice(device.address) : BluetoothService.connectDevice(device.address);
+	                    }
+	                }
+	            }
 
             Text {
                 visible: BluetoothService.friendlyDeviceList.length === 0

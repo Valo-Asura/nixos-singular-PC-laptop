@@ -606,16 +606,19 @@ in
       asuraColorshellRyo
     ];
 
-    systemd.user.services.noctalia.Service.KillMode = lib.mkForce "process";
+    systemd.user.services.noctalia = {
+      Service.KillMode = lib.mkForce "process";
+      Install.WantedBy = lib.mkForce [ ];
+    };
 
     xdg.configFile."asura-shell/profiles.txt".text = ''
+      vibeshell
       noctalia
       caelestia
       ricelin
       dotfiles
       tide-island
       asura-island
-      vibeshell
       nandoroid
       colorshell-ryo
       waybar

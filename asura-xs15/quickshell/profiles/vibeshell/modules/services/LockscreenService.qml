@@ -9,7 +9,7 @@ import qs.modules.globals
 QtObject {
     id: root
 
-    Process {
+    property Process lockCommand: Process {
         id: lockCommand
         command: ["vibeshell-safe-lock"]
         running: false

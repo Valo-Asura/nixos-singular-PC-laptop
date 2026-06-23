@@ -1,8 +1,9 @@
 # Hyprland Quickshell Profiles
 
 The old isolated MangoWM session has been removed from the active NixOS
-configuration. The useful shell experiments are now optional profiles for the
-normal `Noctalia + Hyprland` session.
+configuration. The useful shell experiments are now switchable profiles for the
+normal `Hyprland` session. VibeShell is the default shell; Noctalia remains the
+secondary stable fallback.
 
 ## Paths
 
@@ -28,12 +29,13 @@ normal `Noctalia + Hyprland` session.
 
 ```bash
 asura-quickshell-switch status
+asura-quickshell-switch autostart
+asura-quickshell-switch vibeshell
 asura-quickshell-switch noctalia
 asura-quickshell-switch caelestia
 asura-quickshell-switch ricelin
 asura-quickshell-switch dotfiles
 asura-quickshell-switch tide-island
-asura-quickshell-switch vibeshell
 asura-quickshell-switch nandoroid
 asura-quickshell-switch waybar
 asura-quickshell-switch colorshell-ryo
@@ -62,6 +64,8 @@ Live Hyprland proof screenshots:
 | VibeShell launcher via `asura-shell-launcher` | `screenshots/vibeshell-launcher-20260621.png` |
 | VibeShell dashboard via `vibeshell run dashboard` | `screenshots/vibeshell-dashboard-20260621.png` |
 | VibeShell power menu via `vibeshell run powermenu` | `screenshots/vibeshell-power-menu-20260621.png` |
+| VibeShell live after boot QML fix | `screenshots/vibeshell-live-after-bootfix-20260623.png` |
+| VibeShell final live check | `screenshots/vibeshell-live-final-20260623.png` |
 | Colorshell Ryo runner/control surface | `screenshots/colorshell-ryo-still-works-20260621.png` |
 | Noctalia restored after test | `screenshots/noctalia-restored-20260621.png` |
 
@@ -79,13 +83,19 @@ first.
 
 ## Default
 
-The default and recommended daily profile remains:
+The default profile is VibeShell. Hyprland starts the saved shell profile with
+`asura-quickshell-switch autostart`; when no state exists, the switcher chooses
+VibeShell.
+
+```bash
+asura-quickshell-switch vibeshell
+```
+
+Noctalia is kept as the secondary stable fallback:
 
 ```bash
 asura-quickshell-switch noctalia
 ```
-
-The optional profiles are for testing and screenshots.
 
 `waybar` is a left vertical pill bar-only profile. Switching to it stops
 Noctalia and the other optional shell processes, the same as the Quickshell

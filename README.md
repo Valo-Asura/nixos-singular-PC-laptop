@@ -2,7 +2,8 @@
 
 > [!WARNING]
 > NixOS configuration for the Colorful XS 22 / X15 XS laptop. It is
-> hardware-specific and optimized for a Hyprland/Noctalia workflow.
+> hardware-specific and optimized for a Hyprland/VibeShell workflow, with
+> Noctalia kept as the secondary fallback shell.
 
 ## Showcase
 
@@ -26,6 +27,10 @@
 | :--- | :--- | :--- |
 | ![VibeShell WIP rail](screenshots/vibeshell-wip-rest-patched-20260623.png) | ![VibeShell Wi-Fi panel](screenshots/vibeshell-click-wifi-panel-current-20260623.png) | ![VibeShell no dashboard icon](screenshots/vibeshell-no-dashboard-icon-20260623.png) |
 
+| VibeShell Live Boot Fix | VibeShell Final Live Check |
+| :--- | :--- |
+| ![VibeShell live after boot fix](screenshots/vibeshell-live-after-bootfix-20260623.png) | ![VibeShell final live check](screenshots/vibeshell-live-final-20260623.png) |
+
 ## Install
 
 ```bash
@@ -43,8 +48,8 @@ new commands should use `#asura-xs15`.
 | Area | Current setup |
 |---|---|
 | Host | `asura-xs15` |
-| Desktop | Hyprland `v0.55.3` from the official Hyprland flake plus Noctalia v5 shell |
-| Optional shells | Caelestia, Ricelin, Dotfiles, Tide Island, VibeShell, Nandoroid, Colorshell Ryo, and a left vertical pill Waybar profile are ported to the current Hyprland session through `asura-quickshell-switch`; MangoWM is removed |
+| Desktop | Hyprland `v0.55.3` from the official Hyprland flake plus VibeShell as the default shell |
+| Secondary shells | Noctalia v5 fallback plus Caelestia, Ricelin, Dotfiles, Tide Island, Nandoroid, Colorshell Ryo, and a left vertical pill Waybar profile are available through `asura-quickshell-switch`; MangoWM is removed |
 | Lockscreen | Hyprlock via `vibeshell-safe-lock`, using `screenshots/lockscreen.png`; |
 | File manager | Nautilus default, PCManFM-Qt available, admin launchers/scripts, Xarchiver as the only archive UI |
 | Theme | Dark GTK/libadwaita settings, Papirus-Dark icons, Bibata Modern Amber cursor at 24 px |
@@ -88,13 +93,14 @@ asura-screen-record-toggle status
 asura-screen-record-toggle toggle-pause
 asura-screenshot full         # shell-independent screenshot for Print/features
 asura-screenshot region       # region screenshot; also copies to clipboard
-asura-quickshell-switch status # selected Noctalia/Quickshell profile and live shell processes
-asura-quickshell-switch noctalia # restore the stable Noctalia + Hyprland shell
+asura-quickshell-switch status # selected shell profile and live shell processes
+asura-quickshell-switch autostart # start saved profile, defaulting to VibeShell
+asura-quickshell-switch vibeshell # restore the default VibeShell profile
+asura-quickshell-switch noctalia # restore the secondary Noctalia + Hyprland fallback shell
 asura-quickshell-switch dotfiles # test imported Dotfiles Quickshell profile
 asura-quickshell-switch tide-island # test Tide Island dynamic-island profile
 asura-quickshell-switch waybar # test imported Waybar profile
 asura-quickshell-switch colorshell-ryo # test imported Colorshell Ryo AGS/Astal profile
-asura-quickshell-switch vibeshell # test VibeShell WIP Ricelin-inspired morphing notch profile
 asura-quickshell-switch nandoroid # test imported Nandoroid profile
 asura-shell-launcher          # profile-aware launcher used by bare Super
 asura-shell-launcher /tools   # quick actions/toolbox route used by SUPER+A
