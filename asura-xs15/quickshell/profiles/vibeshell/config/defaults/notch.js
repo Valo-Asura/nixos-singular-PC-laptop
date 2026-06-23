@@ -2,5 +2,5 @@
 
 var data = {
     "theme": "default",
-    "hoverRegionHeight": 8
+    "hoverRegionHeight": 16
 }

@@ -142,12 +142,10 @@ StyledRect {
 
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
-                // Right click: toggle dashboard widgets tab
-                if (Visibilities.currentActiveModule === "dashboard") {
+                if (Visibilities.currentActiveModule === "launcher") {
                     Visibilities.setActiveModule("");
                 } else {
-                    Visibilities.setActiveModule("dashboard");
-                    GlobalStates.widgetsTabCurrentIndex = 0; // launcher/widgets
+                    Visibilities.setActiveModule("launcher");
                 }
             } else {
                 // Left click: play/pause

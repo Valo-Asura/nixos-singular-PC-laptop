@@ -14,11 +14,21 @@ MouseArea {
     required property var bar
     required property SystemTrayItem item
     property int trayItemSize: 20
+    readonly property string itemIdentity: [
+        item.id || "",
+        item.title || "",
+        item.icon || ""
+    ].join(" ").toLowerCase()
+    readonly property bool blockedTrayItem: itemIdentity.includes("easyeffects") || itemIdentity.includes("easy effects") || itemIdentity.includes("wwmm")
 
     acceptedButtons: Qt.LeftButton | Qt.RightButton
+    visible: !blockedTrayItem
+    enabled: !blockedTrayItem
     Layout.fillHeight: bar.orientation === "horizontal"
-    implicitWidth: trayItemSize
-    implicitHeight: trayItemSize
+    Layout.preferredWidth: blockedTrayItem ? 0 : trayItemSize
+    Layout.preferredHeight: blockedTrayItem ? 0 : trayItemSize
+    implicitWidth: blockedTrayItem ? 0 : trayItemSize
+    implicitHeight: blockedTrayItem ? 0 : trayItemSize
     
     onClicked: event => {
         switch (event.button) {

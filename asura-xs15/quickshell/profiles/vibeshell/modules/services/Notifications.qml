@@ -465,6 +465,20 @@ Singleton {
         });
     }
 
+    function showRecentPopups(limit) {
+        const maxItems = limit || 4;
+        const recent = root.list.slice(-maxItems);
+        recent.forEach(notif => {
+            notif.popup = true;
+            if (notif.timer) {
+                notif.timer.stop();
+                notif.timer.destroy();
+                notif.timer = null;
+            }
+        });
+        triggerListChange();
+    }
+
     function triggerListChange() {
         root.list = root.list.slice(0);
     }

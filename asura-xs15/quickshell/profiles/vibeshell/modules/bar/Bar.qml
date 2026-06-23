@@ -10,7 +10,6 @@ import qs.modules.theme
 import qs.modules.bar.clock
 import qs.modules.bar.systray
 import qs.modules.widgets.overview
-import qs.modules.widgets.dashboard
 import qs.modules.widgets.powermenu
 import qs.modules.widgets.presets
 import qs.modules.corners
@@ -410,11 +409,6 @@ PanelWindow {
                 // Get reference to the notch on this screen
                 readonly property var notchContainer: Visibilities.getNotchForScreen(panel.screen.name)
 
-                LauncherButton {
-                    id: launcherButton
-                    Layout.alignment: Qt.AlignVCenter
-                }
-
                 Workspaces {
                     orientation: panel.orientation
                     bar: QtObject {
@@ -610,12 +604,6 @@ PanelWindow {
                 anchors.topMargin: panel.barPadding + 14
                 anchors.bottomMargin: panel.barPadding + 14
                 spacing: panel.moduleGap
-
-                LauncherButton {
-                    id: launcherButtonVert
-                    Layout.preferredHeight: 36
-                    Layout.alignment: Qt.AlignHCenter
-                }
 
                 SysTray {
                     bar: panel

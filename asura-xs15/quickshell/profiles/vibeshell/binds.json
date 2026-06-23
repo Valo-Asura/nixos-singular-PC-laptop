@@ -41,28 +41,27 @@
         "modifiers": [
           "SUPER"
         ],
-        "key": "COMMA",
+        "key": "W",
         "dispatcher": "exec",
-        "argument": "vibeshell run dashboard-wallpapers",
+        "argument": "vibewall toggle",
         "flags": ""
       },
       "widgets": {
         "modifiers": [
           "SUPER"
         ],
-        "key": "SPACE",
+        "key": "A",
         "dispatcher": "exec",
-        "argument": "vibeshell run notch-launcher",
+        "argument": "asura-shell-launcher",
         "flags": ""
       }
     },
     "system": {
       "config": {
         "modifiers": [
-          "SUPER",
-          "SHIFT"
+          "SUPER"
         ],
-        "key": "C",
+        "key": "I",
         "dispatcher": "exec",
         "argument": "vibeshell run config",
         "flags": ""
@@ -107,7 +106,7 @@
         "modifiers": [],
         "key": "Print",
         "dispatcher": "exec",
-        "argument": "vibeshell run screenshot",
+        "argument": "asura-screenshot full",
         "flags": ""
       },
       "screenrecord": {
@@ -117,7 +116,7 @@
         ],
         "key": "R",
         "dispatcher": "exec",
-        "argument": "vibeshell run screenrecord",
+        "argument": "asura-screen-record-toggle",
         "flags": ""
       },
       "lens": {

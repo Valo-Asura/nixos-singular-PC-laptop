@@ -13,12 +13,13 @@ QtObject {
     property bool canRecordDirectly: true // Default optimistic
     property string lastRecordingFile: ""
     property string currentOutputDir: ""
-    readonly property string pidFile: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/vibeshell-gpu-screen-recorder.pid"
+    readonly property string runtimeDir: Quickshell.env("XDG_RUNTIME_DIR") || "/tmp"
+    readonly property string pidFile: runtimeDir + "/asura-screen-record.pid"
+    readonly property string fileFile: runtimeDir + "/asura-screen-record.file"
 
     property Process checkCapabilitiesProcess: Process {
         id: checkCapabilitiesProcess
-        // Check for setuid wrapper directly — reliable regardless of PATH
-        command: ["bash", "-c", "[ -u /run/wrappers/bin/gpu-screen-recorder ] && echo true || echo false"]
+        command: ["bash", "-lc", "command -v asura-screen-record-toggle >/dev/null 2>&1 && echo true || echo false"]
         running: true
         stdout: StdioCollector {
             onTextChanged: {
@@ -64,7 +65,7 @@ QtObject {
 
     property Process checkProcess: Process {
         id: checkProcess
-        command: ["bash", "-c", "pid_file=\"" + root.pidFile + "\"; [ -s \"$pid_file\" ] && pid=$(cat \"$pid_file\") && kill -0 \"$pid\" 2>/dev/null"]
+        command: ["bash", "-lc", "pid_file=" + shellQuote(root.pidFile) + "; if [ -s \"$pid_file\" ]; then pid=$(cat \"$pid_file\"); kill -0 \"$pid\" 2>/dev/null; else pgrep -u \"$(id -u)\" -x wf-recorder >/dev/null; fi"]
         onExited: exitCode => {
             var wasRecording = root.isRecording;
             root.isRecording = (exitCode === 0);
@@ -83,7 +84,7 @@ QtObject {
 
     property Process timeProcess: Process {
         id: timeProcess
-        command: ["bash", "-c", "pid_file=\"" + root.pidFile + "\"; if [ -s \"$pid_file\" ]; then pid=$(cat \"$pid_file\"); ps -o etime= -p \"$pid\" 2>/dev/null || true; fi"]
+        command: ["bash", "-lc", "pid_file=" + shellQuote(root.pidFile) + "; if [ -s \"$pid_file\" ]; then pid=$(cat \"$pid_file\"); ps -o etime= -p \"$pid\" 2>/dev/null || true; fi"]
         stdout: StdioCollector {
             onTextChanged: {
                 root.duration = text.trim();
@@ -126,44 +127,11 @@ QtObject {
     function startRecording(recordAudioOutput, recordAudioInput, mode, regionStr) {
         if (isRecording) return;
         
-        var outputDir = root.videosDir && root.videosDir.length > 0 ? root.videosDir : Quickshell.env("HOME") + "/Videos/Recordings";
-        var outputFile = outputDir + "/" + new Date().toISOString().replace(/[:.]/g, "-") + ".mkv";
+        var outputDir = Quickshell.env("HOME") + "/Videos/Screenrecords";
         root.currentOutputDir = outputDir;
-        root.lastRecordingFile = outputFile;
+        root.lastRecordingFile = "";
         root.lastError = "";
-
-        var cmd = "pid_file=" + shellQuote(root.pidFile) + "; rm -f \"$pid_file\"; ";
-        cmd += "gpu-screen-recorder -f 60 -q high -k h264 -c mkv -ac opus -cr full -fm cfr -keyint 2";
-        
-        // Window mode: -w based on mode
-        if (mode === "portal") {
-            cmd += " -w portal -restore-portal-session yes";
-        } else if (mode === "screen") {
-            cmd += " -w screen";
-        } else if (mode === "region") {
-            cmd += " -w region";
-            const normalizedRegion = normalizeRegion(regionStr);
-            if (normalizedRegion) {
-                cmd += " -region " + shellQuote(normalizedRegion);
-            }
-        }
-        
-        // Audio
-        var audioSources = [];
-        if (recordAudioOutput) audioSources.push("default_output");
-        if (recordAudioInput) audioSources.push("default_input");
-
-        if (audioSources.length === 1) {
-            cmd += " -a " + audioSources[0];
-        } else if (audioSources.length > 1) {
-            cmd += " -a \"" + audioSources.join("|") + "\"";
-        }
-        
-        cmd += " -o " + shellQuote(outputFile);
-        cmd += " & rec_pid=$!; printf '%s\\n' \"$rec_pid\" > \"$pid_file\"; wait \"$rec_pid\"; rc=$?; rm -f \"$pid_file\"; exit \"$rc\"";
-        
-        console.log("[ScreenRecorder] Starting with command: " + cmd);
-        startProcess.command = ["bash", "-c", cmd];
+        startProcess.command = ["asura-screen-record-toggle", "start"];
         
         prepareProcess.running = true;
     }
@@ -193,7 +161,7 @@ QtObject {
     // 3. Start recording (Foreground)
     property Process startProcess: Process {
         id: startProcess
-        command: ["bash", "-c", "echo 'Error: Command not set'"]
+        command: ["asura-screen-record-toggle", "start"]
         
         stdout: StdioCollector {
             onTextChanged: console.log("[ScreenRecorder] OUT: " + text)
@@ -208,12 +176,14 @@ QtObject {
         
         onExited: exitCode => {
             console.log("[ScreenRecorder] Exited with code: " + exitCode)
-            root.isRecording = false
-            root.duration = ""
-            if (exitCode !== 0 && exitCode !== 130 && exitCode !== 2) { // 2 is SIGINT sometimes
+            if (exitCode !== 0) {
+                root.isRecording = false
+                root.duration = ""
                 notifyErrorProcess.running = true
             } else {
-                notifySavedProcess.running = true
+                root.isRecording = true
+                fileReadProcess.running = true
+                checkProcess.running = true
             }
         }
     }
@@ -230,7 +200,7 @@ QtObject {
     
     property Process openVideosProcess: Process {
         id: openVideosProcess
-        command: ["xdg-open", root.videosDir]
+        command: ["xdg-open", root.currentOutputDir || (Quickshell.env("HOME") + "/Videos/Screenrecords")]
     }
 
     function openRecordingsFolder() {
@@ -239,6 +209,25 @@ QtObject {
 
     property Process stopProcess: Process {
         id: stopProcess
-        command: ["bash", "-c", "pid_file=\"" + root.pidFile + "\"; if [ -s \"$pid_file\" ]; then pid=$(cat \"$pid_file\"); kill -INT \"$pid\" 2>/dev/null || true; fi"]
+        command: ["asura-screen-record-toggle", "stop"]
+        onExited: {
+            fileReadProcess.running = true;
+            root.isRecording = false;
+            root.duration = "";
+            notifySavedProcess.running = true;
+        }
+    }
+
+    property Process fileReadProcess: Process {
+        id: fileReadProcess
+        command: ["bash", "-lc", "file_file=" + shellQuote(root.fileFile) + "; [ -s \"$file_file\" ] && cat \"$file_file\" || true"]
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: {
+                const value = text.trim();
+                if (value.length > 0)
+                    root.lastRecordingFile = value;
+            }
+        }
     }
 }

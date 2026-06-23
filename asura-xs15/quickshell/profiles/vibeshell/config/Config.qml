@@ -186,13 +186,13 @@ Singleton {
         adapter: JsonAdapter {
             property bool oledMode: false
             property bool lightMode: false
-            property int roundness: 16
+            property int roundness: 20
             property string font: "Roboto Condensed"
             property int fontSize: 14
             property string monoFont: "Iosevka Nerd Font Mono"
             property int monoFontSize: 14
             property bool tintIcons: false
-            property bool enableCorners: true
+            property bool enableCorners: false
             property int animDuration: 300
             property real shadowOpacity: 0.5
             property string shadowColor: "shadow"
@@ -1400,22 +1400,22 @@ Singleton {
                     }
                     property JsonObject wallpapers: JsonObject {
                         property list<string> modifiers: ["SUPER"]
-                        property string key: "COMMA"
+                        property string key: "W"
                         property string dispatcher: "exec"
-                        property string argument: "vibeshell run dashboard-wallpapers"
+                        property string argument: "vibewall toggle"
                     }
                     property JsonObject widgets: JsonObject {
                         property list<string> modifiers: ["SUPER"]
-                        property string key: "SPACE"
+                        property string key: "A"
                         property string dispatcher: "exec"
-                        property string argument: "vibeshell run notch-launcher"
+                        property string argument: "asura-shell-launcher"
                         property string flags: ""
                     }
                 }
                 property JsonObject system: JsonObject {
                     property JsonObject config: JsonObject {
-                        property list<string> modifiers: ["SUPER", "SHIFT"]
-                        property string key: "C"
+                        property list<string> modifiers: ["SUPER"]
+                        property string key: "I"
                         property string dispatcher: "exec"
                         property string argument: "vibeshell run config"
                         property string flags: ""
@@ -1452,14 +1452,14 @@ Singleton {
                         property list<string> modifiers: []
                         property string key: "Print"
                         property string dispatcher: "exec"
-                        property string argument: "vibeshell run screenshot"
+                        property string argument: "asura-screenshot full"
                         property string flags: ""
                     }
                     property JsonObject screenrecord: JsonObject {
                         property list<string> modifiers: ["SUPER", "SHIFT"]
                         property string key: "R"
                         property string dispatcher: "exec"
-                        property string argument: "vibeshell run screenrecord"
+                        property string argument: "asura-screen-record-toggle"
                         property string flags: ""
                     }
                     property JsonObject lens: JsonObject {
@@ -1492,17 +1492,17 @@ Singleton {
                     "emoji": { "modifiers": ["SUPER"], "key": "PERIOD", "dispatcher": "exec", "argument": "vibeshell run dashboard-emoji", "flags": "" },
                     "notes": { "modifiers": ["SUPER"], "key": "N", "dispatcher": "exec", "argument": "vibeshell run dashboard-notes", "flags": "" },
                     "tmux": { "modifiers": ["SUPER"], "key": "T", "dispatcher": "exec", "argument": "vibeshell run dashboard-tmux", "flags": "" },
-                    "wallpapers": { "modifiers": ["SUPER"], "key": "COMMA", "dispatcher": "exec", "argument": "vibeshell run dashboard-wallpapers", "flags": "" },
-                    "widgets": { "modifiers": ["SUPER"], "key": "SPACE", "dispatcher": "exec", "argument": "vibeshell run notch-launcher", "flags": "" }
+                    "wallpapers": { "modifiers": ["SUPER"], "key": "W", "dispatcher": "exec", "argument": "vibewall toggle", "flags": "" },
+                    "widgets": { "modifiers": ["SUPER"], "key": "A", "dispatcher": "exec", "argument": "asura-shell-launcher", "flags": "" }
                 },
                 "system": {
-                    "config": { "modifiers": ["SUPER", "SHIFT"], "key": "C", "dispatcher": "exec", "argument": "vibeshell run config", "flags": "" },
+                    "config": { "modifiers": ["SUPER"], "key": "I", "dispatcher": "exec", "argument": "vibeshell run config", "flags": "" },
                     "lockscreen": { "modifiers": ["SUPER"], "key": "L", "dispatcher": "exec", "argument": "vibeshell-safe-lock", "flags": "" },
                     "overview": { "modifiers": ["SUPER"], "key": "TAB", "dispatcher": "exec", "argument": "vibeshell run overview", "flags": "" },
                     "powermenu": { "modifiers": ["SUPER"], "key": "ESCAPE", "dispatcher": "exec", "argument": "vibeshell run powermenu", "flags": "" },
                     "tools": { "modifiers": ["SUPER"], "key": "S", "dispatcher": "exec", "argument": "vibeshell run tools", "flags": "" },
-                    "screenshot": { "modifiers": [], "key": "Print", "dispatcher": "exec", "argument": "vibeshell run screenshot", "flags": "" },
-                    "screenrecord": { "modifiers": ["SUPER", "SHIFT"], "key": "R", "dispatcher": "exec", "argument": "vibeshell run screenrecord", "flags": "" },
+                    "screenshot": { "modifiers": [], "key": "Print", "dispatcher": "exec", "argument": "asura-screenshot full", "flags": "" },
+                    "screenrecord": { "modifiers": ["SUPER", "SHIFT"], "key": "R", "dispatcher": "exec", "argument": "asura-screen-record-toggle", "flags": "" },
                     "lens": { "modifiers": ["SUPER", "SHIFT"], "key": "A", "dispatcher": "exec", "argument": "vibeshell run lens", "flags": "" },
                     "reload": { "modifiers": ["SUPER", "ALT"], "key": "B", "dispatcher": "exec", "argument": "vibeshell reload", "flags": "" },
                     "quit": { "modifiers": ["SUPER", "CTRL", "ALT"], "key": "B", "dispatcher": "exec", "argument": "vibeshell quit", "flags": "" }

@@ -22,6 +22,10 @@
 | :--- |
 | ![Vibewall transparent overlay](screenshots/vibewallrezero-transparent-overlay.png) |
 
+| VibeShell WIP Rail | VibeShell Wi-Fi Panel | VibeShell No-Dashboard Rail |
+| :--- | :--- | :--- |
+| ![VibeShell WIP rail](screenshots/vibeshell-wip-rest-patched-20260623.png) | ![VibeShell Wi-Fi panel](screenshots/vibeshell-click-wifi-panel-current-20260623.png) | ![VibeShell no dashboard icon](screenshots/vibeshell-no-dashboard-icon-20260623.png) |
+
 ## Install
 
 ```bash
@@ -90,10 +94,11 @@ asura-quickshell-switch dotfiles # test imported Dotfiles Quickshell profile
 asura-quickshell-switch tide-island # test Tide Island dynamic-island profile
 asura-quickshell-switch waybar # test imported Waybar profile
 asura-quickshell-switch colorshell-ryo # test imported Colorshell Ryo AGS/Astal profile
-asura-quickshell-switch vibeshell # test VibeShell Ricelin-inspired morphing notch profile
+asura-quickshell-switch vibeshell # test VibeShell WIP Ricelin-inspired morphing notch profile
 asura-quickshell-switch nandoroid # test imported Nandoroid profile
 asura-shell-launcher          # profile-aware launcher used by SUPER+A; bare Super opens Noctalia launcher
-asura-vibeshell run dashboard # VibeShell dashboard surface, after switching to the vibeshell profile
+asura-vibeshell run launcher  # VibeShell launcher surface, after switching to the vibeshell profile
+asura-vibeshell run config    # VibeShell settings surface
 asura-vibeshell run powermenu # VibeShell power island, after switching to the vibeshell profile
 kdeconnect-app                # pair with phone; install KDE Connect on the S24 too
 kdeconnect-cli --list-devices # verify phone discovery/pairing from terminal
@@ -276,6 +281,16 @@ Important carry-overs:
 - Lockscreen, wallpaper, launcher, clipboard, and session actions route through
   Noctalia IPC. Screenshots intentionally bypass shell IPC so proof captures
   keep working while optional shells or open panels are visible.
+- VibeShell is the current WIP replacement candidate for Noctalia v5, not the
+  stable default yet. The 2026-06-23 pass keeps the current dark theme defaults,
+  removes the dashboard icon from the active hover rail, hides EasyEffects from
+  the tray, routes the wallpaper icon to `vibewall toggle`, routes recorder
+  controls through `asura-screen-record-toggle`, and fixes stale stacked panel
+  ghosting by unmapping inactive hover surfaces.
+- VibeShell dashboard entry points are compatibility aliases only. Active
+  routes now open the launcher, settings, Vibewall, notes, Wi-Fi/settings, or
+  power surfaces directly. Some legacy dashboard QML files remain because
+  settings and lockscreen components still reuse their smaller widgets.
 - Wofi and Hyprlock are not active modules.
 - Chromium-family XDM integration uses the bundled extension folder at
   `/opt/xdman/chrome-extension`, local desktop launchers add

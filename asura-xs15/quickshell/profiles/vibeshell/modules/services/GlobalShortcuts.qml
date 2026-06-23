@@ -30,8 +30,8 @@ Item {
     }
 
     Process {
-        id: skwdProcess
-        command: ["skwd", "wall", "toggle"]
+        id: vibewallProcess
+        command: ["vibewall", "toggle"]
         running: false
     }
 
@@ -43,7 +43,7 @@ Item {
     function setCaffeine(next) {
         CaffeineService.inhibit = next;
         caffeineCommand.running = false;
-        caffeineCommand.command = ["asura-quickshell-switch", next ? "caffeine-on" : "caffeine-off"];
+        caffeineCommand.command = ["env", "ASURA_SHELL_QUIET=1", "asura-quickshell-switch", next ? "caffeine-on" : "caffeine-off"];
         caffeineCommand.running = true;
     }
 
@@ -59,34 +59,27 @@ Item {
             toggleNotchLauncher();
             break;
         case "dashboard":
-            toggleDashboardTab(0);
+            GlobalStates.settingsVisible = !GlobalStates.settingsVisible;
             break;
         case "dashboard-widgets":
-            toggleDashboardTab(0);
+            toggleNotchLauncher();
             break;
         case "dashboard-wallpapers":
-            skwdProcess.running = false;
-            skwdProcess.running = true;
+            vibewallProcess.running = false;
+            vibewallProcess.running = true;
             break;
         case "dashboard-kanban":
-            toggleDashboardTab(1);
+            GlobalStates.notesVisible = !GlobalStates.notesVisible;
             break;
         case "dashboard-pomodoro":
-            GlobalStates.widgetsTabCurrentIndex = 0;
-            toggleDashboardTab(2);
+            toggleNotchLauncher();
             break;
         case "dashboard-wifi":
-            if (Visibilities.currentActiveModule === "dashboard" && GlobalStates.dashboardCurrentTab === 0 && GlobalStates.widgetsTabCurrentIndex === 5) {
-                Visibilities.setActiveModule("");
-            } else {
-                GlobalStates.dashboardCurrentTab = 0;
-                GlobalStates.widgetsTabCurrentIndex = 5;
-                NetworkService.rescanWifi();
-                Visibilities.setActiveModule("dashboard");
-            }
+            NetworkService.rescanWifi();
+            GlobalStates.settingsVisible = true;
             break;
         case "dashboard-controls":
-            toggleDashboardTab(3);
+            GlobalStates.settingsVisible = !GlobalStates.settingsVisible;
             break;
         case "dashboard-clipboard":
             toggleDashboardWithPrefix(Config.prefix.clipboard + " ");
@@ -196,40 +189,6 @@ Item {
         }
     }
 
-    function toggleDashboardTab(tabIndex) {
-        const isActive = Visibilities.currentActiveModule === "dashboard";
-
-        // Special handling for widgets tab (launcher)
-        if (tabIndex === 0) {
-            if (isActive && GlobalStates.dashboardCurrentTab === 0 && GlobalStates.launcherSearchText === "") {
-                // Only toggle off if we're already in launcher without prefix
-                Visibilities.setActiveModule("");
-                return;
-            }
-
-            // Otherwise, always go to launcher (clear any prefix and ensure tab 0)
-            GlobalStates.dashboardCurrentTab = 0;
-            GlobalStates.launcherSearchText = "";
-            GlobalStates.launcherSelectedIndex = -1;
-            if (!isActive) {
-                Visibilities.setActiveModule("dashboard");
-            }
-            return;
-        }
-
-        // For other tabs, normal toggle behavior
-        if (isActive && GlobalStates.dashboardCurrentTab === tabIndex) {
-            Visibilities.setActiveModule("");
-            return;
-        }
-
-        GlobalStates.widgetsTabCurrentIndex = 0;
-        GlobalStates.dashboardCurrentTab = tabIndex;
-        if (!isActive) {
-            Visibilities.setActiveModule("dashboard");
-        }
-    }
-
     function toggleNotchLauncher() {
         const isActive = Visibilities.currentActiveModule === "launcher";
 
@@ -249,27 +208,22 @@ Item {
     }
 
     function toggleDashboardWithPrefix(prefix) {
-        const isActive = Visibilities.currentActiveModule === "dashboard";
+        const isActive = Visibilities.currentActiveModule === "launcher";
 
-        // Check if dashboard is already open with this prefix
-        if (isActive && GlobalStates.dashboardCurrentTab === 0 && GlobalStates.launcherSearchText === prefix) {
-            // Toggle off - close dashboard
+        if (isActive && GlobalStates.launcherSearchText === prefix) {
             Visibilities.setActiveModule("");
             GlobalStates.clearLauncherState();
             return;
         }
 
-        // Always go to widgets tab first
-        GlobalStates.dashboardCurrentTab = 0;
+        GlobalStates.launcherSelectedIndex = -1;
 
         if (!isActive) {
-            // Open dashboard first, then set prefix after a brief delay
-            Visibilities.setActiveModule("dashboard");
+            Visibilities.setActiveModule("launcher");
             Qt.callLater(() => {
                 GlobalStates.launcherSearchText = prefix;
             });
         } else {
-            // Dashboard already open, just set the prefix
             GlobalStates.launcherSearchText = prefix;
         }
     }
@@ -356,7 +310,7 @@ Item {
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-clipboard"
-        description: "Open dashboard clipboard (via prefix)"
+        description: "Open launcher clipboard prefix"
 
         onPressed: toggleDashboardWithPrefix(Config.prefix.clipboard + " ")
     }
@@ -364,7 +318,7 @@ Item {
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-emoji"
-        description: "Open dashboard emoji picker (via prefix)"
+        description: "Open launcher emoji prefix"
 
         onPressed: toggleDashboardWithPrefix(Config.prefix.emoji + " ")
     }
@@ -372,7 +326,7 @@ Item {
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-tmux"
-        description: "Open dashboard tmux sessions (via prefix)"
+        description: "Open launcher tmux prefix"
 
         onPressed: toggleDashboardWithPrefix(Config.prefix.tmux + " ")
     }
@@ -380,27 +334,27 @@ Item {
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-kanban"
-        description: "Open dashboard kanban tab"
+        description: "Open Vibeshell notes"
 
-        onPressed: toggleDashboardTab(1)
+        onPressed: GlobalStates.notesVisible = !GlobalStates.notesVisible
     }
 
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-pomodoro"
-        description: "Open dashboard Pomodoro tab"
+        description: "Open notch app launcher"
 
-        onPressed: toggleDashboardTab(2)
+        onPressed: toggleNotchLauncher()
     }
 
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-wallpapers"
-        description: "Open dashboard wallpapers tab"
+        description: "Open Vibewall"
 
         onPressed: {
-            skwdProcess.running = false;
-            skwdProcess.running = true;
+            vibewallProcess.running = false;
+            vibewallProcess.running = true;
         }
     }
 
@@ -415,9 +369,9 @@ Item {
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-controls"
-        description: "Open dashboard controls tab"
+        description: "Open Vibeshell settings"
 
-        onPressed: toggleDashboardTab(3)
+        onPressed: GlobalStates.settingsVisible = !GlobalStates.settingsVisible
     }
 
     // Media player shortcuts

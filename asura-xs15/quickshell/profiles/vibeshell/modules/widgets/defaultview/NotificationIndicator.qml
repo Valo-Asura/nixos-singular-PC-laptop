@@ -79,9 +79,7 @@ Item {
                     Notifications.silent = !Notifications.silent;
                     return;
                 }
-                GlobalStates.dashboardCurrentTab = 0;
-                GlobalStates.widgetsTabCurrentIndex = 0;
-                Visibilities.setActiveModule("dashboard");
+                Notifications.showRecentPopups();
             }
         }
     }

@@ -68,7 +68,7 @@ ActionGrid {
     onActionTriggered: action => {
         console.log("Action triggered:", action.command);
         if (action.command) {
-            actionProcess.command = ["/run/current-system/sw/bin/bash", "-c", action.command];
+            actionProcess.command = ["/run/current-system/sw/bin/env", "bash", "-lc", action.command];
             console.log("Starting process with command:", actionProcess.command);
             actionProcess.running = true;
         }

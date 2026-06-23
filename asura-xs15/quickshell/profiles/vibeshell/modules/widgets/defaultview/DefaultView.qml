@@ -14,6 +14,7 @@ Item {
 
     TapHandler {
         acceptedButtons: Qt.LeftButton
+        enabled: !root.expandedState
         gesturePolicy: TapHandler.ReleaseWithinBounds
         onTapped: {
             GlobalStates.launcherSearchText = "";
@@ -25,6 +26,12 @@ Item {
     Process {
         id: caffeineCommand
         running: false
+    }
+
+    Process {
+        id: vibewallCommand
+        running: false
+        command: ["vibewall", "toggle"]
     }
 
     Process {
@@ -41,7 +48,7 @@ Item {
     function setCaffeine(next) {
         CaffeineService.inhibit = next;
         caffeineCommand.running = false;
-        caffeineCommand.command = ["asura-quickshell-switch", next ? "caffeine-on" : "caffeine-off"];
+        caffeineCommand.command = ["env", "ASURA_SHELL_QUIET=1", "asura-quickshell-switch", next ? "caffeine-on" : "caffeine-off"];
         caffeineCommand.running = true;
     }
 
@@ -54,11 +61,33 @@ Item {
         hoveredActionPoint = Qt.point(p.x, p.y);
     }
 
-    function setHoverAction(index, item, x, y, panelIndex) {
+    function setHoverAction(index, item, x, y) {
         hoveredActionIndex = index;
-        if (panelIndex >= 0)
-            activePanelIndex = panelIndex;
         updateActionBead(item, x, y);
+    }
+
+    function togglePanel(index) {
+        hoverGraceTimer.stop();
+        hoverLatch = true;
+        activePanelIndex = activePanelIndex === index ? -1 : index;
+        if (activePanelIndex === 2)
+            NetworkService.rescanWifi();
+        if (activePanelIndex === 7 && BluetoothService.enabled)
+            BluetoothService.startDiscovery();
+    }
+
+    function showNotificationHistory() {
+        hoverGraceTimer.stop();
+        hoverLatch = true;
+        activePanelIndex = -1;
+        Notifications.showRecentPopups();
+    }
+
+    function openVibewall() {
+        vibewallCommand.running = false;
+        vibewallCommand.running = true;
+        hoverLatch = false;
+        activePanelIndex = -1;
     }
 
     function panelTitle(index) {
@@ -81,19 +110,19 @@ Item {
 
     function hoverHeightForPanel(index) {
         if (index === 1)
-            return 232;
+            return 236;
         if (index === 2)
-            return 352;
+            return 392;
         if (index === 3)
-            return 256;
+            return 284;
         if (index === 4)
-            return 164;
+            return 184;
         if (index === 5)
-            return 132;
+            return 198;
         if (index === 6)
-            return 334;
+            return 362;
         if (index === 7)
-            return 352;
+            return 392;
         return 0;
     }
 
@@ -197,7 +226,7 @@ Item {
 
     Timer {
         id: hoverGraceTimer
-        interval: 360
+        interval: 520
         repeat: false
         onTriggered: {
             hoverLatch = false;
@@ -208,7 +237,7 @@ Item {
 
     Timer {
         id: railReleaseTimer
-        interval: 220
+        interval: 420
         repeat: false
         onTriggered: root.railHovered = false
     }
@@ -228,7 +257,7 @@ Item {
     readonly property real mainRowContentWidth: 224 + beadSlotWidth + separator2.width + notifIndicator.width + (mainRow.spacing * 3) + mainRowMargin
     readonly property real mainRowHeight: Config.showBackground ? (Config.notchTheme === "island" ? 36 : 44) : (Config.notchTheme === "island" ? 36 : 40)
     readonly property real actionRailHeight: expandedState && !hasActiveNotifications ? 40 : 0
-    readonly property real hoverRailWidth: 238
+    readonly property real hoverRailWidth: 302
     readonly property real hoverPanelWidth: 386
     readonly property real hoverPanelHeight: expandedState && !hasActiveNotifications && activePanelIndex > 0 ? hoverHeightForPanel(activePanelIndex) : 0
     readonly property real notificationMinWidth: expandedState ? 420 : 320
@@ -350,22 +379,6 @@ Item {
                             height: 12
 
                             Rectangle {
-                                anchors.centerIn: parent
-                                width: 32
-                                height: 22
-                                radius: 11
-                                color: Colors.cyan
-                                opacity: Battery.isPluggedIn ? 0.14 : 0
-
-                                SequentialAnimation on opacity {
-                                    running: Battery.available && Battery.isPluggedIn
-                                    loops: Animation.Infinite
-                                    NumberAnimation { to: 0.24; duration: 520; easing.type: Easing.InOutSine }
-                                    NumberAnimation { to: 0.06; duration: 620; easing.type: Easing.InOutSine }
-                                }
-                            }
-
-                            Rectangle {
                                 anchors.left: parent.left
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: 19
@@ -463,7 +476,7 @@ Item {
                     panelIndex: 1
                     icon: Icons.link
                     active: activePanelIndex === 1
-                    onTriggered: root.activePanelIndex = root.activePanelIndex === 1 ? -1 : 1
+                    onTriggered: root.togglePanel(1)
                 }
 
                 HoverAction {
@@ -471,10 +484,7 @@ Item {
                     panelIndex: 2
                     icon: NetworkService.wifiEnabled ? NetworkService.wifiIconForStrength(NetworkService.networkStrength) : Icons.wifiOff
                     active: activePanelIndex === 2
-                    onTriggered: {
-                        root.activePanelIndex = root.activePanelIndex === 2 ? -1 : 2;
-                        NetworkService.rescanWifi();
-                    }
+                    onTriggered: root.togglePanel(2)
                 }
 
                 HoverAction {
@@ -482,7 +492,7 @@ Item {
                     panelIndex: 3
                     icon: Icons.clock
                     active: activePanelIndex === 3
-                    onTriggered: root.activePanelIndex = root.activePanelIndex === 3 ? -1 : 3
+                    onTriggered: root.togglePanel(3)
                 }
 
                 HoverAction {
@@ -490,7 +500,7 @@ Item {
                     panelIndex: 4
                     icon: Icons.timer
                     active: activePanelIndex === 4 || PomodoroService.running
-                    onTriggered: root.activePanelIndex = root.activePanelIndex === 4 ? -1 : 4
+                    onTriggered: root.togglePanel(4)
                 }
 
                 HoverAction {
@@ -498,10 +508,7 @@ Item {
                     panelIndex: 5
                     icon: Icons.caffeine
                     active: CaffeineService.inhibit
-                    onTriggered: {
-                        root.toggleCaffeine();
-                        root.activePanelIndex = 5;
-                    }
+                    onTriggered: root.togglePanel(5)
                 }
 
                 HoverAction {
@@ -509,7 +516,15 @@ Item {
                     panelIndex: 6
                     icon: Icons.cpu
                     active: activePanelIndex === 6
-                    onTriggered: root.activePanelIndex = root.activePanelIndex === 6 ? -1 : 6
+                    onTriggered: root.togglePanel(6)
+                }
+
+                HoverAction {
+                    actionIndex: 7
+                    panelIndex: -1
+                    icon: Icons.wallpapers
+                    active: false
+                    onTriggered: root.openVibewall()
                 }
             }
         }
@@ -518,7 +533,7 @@ Item {
             id: hoverPanelClip
             width: parent.width
             height: hoverPanelHeight
-            clip: false
+            clip: true
             visible: height > 0
 
             HoverHandler {
@@ -592,7 +607,7 @@ Item {
                         id: panelBody
                         width: parent.width
                         height: Math.max(1, hoverPanelLayout.height - 22 - 1 - (hoverPanelLayout.spacing * 2))
-                        clip: false
+                        clip: true
 
                         PanelSurface {
                             anchors.fill: parent
@@ -691,16 +706,16 @@ Item {
             onContainsMouseChanged: if (containsMouse) {
                 railReleaseTimer.stop();
                 root.railHovered = true;
-                root.setHoverAction(action.actionIndex, action, action.width / 2, action.height / 2, action.panelIndex)
+                root.setHoverAction(action.actionIndex, action, action.width / 2, action.height / 2)
             } else {
                 railReleaseTimer.restart();
             }
             onEntered: {
                 railReleaseTimer.stop();
                 root.railHovered = true;
-                root.setHoverAction(action.actionIndex, action, action.width / 2, action.height / 2, action.panelIndex);
+                root.setHoverAction(action.actionIndex, action, action.width / 2, action.height / 2);
             }
-            onPositionChanged: mouse => root.setHoverAction(action.actionIndex, actionMouse, mouse.x, mouse.y, action.panelIndex)
+            onPositionChanged: mouse => root.setHoverAction(action.actionIndex, actionMouse, mouse.x, mouse.y)
             onClicked: action.triggered()
         }
 
@@ -718,28 +733,16 @@ Item {
 
         property bool active: false
 
-        visible: opacity > 0.01
+        visible: active
+        enabled: active
+        clip: true
         opacity: active ? 1 : 0
-        y: active ? 0 : 8
-        scale: active ? 1 : 0.985
+        y: 0
+        scale: 1
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Motion.glide
-                easing.type: Easing.OutCubic
-            }
-        }
-
-        Behavior on y {
-            NumberAnimation {
-                duration: Motion.glide
-                easing.type: Easing.OutCubic
-            }
-        }
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Motion.glide
+                duration: Motion.fast
                 easing.type: Easing.OutCubic
             }
         }
@@ -883,7 +886,7 @@ Item {
                     subtitle: NetworkService.networkName || NetworkService.wifiStatus
                     value: NetworkService.networkStrength > 0 ? String(NetworkService.networkStrength) + "%" : ""
                     active: NetworkService.wifi
-                    onTriggered: root.activePanelIndex = 2
+                    onTriggered: root.togglePanel(2)
                 }
 
                 MiniSwitch {
@@ -925,7 +928,8 @@ Item {
                 title: "Inbox"
                 subtitle: Notifications.list.length > 0 ? Notifications.list[0].appName + " · " + (Notifications.list[0].summary || Notifications.list[0].body) : "Silence"
                 value: Notifications.list.length > 0 ? String(Notifications.list.length) : ""
-                showChevron: false
+                showChevron: true
+                onTriggered: root.showNotificationHistory()
             }
         }
     }

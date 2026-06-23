@@ -6,8 +6,8 @@ import Quickshell
 ToggleButton {
     id: wallpaperButton
     buttonIcon: Icons.wallpapers
-    tooltipText: "Wallpaper Manager (skwd)"
+    tooltipText: "Vibewall"
     onToggle: function () {
-        Quickshell.execDetached(["skwd", "wall", "toggle"]);
+        Quickshell.execDetached(["vibewall", "toggle"]);
     }
 }
