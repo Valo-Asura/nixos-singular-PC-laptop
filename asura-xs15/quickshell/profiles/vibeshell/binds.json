@@ -47,10 +47,8 @@
         "flags": ""
       },
       "widgets": {
-        "modifiers": [
-          "SUPER"
-        ],
-        "key": "A",
+        "modifiers": [],
+        "key": "SUPER_L",
         "dispatcher": "exec",
         "argument": "asura-shell-launcher",
         "flags": ""
@@ -97,9 +95,9 @@
         "modifiers": [
           "SUPER"
         ],
-        "key": "S",
+        "key": "A",
         "dispatcher": "exec",
-        "argument": "vibeshell run tools",
+        "argument": "asura-shell-launcher /tools",
         "flags": ""
       },
       "screenshot": {
@@ -942,6 +940,10 @@
       "keys": [
         {
           "modifiers": [],
+          "key": "F6"
+        },
+        {
+          "modifiers": [],
           "key": "XF86AudioRaiseVolume"
         }
       ],
@@ -961,6 +963,10 @@
     {
       "name": "Volume Down",
       "keys": [
+        {
+          "modifiers": [],
+          "key": "F5"
+        },
         {
           "modifiers": [],
           "key": "XF86AudioLowerVolume"
@@ -984,6 +990,10 @@
       "keys": [
         {
           "modifiers": [],
+          "key": "F3"
+        },
+        {
+          "modifiers": [],
           "key": "XF86AudioMute"
         }
       ],
@@ -1005,6 +1015,10 @@
       "keys": [
         {
           "modifiers": [],
+          "key": "F9"
+        },
+        {
+          "modifiers": [],
           "key": "XF86MonBrightnessUp"
         }
       ],
@@ -1024,6 +1038,10 @@
     {
       "name": "Brightness Down",
       "keys": [
+        {
+          "modifiers": [],
+          "key": "F8"
+        },
         {
           "modifiers": [],
           "key": "XF86MonBrightnessDown"

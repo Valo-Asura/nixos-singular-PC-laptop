@@ -40,9 +40,10 @@ asura-quickshell-switch colorshell-ryo
 asura-quickshell-switch stop-quickshell
 ```
 
-`asura-shell-launcher` opens the launcher for the selected profile. Hyprland
-binds `SUPER+A`, `SUPER+Period`, and `SUPER+SHIFT+E` through that helper.
-Bare `SUPER_L`/`SUPER_R` release opens the Noctalia app launcher directly.
+`asura-shell-launcher` opens the launcher for the selected profile. Bare
+`SUPER_L`/`SUPER_R` release uses that helper. `SUPER+A` calls
+`asura-shell-launcher /tools` for profile-aware quick actions.
+`SUPER+Period` and `SUPER+SHIFT+E` still route emoji through the same helper.
 
 ## Proof
 

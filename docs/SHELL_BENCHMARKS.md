@@ -33,8 +33,9 @@ from the desktop, so comparisons use direct process RSS.
 | Nandoroid | `/etc/xdg/quickshell/nandoroid` | `asura-nandoroid launcher` through `asura-shell-launcher` | Experimental, imported Quickshell shell |
 | Colorshell Ryo | `/etc/nixos/asura-xs15/ags-v3-colorshell-ryo` | `colorshell runner` through `asura-shell-launcher` | Experimental AGS 3.1/Astal shell imported from `colorshell-ryo` |
 
-`SUPER+A` remains profile-aware through `asura-shell-launcher`. Bare
-`SUPER_L`/`SUPER_R` release opens the Noctalia app launcher directly.
+Bare `SUPER_L`/`SUPER_R` release opens the active profile launcher through
+`asura-shell-launcher`. `SUPER+A` opens the active profile toolbox/control
+center through `asura-shell-launcher /tools`.
 
 ## Idle And Working Memory
 

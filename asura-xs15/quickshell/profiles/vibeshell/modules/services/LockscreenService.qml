@@ -9,12 +9,19 @@ import qs.modules.globals
 QtObject {
     id: root
 
+    Process {
+        id: lockCommand
+        command: ["vibeshell-safe-lock"]
+        running: false
+    }
+
     function toggle() {
-        GlobalStates.lockscreenVisible = !GlobalStates.lockscreenVisible;
+        lock();
     }
 
     function lock() {
-        GlobalStates.lockscreenVisible = true;
+        lockCommand.running = false;
+        lockCommand.running = true;
     }
 
     function unlock() {

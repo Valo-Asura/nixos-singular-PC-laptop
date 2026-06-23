@@ -45,7 +45,7 @@ new commands should use `#asura-xs15`.
 | Host | `asura-xs15` |
 | Desktop | Hyprland `v0.55.3` from the official Hyprland flake plus Noctalia v5 shell |
 | Optional shells | Caelestia, Ricelin, Dotfiles, Tide Island, VibeShell, Nandoroid, Colorshell Ryo, and a left vertical pill Waybar profile are ported to the current Hyprland session through `asura-quickshell-switch`; MangoWM is removed |
-| Lockscreen | Noctalia IPC lock using `screenshots/lockscreen.png`; |
+| Lockscreen | Hyprlock via `vibeshell-safe-lock`, using `screenshots/lockscreen.png`; |
 | File manager | Nautilus default, PCManFM-Qt available, admin launchers/scripts, Xarchiver as the only archive UI |
 | Theme | Dark GTK/libadwaita settings, Papirus-Dark icons, Bibata Modern Amber cursor at 24 px |
 | Wallpaper | `SUPER+W` and `SUPER+SHIFT+W` open native `vibewallREzero`; images apply through Noctalia IPC, videos through `mpvpaper`, live-video switches stop `hyprpaper`, and video wallpaper is suspended on battery |
@@ -96,10 +96,12 @@ asura-quickshell-switch waybar # test imported Waybar profile
 asura-quickshell-switch colorshell-ryo # test imported Colorshell Ryo AGS/Astal profile
 asura-quickshell-switch vibeshell # test VibeShell WIP Ricelin-inspired morphing notch profile
 asura-quickshell-switch nandoroid # test imported Nandoroid profile
-asura-shell-launcher          # profile-aware launcher used by SUPER+A; bare Super opens Noctalia launcher
+asura-shell-launcher          # profile-aware launcher used by bare Super
+asura-shell-launcher /tools   # quick actions/toolbox route used by SUPER+A
 asura-vibeshell run launcher  # VibeShell launcher surface, after switching to the vibeshell profile
 asura-vibeshell run config    # VibeShell settings surface
 asura-vibeshell run powermenu # VibeShell power island, after switching to the vibeshell profile
+vibeshell-safe-lock           # Hyprlock-backed shared lock command
 kdeconnect-app                # pair with phone; install KDE Connect on the S24 too
 kdeconnect-cli --list-devices # verify phone discovery/pairing from terminal
 hypr-kdeconnect-portal --self-test-motion 120 0 # verify laptop pointer injection after login

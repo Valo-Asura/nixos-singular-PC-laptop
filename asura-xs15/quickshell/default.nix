@@ -294,6 +294,22 @@ let
     text = builtins.readFile "${waybarRoot}/scripts/workspaces.sh";
   };
 
+  vibeshellSafeLock = pkgs.writeShellApplication {
+    name = "vibeshell-safe-lock";
+    runtimeInputs = with pkgs; [
+      coreutils
+      hyprlock
+      procps
+    ];
+    text = ''
+      if pgrep -u "$(id -u)" -x hyprlock >/dev/null 2>&1; then
+        exit 0
+      fi
+
+      exec hyprlock "$@"
+    '';
+  };
+
   asuraVibeshell = pkgs.writeShellApplication {
     name = "asura-vibeshell";
     runtimeInputs =
@@ -309,7 +325,9 @@ let
         glib
         gnugrep
         grim
+        hyprlock
         hyprpicker
+        hyprshutdown
         jq
         libnotify
         matugen
@@ -329,6 +347,7 @@ let
       ]
       ++ [
         hyprlandPackage
+        vibeshellSafeLock
         vibeshellFonts
         vibeshellPhosphorIcons
       ];
@@ -553,6 +572,7 @@ in
     asuraWaybarSysbar
     asuraWaybarWorkspaces
     asuraVibeshell
+    vibeshellSafeLock
     asuraNandoroid
     asuraColorshellRyo
     pkgs.quickshell
@@ -581,6 +601,7 @@ in
       asuraWaybarSysbar
       asuraWaybarWorkspaces
       asuraVibeshell
+      vibeshellSafeLock
       asuraNandoroid
       asuraColorshellRyo
     ];

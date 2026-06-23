@@ -3,7 +3,7 @@ let
   terminal = "${pkgs.foot}/bin/foot";
   browser = "${pkgs.brave}/bin/brave";
   editor = "code --ozone-platform=wayland";
-  lock = "/run/current-system/sw/bin/noctalia-safe-lock";
+  lock = "/run/current-system/sw/bin/vibeshell-safe-lock";
 in
 {
   wayland.windowManager.hyprland = {
@@ -17,13 +17,13 @@ in
         "SUPER, B, exec, ${browser}"
         "SUPER, T, exec, ${terminal}"
         "SUPER, C, exec, ${editor}"
-        "SUPER, A, exec, asura-shell-launcher"
+        "SUPER, A, exec, asura-shell-launcher /tools"
         "SUPER, E, exec, ${pkgs.telegram-desktop}/bin/telegram-desktop"
         "SUPER, W, exec, vibewall toggle"
         "SUPER, P, exec, asura-display-manager"
         "SUPER SHIFT, P, exec, asura-monitor-guard --restore"
         "CTRL, L, exec, ${lock}"
-        "SUPER, L, exec, noctalia msg session lock"
+        "SUPER, L, exec, ${lock}"
         "SUPER, V, exec, noctalia msg panel-toggle clipboard"
         "SUPER SHIFT, V, togglefloating"
         "SUPER SHIFT, C, exec, clipboard"
@@ -76,8 +76,8 @@ in
       ];
 
       bindr = [
-        "SUPER, SUPER_L, exec, noctalia msg panel-toggle launcher"
-        "SUPER, SUPER_R, exec, noctalia msg panel-toggle launcher"
+        "SUPER, SUPER_L, exec, asura-shell-launcher"
+        "SUPER, SUPER_R, exec, asura-shell-launcher"
       ];
 
       bindl = [
@@ -86,10 +86,14 @@ in
         ", XF86AudioNext, exec, ${pkgs.playerctl}/bin/playerctl next"
         ", XF86AudioPrev, exec, ${pkgs.playerctl}/bin/playerctl previous"
         ", switch:Lid Switch, exec, ${lock}"
-        ", F3, exec, noctalia msg volume-mute"
+        ", F3, exec, sound-toggle"
+        ", F5, exec, sound-down"
+        ", F6, exec, sound-up"
+        ", F8, exec, brightness-down"
+        ", F9, exec, brightness-up"
         ", F10, exec, asura-camera-app"
         ", F11, exec, asura-airplane-toggle"
-        ", F12, exec, noctalia msg nightlight-force-toggle"
+        ", F12, exec, night-shift"
       ];
 
       bindle = [

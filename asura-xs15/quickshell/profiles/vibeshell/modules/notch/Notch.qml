@@ -391,12 +391,105 @@ Item {
                     }
                 }
 
-                pushEnter: Transition {}
-                pushExit: Transition {}
-                popEnter: Transition {}
-                popExit: Transition {}
-                replaceEnter: Transition {}
-                replaceExit: Transition {}
+                pushEnter: Transition {
+                    NumberAnimation {
+                        property: "opacity"
+                        from: 0
+                        to: 1
+                        duration: Motion.standard
+                        easing.type: Easing.OutCubic
+                    }
+                    NumberAnimation {
+                        property: "y"
+                        from: 10
+                        to: 0
+                        duration: Motion.glide
+                        easing.type: Motion.easeMorph
+                        easing.bezierCurve: Motion.morphCurve
+                    }
+                }
+                pushExit: Transition {
+                    NumberAnimation {
+                        property: "opacity"
+                        from: 1
+                        to: 0
+                        duration: Motion.fast
+                        easing.type: Easing.OutCubic
+                    }
+                    NumberAnimation {
+                        property: "y"
+                        from: 0
+                        to: -8
+                        duration: Motion.fast
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                popEnter: Transition {
+                    NumberAnimation {
+                        property: "opacity"
+                        from: 0
+                        to: 1
+                        duration: Motion.standard
+                        easing.type: Easing.OutCubic
+                    }
+                    NumberAnimation {
+                        property: "y"
+                        from: -6
+                        to: 0
+                        duration: Motion.glide
+                        easing.type: Motion.easeMorph
+                        easing.bezierCurve: Motion.morphCurve
+                    }
+                }
+                popExit: Transition {
+                    NumberAnimation {
+                        property: "opacity"
+                        from: 1
+                        to: 0
+                        duration: Motion.standard
+                        easing.type: Easing.OutCubic
+                    }
+                    NumberAnimation {
+                        property: "y"
+                        from: 0
+                        to: 10
+                        duration: Motion.glide
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                replaceEnter: Transition {
+                    NumberAnimation {
+                        property: "opacity"
+                        from: 0
+                        to: 1
+                        duration: Motion.standard
+                        easing.type: Easing.OutCubic
+                    }
+                    NumberAnimation {
+                        property: "y"
+                        from: 8
+                        to: 0
+                        duration: Motion.glide
+                        easing.type: Motion.easeMorph
+                        easing.bezierCurve: Motion.morphCurve
+                    }
+                }
+                replaceExit: Transition {
+                    NumberAnimation {
+                        property: "opacity"
+                        from: 1
+                        to: 0
+                        duration: Motion.fast
+                        easing.type: Easing.OutCubic
+                    }
+                    NumberAnimation {
+                        property: "y"
+                        from: 0
+                        to: -6
+                        duration: Motion.fast
+                        easing.type: Easing.OutCubic
+                    }
+                }
             }
 
             Binding {

@@ -180,16 +180,14 @@ run)
 	}
 	;;
 lock)
-	# Trigger lockscreen via quickshell-ipc
-	PID=$(find_vibeshell_pid)
-	if [ -z "$PID" ]; then
-		echo "Error: Vibeshell is not running"
-		exit 1
+	if command -v vibeshell-safe-lock >/dev/null 2>&1; then
+		exec vibeshell-safe-lock
 	fi
-	"$QS_BIN" ipc --pid "$PID" call vibeshell run lockscreen 2>/dev/null || {
-		echo "Error: Could not activate lockscreen"
-		exit 1
-	}
+	if command -v hyprlock >/dev/null 2>&1; then
+		exec hyprlock
+	fi
+	echo "Error: hyprlock is not available"
+	exit 127
 	;;
 reload)
 	acquire_vibeshell_lock

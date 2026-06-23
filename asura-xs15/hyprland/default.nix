@@ -46,6 +46,7 @@ in
   imports = [
     ./animations.nix
     ./bindings.nix
+    ./hyprlock.nix
     ./polkitagent.nix
     ./hypridle.nix
   ];

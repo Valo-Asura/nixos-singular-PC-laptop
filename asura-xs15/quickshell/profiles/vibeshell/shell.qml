@@ -180,16 +180,6 @@ ShellRoot {
         sourceComponent: Dock {}
     }
 
-    // Secure lockscreen using WlSessionLock
-    WlSessionLock {
-        id: sessionLock
-        locked: GlobalStates.lockscreenVisible
-
-        LockScreen {
-            // WlSessionLockSurface creates automatically for each screen
-        }
-    }
-
     GlobalShortcuts {
         id: globalShortcuts
     }

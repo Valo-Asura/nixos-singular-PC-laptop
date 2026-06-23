@@ -1405,8 +1405,8 @@ Singleton {
                         property string argument: "vibewall toggle"
                     }
                     property JsonObject widgets: JsonObject {
-                        property list<string> modifiers: ["SUPER"]
-                        property string key: "A"
+                        property list<string> modifiers: []
+                        property string key: "SUPER_L"
                         property string dispatcher: "exec"
                         property string argument: "asura-shell-launcher"
                         property string flags: ""
@@ -1443,9 +1443,9 @@ Singleton {
                     }
                     property JsonObject tools: JsonObject {
                         property list<string> modifiers: ["SUPER"]
-                        property string key: "S"
+                        property string key: "A"
                         property string dispatcher: "exec"
-                        property string argument: "vibeshell run tools"
+                        property string argument: "asura-shell-launcher /tools"
                         property string flags: ""
                     }
                     property JsonObject screenshot: JsonObject {
@@ -1493,14 +1493,14 @@ Singleton {
                     "notes": { "modifiers": ["SUPER"], "key": "N", "dispatcher": "exec", "argument": "vibeshell run dashboard-notes", "flags": "" },
                     "tmux": { "modifiers": ["SUPER"], "key": "T", "dispatcher": "exec", "argument": "vibeshell run dashboard-tmux", "flags": "" },
                     "wallpapers": { "modifiers": ["SUPER"], "key": "W", "dispatcher": "exec", "argument": "vibewall toggle", "flags": "" },
-                    "widgets": { "modifiers": ["SUPER"], "key": "A", "dispatcher": "exec", "argument": "asura-shell-launcher", "flags": "" }
+                    "widgets": { "modifiers": [], "key": "SUPER_L", "dispatcher": "exec", "argument": "asura-shell-launcher", "flags": "" }
                 },
                 "system": {
                     "config": { "modifiers": ["SUPER"], "key": "I", "dispatcher": "exec", "argument": "vibeshell run config", "flags": "" },
                     "lockscreen": { "modifiers": ["SUPER"], "key": "L", "dispatcher": "exec", "argument": "vibeshell-safe-lock", "flags": "" },
                     "overview": { "modifiers": ["SUPER"], "key": "TAB", "dispatcher": "exec", "argument": "vibeshell run overview", "flags": "" },
                     "powermenu": { "modifiers": ["SUPER"], "key": "ESCAPE", "dispatcher": "exec", "argument": "vibeshell run powermenu", "flags": "" },
-                    "tools": { "modifiers": ["SUPER"], "key": "S", "dispatcher": "exec", "argument": "vibeshell run tools", "flags": "" },
+                    "tools": { "modifiers": ["SUPER"], "key": "A", "dispatcher": "exec", "argument": "asura-shell-launcher /tools", "flags": "" },
                     "screenshot": { "modifiers": [], "key": "Print", "dispatcher": "exec", "argument": "asura-screenshot full", "flags": "" },
                     "screenrecord": { "modifiers": ["SUPER", "SHIFT"], "key": "R", "dispatcher": "exec", "argument": "asura-screen-record-toggle", "flags": "" },
                     "lens": { "modifiers": ["SUPER", "SHIFT"], "key": "A", "dispatcher": "exec", "argument": "vibeshell run lens", "flags": "" },
@@ -2256,6 +2256,10 @@ Singleton {
                     "keys": [
                         {
                             "modifiers": [],
+                            "key": "F6"
+                        },
+                        {
+                            "modifiers": [],
                             "key": "XF86AudioRaiseVolume"
                         }
                     ],
@@ -2277,6 +2281,10 @@ Singleton {
                     "keys": [
                         {
                             "modifiers": [],
+                            "key": "F5"
+                        },
+                        {
+                            "modifiers": [],
                             "key": "XF86AudioLowerVolume"
                         }
                     ],
@@ -2296,6 +2304,10 @@ Singleton {
                 {
                     "name": "Mute Audio",
                     "keys": [
+                        {
+                            "modifiers": [],
+                            "key": "F3"
+                        },
                         {
                             "modifiers": [],
                             "key": "XF86AudioMute"
@@ -2321,6 +2333,10 @@ Singleton {
                     "keys": [
                         {
                             "modifiers": [],
+                            "key": "F9"
+                        },
+                        {
+                            "modifiers": [],
                             "key": "XF86MonBrightnessUp"
                         }
                     ],
@@ -2340,6 +2356,10 @@ Singleton {
                 {
                     "name": "Brightness Down",
                     "keys": [
+                        {
+                            "modifiers": [],
+                            "key": "F8"
+                        },
                         {
                             "modifiers": [],
                             "key": "XF86MonBrightnessDown"

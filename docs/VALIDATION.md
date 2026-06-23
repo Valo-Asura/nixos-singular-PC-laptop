@@ -86,7 +86,7 @@ vibewall apply /home/asura/Wallpaper/radha-krishna-5120x2880-14416.png
 test "$(noctalia msg wallpaper-get)" = "/home/asura/Wallpaper/radha-krishna-5120x2880-14416.png"
 timeout 8s vibewall picker --mode grid || test "$?" = 124
 vibewall-benchmark
-test ! -e /run/current-system/sw/bin/hyprlock
+test -x /run/current-system/sw/bin/hyprlock
 test ! -e /run/current-system/sw/bin/wofi
 systemd-analyze
 systemd-analyze critical-chain graphical.target

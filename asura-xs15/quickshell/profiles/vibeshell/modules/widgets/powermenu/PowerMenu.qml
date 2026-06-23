@@ -31,45 +31,44 @@ ActionGrid {
             icon: Icons.lock,
             text: "Lock",
             tooltip: "Lock Session",
-            command: "/run/current-system/sw/bin/vibeshell-safe-lock"
+            command: ["/run/current-system/sw/bin/vibeshell-safe-lock"]
         },
         {
             icon: Icons.suspend,
             text: "Sleep",
             tooltip: "Suspend",
-            command: "/run/current-system/sw/bin/systemctl suspend"
+            command: ["/run/current-system/sw/bin/systemctl", "suspend"]
         },
         {
             icon: Icons.logout,
             text: "Exit",
             tooltip: "Exit Hyprland",
-            command: "/run/current-system/sw/bin/hyprctl dispatch exit"
+            command: ["/run/current-system/sw/bin/hyprctl", "dispatch", "exit"]
         },
         {
             icon: Icons.reboot,
             text: "Reboot",
             tooltip: "Reboot",
-            command: "/run/current-system/sw/bin/systemctl reboot"
+            command: ["/run/current-system/sw/bin/systemctl", "reboot"]
         },
         {
             icon: Icons.firmware,
             text: "UEFI",
             tooltip: "Reboot to UEFI Firmware",
-            command: "/run/current-system/sw/bin/systemctl reboot --firmware-setup"
+            command: ["/run/current-system/sw/bin/systemctl", "reboot", "--firmware-setup"]
         },
         {
             icon: Icons.shutdown,
             text: "Off",
             tooltip: "Power Off",
-            command: "/run/current-system/sw/bin/systemctl poweroff"
+            command: ["/run/current-system/sw/bin/systemctl", "poweroff"]
         }
     ]
 
     onActionTriggered: action => {
-        console.log("Action triggered:", action.command);
+        console.log("Action triggered:", action.command.join(" "));
         if (action.command) {
-            actionProcess.command = ["/run/current-system/sw/bin/env", "bash", "-lc", action.command];
-            console.log("Starting process with command:", actionProcess.command);
+            actionProcess.command = action.command;
             actionProcess.running = true;
         }
         root.itemSelected();

@@ -40,6 +40,12 @@ Item {
         running: false
     }
 
+    Process {
+        id: lockCommand
+        command: ["vibeshell-safe-lock"]
+        running: false
+    }
+
     function setCaffeine(next) {
         CaffeineService.inhibit = next;
         caffeineCommand.running = false;
@@ -137,7 +143,8 @@ Item {
             GlobalStates.screenshotToolVisible = true;
             break;
         case "lockscreen":
-            GlobalStates.lockscreenVisible = true;
+            lockCommand.running = false;
+            lockCommand.running = true;
             break;
         case "gamemode-toggle":
             GameModeService.toggle();

@@ -94,6 +94,7 @@ PanelWindow {
 
     // Hover state with delay to prevent flickering
     property bool hoverActive: false
+    property bool closeHoldActive: false
 
     // Track if mouse is over any notch-related area
     readonly property bool isMouseOverNotch: notchMouseAreaHover.hovered || notchRegionHover.hovered
@@ -105,7 +106,7 @@ PanelWindow {
         
         // Show on interaction (hover, open, notifications)
         // This works even in fullscreen, ensuring hover always works
-        if (screenNotchOpen || hasActiveNotifications || hoverActive || barHoverActive) {
+        if (screenNotchOpen || hasActiveNotifications || hoverActive || closeHoldActive || barHoverActive) {
             return true;
         }
         
@@ -130,6 +131,16 @@ PanelWindow {
                 notchPanel.hoverActive = false;
                 notchContainer.hoverLatch = false;
             }
+        }
+    }
+
+    Timer {
+        id: closeHoldTimer
+        interval: Math.max(220, Config.animDuration)
+        repeat: false
+        onTriggered: {
+            notchPanel.closeHoldActive = false;
+            notchContainer.hoverLatch = false;
         }
     }
 
@@ -172,6 +183,9 @@ PanelWindow {
     }
 
     function resetToDefaultView() {
+        closeHoldTimer.restart();
+        closeHoldActive = true;
+        notchContainer.hoverLatch = true;
         activeNotchModule = "";
         if (notchContainer.stackView.depth > 1)
             notchContainer.stackView.pop();

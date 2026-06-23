@@ -3,6 +3,7 @@ set -euo pipefail
 
 state_file="${XDG_STATE_HOME:-$HOME/.local/state}/asura-shell/current"
 profile="$(cat "$state_file" 2>/dev/null || printf noctalia)"
+mode="${1:-launcher}"
 
 caelestia_bin="@CAELESTIA_BIN@"
 dotfiles_path="@DOTFILES_QUICKSHELL_PATH@"
@@ -62,15 +63,16 @@ open_asura_island() {
 }
 
 open_vibeshell() {
+  local target="${1:-notch-launcher}"
   if [ -p /tmp/vibeshell_ipc.pipe ]; then
-    if printf '%s\n' notch-launcher | timeout 0.25s tee /tmp/vibeshell_ipc.pipe >/dev/null 2>&1; then
+    if printf '%s\n' "$target" | timeout 0.25s tee /tmp/vibeshell_ipc.pipe >/dev/null 2>&1; then
       return 0
     fi
 
     rm -f /tmp/vibeshell_ipc.pipe 2>/dev/null || true
   fi
 
-  "$vibeshell_bin" run notch-launcher
+  "$vibeshell_bin" run "$target"
 }
 
 open_nandoroid() {
@@ -90,10 +92,37 @@ open_noctalia() {
   exec "$noctalia_bin" msg panel-toggle launcher "$@"
 }
 
+open_tools_noctalia() {
+  exec "$noctalia_bin" msg panel-toggle control-center "$@"
+}
+
+open_tools() {
+  case "$profile" in
+    vibeshell|vibe)
+      open_vibeshell tools || open_tools_noctalia "$@"
+      ;;
+    nandoroid|nandroid)
+      "$nandoroid_bin" quicksettings toggle || open_tools_noctalia "$@"
+      ;;
+    tide-island|tide)
+      open_tide_island || open_tools_noctalia "$@"
+      ;;
+    noctalia|noctalia-v5|unknown|*)
+      open_tools_noctalia "$@"
+      ;;
+  esac
+}
+
 open_waybar() {
   notify "Waybar has no launcher" "Switch back with: asura-quickshell-switch noctalia"
 }
 
+case "$mode" in
+  /tools|tools|quickactions|quick-actions)
+    shift || true
+    open_tools "$@"
+    ;;
+  *)
 case "$profile" in
   dotfiles|dotfiles-quickshell)
     open_dotfiles || {
@@ -147,5 +176,7 @@ case "$profile" in
     else
       open_noctalia "$@"
     fi
+    ;;
+esac
     ;;
 esac
