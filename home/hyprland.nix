@@ -1,8 +1,8 @@
-# Hyprland configuration
-{ inputs, pkgs, ... }:
+# Backward-compatible wrapper: shared Hyprland config now lives in home/desktop/hyprland.
+{ ... }:
 
 {
   imports = [
-    ../asura-xs15/hyprland
+    ./desktop/hyprland
   ];
 }

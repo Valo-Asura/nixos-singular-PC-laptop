@@ -1,6 +1,6 @@
 # Theming configuration
 # Stylix owns the base theme. We add a few desktop-specific keys on top.
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   stylix.targets.gtk.enable = false;
@@ -46,7 +46,16 @@
     };
 
     "org/gtk/settings/file-chooser" = {
+      location-mode = "filename-entry";
       show-hidden = true;
+      show-size-column = true;
+      show-type-column = true;
+      sort-directories-first = true;
+      startup-mode = "cwd";
+      window-size = lib.hm.gvariant.mkTuple [
+        1100
+        720
+      ];
     };
 
     "org/gnome/nautilus/preferences" = {

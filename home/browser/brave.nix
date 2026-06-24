@@ -57,7 +57,7 @@ in
   xdg.desktopEntries.brave-browser = {
     name = "Brave Web Browser";
     genericName = "Web Browser";
-    exec = "${pkgs.brave}/bin/brave --load-extension=${xdmExtensionPath} %U";
+    exec = "env GTK_USE_PORTAL=1 ${pkgs.brave}/bin/brave --load-extension=${xdmExtensionPath} %U";
     icon = "brave-browser";
     terminal = false;
     categories = [

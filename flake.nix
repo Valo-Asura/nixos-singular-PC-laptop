@@ -15,11 +15,16 @@
       url = "github:noctalia-dev/noctalia";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    skwd-wall = {
+      url = "github:liixini/skwd-wall";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.quickshell.inputs.nixpkgs.follows = "nixpkgs";
+      inputs.skwd-daemon.inputs.nixpkgs.follows = "nixpkgs";
+    };
     stylix = {
       url = "github:nix-community/stylix/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    colorshell-ryo.url = "path:./asura-xs15/ags-v3-colorshell-ryo";
 
     #hyprland plugins and related tools. These are not strictly necessary, but I use them and it's more convenient to have them here than to install them separately.
     hyprpaper.url = "github:hyprwm/hyprpaper";

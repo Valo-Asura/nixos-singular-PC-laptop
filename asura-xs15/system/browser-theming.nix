@@ -1,6 +1,22 @@
-# Chromium Browser Theming and Thumbnail Support
+# Chromium Browser Theming, XDM Integration, and Thumbnail Support
 { pkgs, ... }:
 
+let
+  xdmExtensionPath = "/opt/xdman/chrome-extension";
+  chromiumManagedPolicy = ''
+    {
+      "RestoreOnStartup": 1,
+      "ExtensionInstallSources": [
+        "file://${xdmExtensionPath}/*"
+      ],
+      "ExtensionSettings": {
+        "*": {
+          "installation_mode": "allowed"
+        }
+      }
+    }
+  '';
+in
 {
   environment.sessionVariables = {
     MOZ_USE_XINPUT2 = "1";
@@ -23,29 +39,13 @@
   ];
 
   environment.etc = {
-    "opt/chrome/policies/managed/session-restore.json".text = ''
-      {
-        "RestoreOnStartup": 1
-      }
-    '';
+    "opt/chrome/policies/managed/asura-xdm-integration.json".text = chromiumManagedPolicy;
 
-    "chromium/policies/managed/session-restore.json".text = ''
-      {
-        "RestoreOnStartup": 1
-      }
-    '';
+    "chromium/policies/managed/asura-xdm-integration.json".text = chromiumManagedPolicy;
 
-    "brave/policies/managed/session-restore.json".text = ''
-      {
-        "RestoreOnStartup": 1
-      }
-    '';
+    "brave/policies/managed/asura-xdm-integration.json".text = chromiumManagedPolicy;
 
-    "helium/policies/managed/session-restore.json".text = ''
-      {
-        "RestoreOnStartup": 1
-      }
-    '';
+    "helium/policies/managed/asura-xdm-integration.json".text = chromiumManagedPolicy;
   };
 
   environment.systemPackages = with pkgs; [

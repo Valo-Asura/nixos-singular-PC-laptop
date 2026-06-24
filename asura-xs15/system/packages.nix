@@ -660,16 +660,16 @@ in
   ];
 
   systemd.user.services.xdman = {
-    description = "Xtreme Download Manager on-demand browser bridge";
+    description = "Xtreme Download Manager browser monitor bridge";
     after = [ "graphical-session.target" ];
     partOf = [ "graphical-session.target" ];
-    wantedBy = lib.mkForce [ ];
+    wantedBy = [ "graphical-session.target" ];
     unitConfig = {
       StartLimitBurst = 3;
       StartLimitIntervalSec = 60;
     };
     serviceConfig = {
-      ExecStart = "${xdmanGtk}/bin/xdman";
+      ExecStart = "${xdmanGtk}/bin/xdman --background";
       Restart = "on-failure";
       RestartSec = 15;
       Environment = "GDK_PIXBUF_MODULE_FILE=${pkgs.librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache";

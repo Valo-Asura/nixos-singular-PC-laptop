@@ -259,14 +259,19 @@ Item {
     readonly property real actionRailHeight: expandedState && !hasActiveNotifications ? 40 : 0
     readonly property real hoverRailWidth: 302
     readonly property real hoverPanelWidth: 386
-    readonly property real hoverPanelHeight: expandedState && !hasActiveNotifications && activePanelIndex > 0 ? hoverHeightForPanel(activePanelIndex) : 0
+    readonly property real targetHoverPanelHeight: expandedState && !hasActiveNotifications && activePanelIndex > 0 ? hoverHeightForPanel(activePanelIndex) : 0
+    property real hoverPanelHeight: targetHoverPanelHeight
     readonly property real notificationMinWidth: expandedState ? 420 : 320
     readonly property real notificationContainerHeight: notificationView.implicitHeight + notificationPaddingTop + notificationPaddingBottom
+    readonly property real targetImplicitWidth: Math.round(hasActiveNotifications ? Math.max(notificationMinWidth + (notificationPadding * 2), mainRowContentWidth) : Math.max(mainRowContentWidth, expandedState ? Math.max(hoverRailWidth, hoverPanelWidth) : 0))
+    readonly property real targetImplicitHeight: hasActiveNotifications ? mainRowHeight + notificationContainerHeight : mainRowHeight + actionRailHeight + hoverPanelHeight
 
-    implicitWidth: Math.round(hasActiveNotifications ? Math.max(notificationMinWidth + (notificationPadding * 2), mainRowContentWidth) : Math.max(mainRowContentWidth, expandedState ? Math.max(hoverRailWidth, hoverPanelWidth) : 0))
-    implicitHeight: hasActiveNotifications ? mainRowHeight + notificationContainerHeight : mainRowHeight + actionRailHeight + hoverPanelHeight
+    implicitWidth: targetImplicitWidth
+    implicitHeight: targetImplicitHeight
 
-    Behavior on implicitWidth {
+    onTargetHoverPanelHeightChanged: hoverPanelHeight = targetHoverPanelHeight
+
+    Behavior on hoverPanelHeight {
         enabled: Config.animDuration > 0
         NumberAnimation {
             duration: Motion.morph
@@ -275,7 +280,7 @@ Item {
         }
     }
 
-    Behavior on implicitHeight {
+    Behavior on implicitWidth {
         enabled: Config.animDuration > 0
         NumberAnimation {
             duration: Motion.morph
@@ -733,17 +738,26 @@ Item {
 
         property bool active: false
 
-        visible: active
+        visible: active || opacity > 0.01
         enabled: active
         clip: true
         opacity: active ? 1 : 0
-        y: 0
+        y: active ? 0 : 8
         scale: 1
+        z: active ? 2 : 1
 
         Behavior on opacity {
             NumberAnimation {
                 duration: Motion.fast
                 easing.type: Easing.OutCubic
+            }
+        }
+
+        Behavior on y {
+            NumberAnimation {
+                duration: Motion.glide
+                easing.type: Motion.easeMorph
+                easing.bezierCurve: Motion.morphCurve
             }
         }
     }

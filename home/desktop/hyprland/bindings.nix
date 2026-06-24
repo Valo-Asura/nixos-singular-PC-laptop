@@ -1,0 +1,121 @@
+# Shared Home Manager module: common Hyprland keybindings.
+{ pkgs, ... }:
+let
+  terminal = "${pkgs.foot}/bin/foot";
+  browser = "${pkgs.brave}/bin/brave";
+  editor = "code --ozone-platform=wayland";
+  lock = "/run/current-system/sw/bin/vibeshell-safe-lock";
+in
+{
+  wayland.windowManager.hyprland = {
+    settings = {
+      bind = [
+        "SUPER, Q, killactive"
+        "SUPER, H, exit"
+        "SUPER, F, exec, asura-file-manager \"$HOME\""
+        "SUPER, G, togglefloating"
+        "SUPER, J, layoutmsg, togglesplit"
+        "SUPER, B, exec, ${browser}"
+        "SUPER, T, exec, ${terminal}"
+        "SUPER, C, exec, ${editor}"
+        "SUPER, A, exec, asura-shell-launcher /tools"
+        "SUPER, E, exec, ${pkgs.telegram-desktop}/bin/telegram-desktop"
+        "SUPER, W, exec, skwd-wall"
+        "SUPER, P, exec, asura-display-manager"
+        "SUPER SHIFT, P, exec, asura-monitor-guard --restore"
+        "CTRL, L, exec, ${lock}"
+        "SUPER, L, exec, ${lock}"
+        "SUPER, V, exec, noctalia msg panel-toggle clipboard"
+        "SUPER SHIFT, V, togglefloating"
+        "SUPER SHIFT, C, exec, clipboard"
+        "SUPER SHIFT, E, exec, asura-shell-launcher /emo"
+        "SUPER SHIFT, S, exec, asura-screenshot region"
+        "SUPER SHIFT, W, exec, skwd-wall"
+        "SUPER SHIFT, R, exec, /run/current-system/sw/bin/asura-screen-record-toggle"
+        "SUPER SHIFT, X, exec, asura-screenshot region-edit"
+        "SUPER, F2, exec, night-shift"
+        "SUPER, N, exec, noctalia msg panel-toggle control-center"
+        "SUPER, D, exec, noctalia msg panel-toggle control-center"
+        "SUPER, I, exec, noctalia msg settings-toggle"
+        "CTRL ALT, Delete, exec, noctalia msg session logout"
+        "SUPER, BackSpace, exec, noctalia msg panel-toggle session"
+        "SUPER, Period, exec, asura-shell-launcher /emo"
+        "CTRL SUPER, R, exec, noctalia msg config-reload"
+        ", Print, exec, asura-screenshot full"
+        "SHIFT, Print, exec, asura-screenshot region"
+        "SUPER, Print, exec, asura-screenshot output"
+        "SUPER SHIFT, Print, exec, asura-screenshot region-edit"
+        "SUPER, left, movefocus, l"
+        "SUPER, right, movefocus, r"
+        "SUPER, up, movefocus, u"
+        "SUPER, down, movefocus, d"
+        "ALT, Tab, cyclenext"
+        "ALT SHIFT, Tab, cyclenext, prev"
+        "SUPER, Tab, cyclenext"
+        "SUPER SHIFT, Tab, submap, resize"
+      ]
+      ++ (builtins.concatLists (
+        builtins.genList (
+          i:
+          let
+            ws = i + 1;
+          in
+          [
+            "SUPER, ${toString ws}, workspace, ${toString ws}"
+            "SUPER SHIFT, ${toString ws}, movetoworkspace, ${toString ws}"
+          ]
+        ) 9
+      ))
+      ++ [
+        "SUPER, 0, workspace, 10"
+        "SUPER SHIFT, 0, movetoworkspace, 10"
+      ];
+
+      bindm = [
+        "SUPER, mouse:272, movewindow"
+        "SUPER, mouse:273, resizewindow"
+      ];
+
+      bindr = [
+        "SUPER, SUPER_L, exec, asura-shell-launcher"
+        "SUPER, SUPER_R, exec, asura-shell-launcher"
+      ];
+
+      bindl = [
+        ", XF86AudioMute, exec, sound-toggle"
+        ", XF86AudioPlay, exec, ${pkgs.playerctl}/bin/playerctl play-pause"
+        ", XF86AudioNext, exec, ${pkgs.playerctl}/bin/playerctl next"
+        ", XF86AudioPrev, exec, ${pkgs.playerctl}/bin/playerctl previous"
+        ", switch:Lid Switch, exec, ${lock}"
+        ", F3, exec, sound-toggle"
+        ", F5, exec, sound-down"
+        ", F6, exec, sound-up"
+        ", F8, exec, brightness-down"
+        ", F9, exec, brightness-up"
+        ", F10, exec, asura-camera-app"
+        ", F11, exec, asura-airplane-toggle"
+        ", F12, exec, night-shift"
+      ];
+
+      bindle = [
+        ", XF86AudioRaiseVolume, exec, sound-up"
+        ", XF86AudioLowerVolume, exec, sound-down"
+        ", XF86MonBrightnessUp, exec, brightness-up"
+        ", XF86MonBrightnessDown, exec, brightness-down"
+      ];
+    };
+
+    submaps.resize.settings = {
+      binde = [
+        ", right, resizeactive, 30 0"
+        ", left, resizeactive, -30 0"
+        ", up, resizeactive, 0 -30"
+        ", down, resizeactive, 0 30"
+      ];
+      bind = [
+        ", escape, submap, reset"
+        "SUPER SHIFT, Tab, submap, reset"
+      ];
+    };
+  };
+}

@@ -1,17 +1,17 @@
-# Home Manager configuration
+# Shared Home Manager entrypoint: common user config for all Asura hosts.
 { inputs, pkgs, ... }:
 
 {
   imports = [
-    ./application.nix
-    ./hyprland.nix
-    ./theming.nix
-    ./browser
-    ./aimemory.nix
-    ./programs
-    ./shell
-    ./vscode
-    ./templates
+    ./shared/apps.nix
+    ./shared/browser.nix
+    ./shared/ai-memory.nix
+    ./shared/programs.nix
+    ./shared/shell.nix
+    ./shared/vscode.nix
+    ./shared/templates.nix
+    ./desktop/hyprland
+    ./desktop/theming
   ];
 
   home = {

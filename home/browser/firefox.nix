@@ -13,8 +13,14 @@
         default_area = "menupanel";
         private_browsing = true;
       };
+      # XDM 8.x uses the v8 helper. The older browser-mon@xdman add-on still
+      # installs from AMO, but it does not talk to the 8.x localhost monitor
+      # reliably and creates a duplicate extension in Firefox.
       "browser-mon@xdman.sourceforge.net" = {
-        install_url = "https://addons.mozilla.org/firefox/downloads/latest/xdm-browser-monitor/latest.xpi";
+        installation_mode = "blocked";
+      };
+      "xdm-v8-browser-helper@subhra74.github.io" = {
+        install_url = "https://addons.mozilla.org/firefox/downloads/file/4095144/xdm_browser_monitor_v8-3.4.xpi";
         installation_mode = "force_installed";
         default_area = "menupanel";
         private_browsing = true;
@@ -34,6 +40,7 @@
         "browser.visited_color" = "#ff00ff";
         "privacy.trackingprotection.enabled" = true;
         "dom.security.https_only_mode" = true;
+        "widget.use-xdg-desktop-portal.file-picker" = 1;
         "browser.cache.disk.enable" = true;
         "browser.startup.page" = 3;
         "browser.sessionstore.resume_from_crash" = true;

@@ -274,6 +274,17 @@ in
     '';
   };
 
+  xdg.configFile."autostart/xdm-app.desktop" = {
+    force = true;
+    text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=Xtreme Download Manager
+      Comment=Started by the xdman systemd user service
+      Hidden=true
+    '';
+  };
+
   xdg.mimeApps = {
     enable = true;
     defaultApplications = desktopDefaults;

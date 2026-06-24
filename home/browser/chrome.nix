@@ -33,7 +33,7 @@ in
   xdg.desktopEntries.google-chrome = {
     name = "Google Chrome";
     genericName = "Web Browser";
-    exec = "${pkgs.google-chrome}/bin/google-chrome-stable --load-extension=${xdmExtensionPath} %U";
+    exec = "env GTK_USE_PORTAL=1 ${pkgs.google-chrome}/bin/google-chrome-stable --load-extension=${xdmExtensionPath} %U";
     icon = "google-chrome";
     terminal = false;
     categories = [
@@ -47,7 +47,7 @@ in
   xdg.desktopEntries.chromium-browser = {
     name = "Chromium";
     genericName = "Web Browser";
-    exec = "${pkgs.chromium}/bin/chromium --load-extension=${xdmExtensionPath} %U";
+    exec = "env GTK_USE_PORTAL=1 ${pkgs.chromium}/bin/chromium --load-extension=${xdmExtensionPath} %U";
     icon = "chromium";
     terminal = false;
     categories = [
