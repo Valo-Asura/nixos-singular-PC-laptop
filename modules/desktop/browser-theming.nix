@@ -3,6 +3,6 @@
 
 {
   imports = [
-    ../../asura-xs15/system/browser-theming.nix
+    ./sources/browser-theming.nix
   ];
 }

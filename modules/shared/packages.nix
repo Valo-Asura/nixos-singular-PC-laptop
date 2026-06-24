@@ -3,6 +3,6 @@
 
 {
   imports = [
-    ../../asura-xs15/system/packages.nix
+    ./sources/packages.nix
   ];
 }

@@ -2,7 +2,7 @@
 { ... }:
 
 let
-  logoImage = ../../../asura-xs15/assets/sans.png;
+  logoImage = ../../../assets/sans.png;
   cfg = {
     "$schema" = "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json";
     logo = {

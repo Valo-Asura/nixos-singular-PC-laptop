@@ -3,6 +3,8 @@
 /.direnv
 /.cache
 /.tmp
+/.codex-backups
+/.codex-backups/*
 
 *.log
 *.tmp

@@ -6,7 +6,7 @@
 }:
 
 let
-  logoImage = "${../../../asura-xs15/assets/sans.png}";
+  logoImage = "${../../../assets/sans.png}";
   warpIcon = pkgs.writeText "dev.warp.Warp.svg" ''
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
       <rect width="128" height="128" rx="28" fill="${colors.base00}"/>

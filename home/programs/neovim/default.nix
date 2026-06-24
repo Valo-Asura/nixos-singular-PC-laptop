@@ -2,7 +2,7 @@
 { pkgs, ... }:
 
 let
-  assetsDir = toString ../../../asura-xs15/assets;
+  assetsDir = toString ../../../assets;
   lua =
     # lua
     ''

@@ -3,6 +3,6 @@
 
 {
   imports = [
-    ../../asura-xs15/system/mysql.nix
+    ./sources/mysql.nix
   ];
 }

@@ -3,9 +3,9 @@
 Run these after editing the flake:
 
 ```bash
-nix flake check
+nix flake check --no-build
 nix build /etc/nixos#nixosConfigurations.asura-xs15.config.system.build.toplevel --no-link
-sudo nixos-rebuild dry-build --flake /etc/nixos#asura-xs15
+sudo nixos-rebuild test --flake /etc/nixos#asura-xs15
 ```
 
 Run these after switching:
@@ -13,6 +13,7 @@ Run these after switching:
 ```bash
 hostnamectl --static
 systemctl --failed
+asura-shell-switch current
 nbfc-colorful-verify
 nbfc status
 systemctl status nbfc --no-pager
@@ -28,14 +29,13 @@ nix eval /etc/nixos#nixosConfigurations.asura-xs15.config.home-manager.users.asu
 nix eval --raw /etc/nixos#nixosConfigurations.asura-xs15.config.programs.hyprland.package.version
 nix eval --raw /etc/nixos#nixosConfigurations.asura-xs15.config.boot.kernelPackages.kernel.version
 nix eval /etc/nixos#nixosConfigurations.asura-xs15.config.boot.initrd.kernelModules
-grep -n 'wallpaper = "/etc/nixos/screenshots/lockscreen.png"' /etc/nixos/asura-xs15/noctaliaShell/settings.toml
+test -f /etc/asura-shell/active-shell
 command -v xdman
 command -v xdm-open
 command -v codex
 command -v asura-screen-record-toggle
 asura-screen-record-toggle status
 command -v asura-screenshot
-grep -n 'Print.*asura-screenshot full' /etc/nixos/asura-xs15/hyprland/bindings.nix
 command -v kdeconnect-app
 command -v kdeconnect-cli
 command -v hypr-kdeconnect-portal
@@ -76,16 +76,8 @@ systemctl is-enabled libvirtd.socket
 systemctl is-enabled virtlogd.socket
 systemctl is-enabled virtlockd.socket
 systemctl is-enabled blueman.service || true
-vibewall close
-vibewall toggle
-sleep 1
-vibewall close
-vibewall wallhaven search "pixel art" --page 1
-timeout 8s vibewall picker --wallhaven || test "$?" = 124
-vibewall apply /home/asura/Wallpaper/radha-krishna-5120x2880-14416.png
-test "$(noctalia msg wallpaper-get)" = "/home/asura/Wallpaper/radha-krishna-5120x2880-14416.png"
-timeout 8s vibewall picker --mode grid || test "$?" = 124
-vibewall-benchmark
+command -v skwd-wall
+systemctl --user status skwd-daemon.service --no-pager || true
 test -x /run/current-system/sw/bin/hyprlock
 test ! -e /run/current-system/sw/bin/wofi
 systemd-analyze
@@ -117,7 +109,7 @@ Expected values:
 | Kernel version | `7.0.11` |
 | NVIDIA initrd preload | no `nvidia*` modules in `boot.initrd.kernelModules` |
 | NVIDIA boot params | no local `nvidia-drm.modeset` or `nvidia-drm.fbdev` in `boot.kernelParams` |
-| Lockscreen wallpaper | `/etc/nixos/screenshots/lockscreen.png` |
+| Active shell state | `/etc/asura-shell/active-shell` exists and matches `waybar`, `noctalia`, or `vibeshell` |
 | XDM scheme handlers | `xdm-app.desktop` |
 | XDM browser helper | `/opt/xdman/chrome-extension` exists; Brave/Chrome/Chromium launchers load it |
 | XDM browser monitor | `xdman.service` is not enabled at boot; browser extension/protocol handlers remain installed and `xdm-open` starts XDM on demand |
@@ -135,11 +127,7 @@ Expected values:
 | Video renderer ownership | applying a video wallpaper stops `hyprpaper.service`/`hyprpaper` before starting `mpvpaper`; restoring an image stops `mpvpaper` |
 | VM stack | `libvirtd.service` and `libvirt-guests.service` are not enabled; libvirt sockets are enabled for on-demand VM use |
 | Bluetooth tray | base BlueZ stays available; Blueman tray/OBEX service is disabled |
-| Vibewall toggle | first `vibewall toggle` starts daemon/picker; close cleans picker; daemon reaps picker child exits on `SIGCHLD` |
-| Vibewall transparent overlay | active workspace remains visible behind centered toolbar/cards; proof screenshot is `screenshots/vibewallrezero-transparent-overlay.png` |
-| Vibewall image apply | `vibewall apply` returns `ok` and `noctalia msg wallpaper-get` returns the requested path |
-| Vibewall Wallhaven | cached browser opens immediately; WEB page loading runs in the background; `D`/`DOWNLOAD` saves selected remote wallpaper and `Enter`/`APPLY` downloads then applies |
-| Vibewall benchmark | daemon stays small, picker is event-driven at idle |
+| Wallpaper backend | `skwd-wall` command exists; `skwd-daemon.service` is present in the user session |
 | Removed launchers | no Hyprlock, no Wofi |
 | Boot critical path | `nvidia-persistenced.service` should not gate `graphical.target` after reboot |
 | NVIDIA persistence | service disabled for boot pull-in, delayed timer enabled |

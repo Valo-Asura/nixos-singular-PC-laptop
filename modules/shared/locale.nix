@@ -3,6 +3,6 @@
 
 {
   imports = [
-    ../../asura-xs15/system/locale.nix
+    ./sources/locale.nix
   ];
 }

@@ -1,9 +1,9 @@
-# Asura XS15 NixOS Flake
+# Asura NixOS Singular Flake
 
 > [!WARNING]
-> NixOS configuration for the Colorful XS 22 / X15 XS laptop. It is
-> hardware-specific and optimized for a Hyprland/VibeShell workflow, with
-> Noctalia kept as the secondary fallback shell.
+> Unified `/etc/nixos` flake for the active `asura-xs15` laptop and a future
+> `asura-pc` host. The current implementation is laptop-first and uses shared
+> desktop/shell modules with per-host overrides.
 
 ## Showcase
 
@@ -34,14 +34,11 @@
 ## Install
 
 ```bash
-sudo git clone https://github.com/Valo-Asura/asura-xs15-nixos.git /etc/nixos
+sudo git clone https://github.com/Valo-Asura/nixos-singular-PC-laptop.git /etc/nixos
 cd /etc/nixos
-sudo nixos-generate-config --show-hardware-config > /etc/nixos/asura-xs15/system/hardware-configuration.nix
+sudo nixos-generate-config --show-hardware-config > /etc/nixos/hosts/asura-xs15/hardware-configuration.nix
 sudo nixos-rebuild switch --flake /etc/nixos#asura-xs15
 ```
-
-The old `#nixos` flake output remains as a temporary compatibility alias, but
-new commands should use `#asura-xs15`.
 
 ## Key Configurations
 
@@ -49,14 +46,14 @@ new commands should use `#asura-xs15`.
 |---|---|
 | Host | `asura-xs15` |
 | Desktop | Hyprland `v0.55.3` from the official Hyprland flake plus VibeShell as the default shell |
-| Secondary shells | Noctalia v5 fallback plus Caelestia, Ricelin, Dotfiles, Tide Island, Nandoroid, Colorshell Ryo, and a left vertical pill Waybar profile are available through `asura-quickshell-switch`; MangoWM is removed |
+| Secondary shells | Only `noctalia` and `waybar` remain alongside the shared default `vibeshell`; shell switching is handled by `asura-shell-switch` |
 | Lockscreen | Hyprlock via `vibeshell-safe-lock`, using `screenshots/lockscreen.png`; |
 | File manager | Nautilus default, PCManFM-Qt available, admin launchers/scripts, Xarchiver as the only archive UI |
 | Theme | Dark GTK/libadwaita settings, Papirus-Dark icons, Bibata Modern Amber cursor at 24 px |
-| Wallpaper | `SUPER+W` and `SUPER+SHIFT+W` open native `vibewallREzero`; images apply through Noctalia IPC, videos through `mpvpaper`, live-video switches stop `hyprpaper`, and video wallpaper is suspended on battery |
+| Wallpaper | Shared `skwd-wall` backend; `vibewallREzero` is retained only as a disabled source package |
 | Fan control | NBFC-Linux `0.5.2` plus NBFC-GTK `0.4.1` |
 | Fan profile | Declarative two-fan `Colorful X15 AT 22` config with `MaxSpeedValue = 255`, max-sensor ramping, and emergency thermal guard |
-| Plymouth | Local `circle_hud` theme from `asura-xs15/plymouth/circle_hud` |
+| Plymouth | Host-local `circle_hud` theme from `hosts/asura-xs15/plymouth/circle_hud` |
 | Kernel | CachyOS `7.1.0` from `nix-cachyos-kernel/release` |
 | Boot GPU policy | Intel `i915` loads in initrd; NVIDIA stays out of initrd/modules-load and explicit `nvidia-drm.*` boot params |
 | Performance | CachyOS kernel, `scx_lavd`, `ananicy-cpp` CachyOS rules, BBR, zram, irqbalance, delayed NVIDIA persistenced/cache warm, socket-only VM stack |
@@ -93,20 +90,16 @@ asura-screen-record-toggle status
 asura-screen-record-toggle toggle-pause
 asura-screenshot full         # shell-independent screenshot for Print/features
 asura-screenshot region       # region screenshot; also copies to clipboard
-asura-quickshell-switch status # selected shell profile and live shell processes
-asura-quickshell-switch autostart # start saved profile, defaulting to VibeShell
-asura-quickshell-switch vibeshell # restore the default VibeShell profile
-asura-quickshell-switch noctalia # restore the secondary Noctalia + Hyprland fallback shell
-asura-quickshell-switch dotfiles # test imported Dotfiles Quickshell profile
-asura-quickshell-switch tide-island # test Tide Island dynamic-island profile
-asura-quickshell-switch waybar # test imported Waybar profile
-asura-quickshell-switch colorshell-ryo # test imported Colorshell Ryo AGS/Astal profile
-asura-quickshell-switch nandoroid # test imported Nandoroid profile
+asura-shell-switch current      # print active shell from hosts/asura-xs15/shell/active-shell.nix
+asura-shell-switch autostart    # start the configured shell
+asura-shell-switch vibeshell    # start shared default VibeShell
+asura-shell-switch noctalia     # start shared Noctalia
+asura-shell-switch waybar       # start shared Waybar
 asura-shell-launcher          # profile-aware launcher used by bare Super
 asura-shell-launcher /tools   # quick actions/toolbox route used by SUPER+A
-asura-vibeshell run launcher  # VibeShell launcher surface, after switching to the vibeshell profile
+asura-vibeshell run launcher  # VibeShell launcher surface
 asura-vibeshell run config    # VibeShell settings surface
-asura-vibeshell run powermenu # VibeShell power island, after switching to the vibeshell profile
+asura-vibeshell run powermenu # VibeShell power island
 vibeshell-safe-lock           # Hyprlock-backed shared lock command
 kdeconnect-app                # pair with phone; install KDE Connect on the S24 too
 kdeconnect-cli --list-devices # verify phone discovery/pairing from terminal
@@ -122,64 +115,25 @@ ASURA_SKIP_FASTFETCH=1 foot   # skip the automatic fastfetch banner for one term
 
 ```text
 /etc/nixos
-├── hosts/                  # Flake host declarations
-├── system/                 # Thin shared NixOS defaults/import wrapper
-├── asura-xs15/             # Laptop-specific declarative config
-│   ├── plymouth/           # Local Plymouth theme source
-│   ├── hyprland/           # Nix-owned Hyprland config, rules, keybinds
-│   ├── noctaliaShell/      # Noctalia settings and shell-managed app defaults
-│   ├── quickshell/         # Optional Hyprland Quickshell profiles and switcher
-│   ├── waybar/             # Optional imported Waybar profile
-│   ├── ags-v3-colorshell-ryo/ # Optional imported Colorshell Ryo AGS/Astal shell
-│   ├── scripts/            # Home Manager helper scripts
-│   ├── vibewallREzero/     # Native C++23 wallpaper picker/daemon package
-│   └── system/             # Flat one-file NixOS host modules
-│       ├── default.nix
-│       ├── boot.nix
-│       ├── fan-control-tools.nix
-│       ├── hardware.nix
-│       ├── kernel-cachyos.nix
-│       ├── packages.nix
-│       ├── programs.nix
-│       ├── services.nix
-│       ├── theming.nix
-│       └── users.nix
-├── home/                   # Home Manager user configuration
-│   ├── application.nix     # Desktop entries, Nautilus, MIME defaults
-│   ├── hyprland.nix        # Home Manager import for host Hyprland config
-│   ├── theming.nix         # GTK/libadwaita/Qt dark theme and cursor
-│   ├── aimemory.nix        # Shared system-scoped AI memory wiring
-│   ├── default.nix         # Home Manager import root
-│   ├── browser/
-│   │   ├── brave.nix
-│   │   ├── chrome.nix
-│   │   ├── firefox.nix
-│   │   └── helium.nix
-│   ├── programs/
-│   │   ├── git/
-│   │   ├── neovim/
-│   │   ├── scripts/
-│   │   ├── terminal/
-│   │   └── tmux/
-│   ├── shell/
-│   ├── templates/
-│   └── vscode/
+├── hosts/                  # Host declarations; xs15 active, pc placeholder
+├── modules/                # Shared NixOS modules and desktop/shell wiring
+├── home/                   # Shared Home Manager modules and host overrides
+├── shells/                 # Shared Noctalia, VibeShell, Walker, Waybar configs
+├── packages/               # Local package adapters and disabled future sources
+├── assets/                 # Shared visual/theme assets
 ├── docs/                   # Validation and workflow docs
 └── screenshots/            # README screenshots
 ```
 
-Rule: one-file modules stay as `.nix` files. Folders are only for real
-multi-file domains such as `hyprland/`, `noctaliaShell/`, `quickshell/`,
-`scripts/`, `vibewallREzero/`, `browser/`, and `plymouth/`.
+Rule: shared modules live under `modules/`, laptop-only modules live under
+`hosts/asura-xs15/`, and shell configs live under `shells/`.
 
 ## Docs
 
 | Document | Purpose |
 |---|---|
 | [`docs/VALIDATION.md`](docs/VALIDATION.md) | Rebuild, fan, theme, and repo safety checks |
-| [`docs/WALLPAPER.md`](docs/WALLPAPER.md) | `SUPER+W`, vibewallREzero, Noctalia IPC image apply, and mpvpaper video apply |
-| [`docs/QUICKSHELL_PROFILES.md`](docs/QUICKSHELL_PROFILES.md) | Optional Hyprland Quickshell profiles and switch commands |
-| [`docs/SHELL_BENCHMARKS.md`](docs/SHELL_BENCHMARKS.md) | Hyprland/Noctalia and historical Mango comparison numbers |
+| [`STRUCTURE.md`](STRUCTURE.md) | Current shared vs host-specific repo layout |
 
 ## Previous Config References
 

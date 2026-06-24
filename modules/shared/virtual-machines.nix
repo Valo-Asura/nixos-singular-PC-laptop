@@ -3,6 +3,6 @@
 
 {
   imports = [
-    ../../asura-xs15/system/virtual-machines.nix
+    ./sources/virtual-machines.nix
   ];
 }

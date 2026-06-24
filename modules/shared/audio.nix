@@ -3,6 +3,6 @@
 
 {
   imports = [
-    ../../asura-xs15/system/audio.nix
+    ./sources/audio.nix
   ];
 }

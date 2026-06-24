@@ -62,7 +62,7 @@ let
     On task completion, add durable facts, lessons, and gotchas to the shared store.
 
     ## Desktop Shell Context
-    - Active stable shell: `/etc/nixos/asura-xs15/noctaliaShell` (Noctalia).
+    - Active stable shell: `/etc/nixos/shells/noctalia` (Noctalia shared config).
     - Hyprland lock, clipboard, wallpaper, launcher, and session actions should route through Noctalia IPC.
     - Screenshots should use `asura-screenshot` instead of shell IPC so feature proof captures work while panels/launchers are open or optional shells are active.
     - Keep NVIDIA persistenced enabled so monitor/NVML tools can see the dGPU while idle.
@@ -73,8 +73,8 @@ let
     asura_xs15_nixos = {
       host = "asura-xs15";
       repo_path = "/etc/nixos";
-      tree_root = "/etc/nixos/asura-xs15";
-      system_module_layout = "flat files: /etc/nixos/asura-xs15/system/<module>.nix";
+      tree_root = "/etc/nixos/hosts/asura-xs15";
+      system_module_layout = "shared modules live under /etc/nixos/modules; laptop-only modules live under /etc/nixos/hosts/asura-xs15/system";
     };
   };
 
@@ -394,7 +394,7 @@ let
         }
         facts["desktop_shell"] = {
             "active": "noctalia",
-            "noctalia_path": "/etc/nixos/asura-xs15/noctaliaShell",
+            "noctalia_path": "/etc/nixos/shells/noctalia",
             "current_focus": [
                 "Noctalia IPC keybinds",
                 "Noctalia lockscreen image",

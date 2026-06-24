@@ -3,6 +3,6 @@
 
 {
   imports = [
-    ../../asura-xs15/system/maintenance.nix
+    ./sources/maintenance.nix
   ];
 }

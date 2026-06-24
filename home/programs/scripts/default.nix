@@ -3,8 +3,8 @@
 
 {
   imports = [
-    ../../../asura-xs15/scripts/desktop-helpers.nix
-    ../../../asura-xs15/scripts/screenshot.nix
-    ../../../asura-xs15/scripts/nightShift.nix
+    ./modules/desktop-helpers.nix
+    ./modules/legacy-screenshot.nix
+    ./modules/night-shift.nix
   ];
 }

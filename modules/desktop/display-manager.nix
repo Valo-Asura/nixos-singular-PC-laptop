@@ -3,6 +3,6 @@
 
 {
   imports = [
-    ../../asura-xs15/system/login.nix
+    ./sources/display-manager.nix
   ];
 }
