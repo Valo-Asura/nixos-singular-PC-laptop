@@ -1,51 +1,38 @@
-# /etc/nixos Target Structure
+# /etc/nixos Structure
 
-Active host: `hosts/asura-xs15`
+Active hosts:
 
-Future host: `hosts/asura-pc` placeholder only
+- `asura-xs15`
+- `asura-pc`
 
-The flake imports the target tree below. Legacy root-level shell/profile trees are removed.
+The flake exports both hosts from [hosts/default.nix](hosts/default.nix).
 
-```text
-/etc/nixos
-|-- flake.nix                  # single flake; exports asura-xs15 only
-|-- hosts/
-|   |-- default.nix            # host registry; asura-pc not exported yet
-|   |-- asura-xs15/            # laptop-specific implementation
-|   |   |-- default.nix        # XS15 host module root
-|   |   |-- hardware-configuration.nix
-|   |   |-- system/            # laptop-only kernel, power, thermal, NBFC, filesystems, secrets
-|   |   |-- hyprland/          # laptop-only monitor layout
-|   |   |-- shell/             # laptop-only active shell choice
-|   |   |-- home/              # laptop-only Home Manager overrides
-|   |   |-- assets/            # laptop-local assets kept with host
-|   |   `-- secrets/           # laptop-local secret material
-|   `-- asura-pc/              # placeholder; implement later
-|-- modules/
-|   |-- shared/                # shared NixOS apps, services, packages, users, nix policy
-|   |-- desktop/               # shared display manager, theme, browser, XDG, skwd-wall
-|   |-- hardware/              # shared hardware baseline only
-|   `-- shells/                # shared shell modules and switcher
-|-- home/
-|   |-- shared/                # shared Home Manager apps, browsers, shell, editors
-|   |-- desktop/               # shared Hyprland, bindings, animations, theming, Walker
-|   `-- host-overrides/        # placeholders for per-host Home Manager overrides
-|-- shells/
-|   |-- waybar/                # one shared Waybar config
-|   |-- walker/                # shared Walker config root
-|   |-- noctalia/              # shared Noctalia config
-|   `-- vibeshell/             # one shared VibeShell/Quickshell default config; no profiles
-|-- packages/
-|   |-- skwd-wall/             # active wallpaper backend adapter
-|   |-- vibewallREzero/        # disabled for now; skwd-wall is active.
-|   |-- vibeshell/             # placeholder; wrapper lives in modules/shells/vibeshell.nix
-|   `-- wrappers/              # wrapper package notes
-|-- assets/                    # shared theme/wallpaper assets
-|-- lib/                       # shared constants and host constructor helpers
-`-- scripts/                   # safe test/rebuild/check helpers
-```
+| Path | Comment |
+|---|---|
+| [flake.nix](flake.nix) | Single flake entry point. |
+| [hosts/default.nix](hosts/default.nix) | Host registry. |
+| [hosts/asura-xs15](hosts/asura-xs15) | Laptop-specific implementation. |
+| [hosts/asura-xs15/system](hosts/asura-xs15/system) | Laptop boot, kernel, hardware, filesystems, thermal, NBFC, power, secrets. |
+| [hosts/asura-xs15/hyprland](hosts/asura-xs15/hyprland) | Laptop monitor/layout only. |
+| [hosts/asura-xs15/shell](hosts/asura-xs15/shell) | Laptop active shell selection. |
+| [hosts/asura-pc](hosts/asura-pc) | Desktop implementation imported from `hyprNixos-main`. |
+| [hosts/asura-pc/system](hosts/asura-pc/system) | PC boot, AMD/NVIDIA/Broadcom hardware, filesystems, power, thermal, secrets. |
+| [hosts/asura-pc/hyprland](hosts/asura-pc/hyprland) | PC monitor/layout only. |
+| [hosts/asura-pc/shell](hosts/asura-pc/shell) | PC active shell selection. |
+| [modules/shared](modules/shared) | Shared NixOS apps, services, packages, users, locale, nix policy. |
+| [modules/desktop](modules/desktop) | Shared desktop manager, theme, XDG, browser theme, wallpaper. |
+| [modules/hardware](modules/hardware) | Shared hardware baseline. |
+| [modules/shells](modules/shells) | Shared Waybar, Walker, Noctalia, VibeShell, shell switcher. |
+| [home](home) | Shared Home Manager modules plus host overrides. |
+| [home/desktop/hyprland](home/desktop/hyprland) | Shared Hyprland config, bindings, animations, lock/idle support. |
+| [shells/waybar](shells/waybar) | One shared Waybar config. |
+| [shells/walker](shells/walker) | Shared Walker config root. |
+| [shells/noctalia](shells/noctalia) | Shared Noctalia config, loaded only when active shell is `noctalia`. |
+| [shells/vibeshell](shells/vibeshell) | One shared VibeShell/Quickshell default config; no profiles. |
+| [packages/skwd-wall](packages/skwd-wall) | Active shared wallpaper backend. |
+| [packages/vibewallREzero](packages/vibewallREzero) | Disabled for now; `skwd-wall` is active. |
 
-Shell switcher supports only:
+Shell choices:
 
 ```text
 waybar
@@ -53,9 +40,10 @@ noctalia
 vibeshell
 ```
 
-Validation target:
+Validation:
 
-```sh
-sudo nixos-rebuild test --flake /etc/nixos#asura-xs15
-sudo nixos-rebuild switch --flake /etc/nixos#asura-xs15
+```bash
+nix flake check --no-build /etc/nixos
+nix build /etc/nixos#nixosConfigurations.asura-xs15.config.system.build.toplevel --no-link
+nix build /etc/nixos#nixosConfigurations.asura-pc.config.system.build.toplevel --no-link
 ```

@@ -1,0 +1,84 @@
+# PC-specific module: AMD CPU, NVIDIA desktop GPU, Broadcom Wi-Fi, and camera loopback.
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+
+let
+  broadcomSta = config.boot.kernelPackages.broadcom_sta.overrideAttrs (oldAttrs: {
+    patches = (oldAttrs.patches or [ ]) ++ [
+      ./patches/broadcom-sta-linux-7.1-cfg80211-wdev.patch
+    ];
+  });
+in
+{
+  hardware = {
+    enableRedistributableFirmware = true;
+    cpu.amd.updateMicrocode = true;
+    i2c.enable = true;
+    graphics = {
+      enable = true;
+      enable32Bit = true;
+      extraPackages = with pkgs; [
+        nvidia-vaapi-driver
+        libva-vdpau-driver
+        libvdpau-va-gl
+      ];
+    };
+    logitech.wireless = {
+      enable = true;
+      enableGraphical = true;
+    };
+    bluetooth.enable = true;
+    nvidia = {
+      modesetting.enable = lib.mkForce true;
+      powerManagement.enable = false;
+      nvidiaPersistenced = false;
+      open = lib.mkForce false;
+      nvidiaSettings = true;
+      package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
+      prime = {
+        offload.enable = lib.mkForce false;
+        sync.enable = lib.mkForce false;
+        reverseSync.enable = lib.mkForce false;
+      };
+    };
+  };
+
+  boot.extraModulePackages = [
+    broadcomSta
+    config.boot.kernelPackages.v4l2loopback
+  ];
+
+  boot.extraModprobeConfig = ''
+    options v4l2loopback devices=1 video_nr=9 card_label="OBS Virtual Camera" exclusive_caps=1
+  '';
+
+  boot.initrd.kernelModules = [
+    "nvidia"
+    "nvidia_modeset"
+    "nvidia_uvm"
+    "nvidia_drm"
+  ];
+
+  boot.kernelModules = [
+    "wl"
+    "nvidia"
+    "nvidia_modeset"
+    "nvidia_uvm"
+    "nvidia_drm"
+    "v4l2loopback"
+  ];
+
+  boot.blacklistedKernelModules = [
+    "b43"
+    "b43legacy"
+    "ssb"
+    "bcma"
+    "brcm80211"
+    "brcmfmac"
+    "brcmsmac"
+  ];
+}

@@ -21,17 +21,15 @@ in
     skwd-wall
   '';
 
+  # The upstream skwd-wall flake ships its own skwd-daemon.service unit.
+  # We only override the ExecStart binary path to our resolved store path and
+  # ensure it auto-starts.  The empty ExecStart= clears the upstream value
+  # before setting ours — systemd requires exactly one ExecStart for
+  # Type=simple services.
   systemd.user.services.skwd-daemon = {
-    description = "Skwd wallpaper daemon";
-    documentation = [ "https://github.com/liixini/skwd-daemon" ];
-    partOf = [ "graphical-session.target" ];
-    after = [ "graphical-session.target" ];
-    wantedBy = [ "graphical-session.target" ];
+    overrideStrategy = "asDropin";
     serviceConfig = {
-      Type = "simple";
-      ExecStart = "${skwdWall}/bin/skwd-daemon";
-      Restart = "on-failure";
-      RestartSec = 2;
+      ExecStart = [ "" "${skwdWall}/bin/skwd-daemon" ];
       Environment = [ "RUST_LOG=info" ];
     };
   };

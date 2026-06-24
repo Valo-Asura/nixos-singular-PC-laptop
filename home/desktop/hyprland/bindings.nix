@@ -18,14 +18,14 @@ in
         "SUPER, B, exec, ${browser}"
         "SUPER, T, exec, ${terminal}"
         "SUPER, C, exec, ${editor}"
-        "SUPER, A, exec, asura-shell-launcher /tools"
+        "SUPER, A, exec, asura-vibeshell run tools"
         "SUPER, E, exec, ${pkgs.telegram-desktop}/bin/telegram-desktop"
         "SUPER, W, exec, skwd-wall"
         "SUPER, P, exec, asura-display-manager"
         "SUPER SHIFT, P, exec, asura-monitor-guard --restore"
         "CTRL, L, exec, ${lock}"
         "SUPER, L, exec, ${lock}"
-        "SUPER, V, exec, noctalia msg panel-toggle clipboard"
+        "SUPER, V, exec, asura-vibeshell run dashboard-clipboard"
         "SUPER SHIFT, V, togglefloating"
         "SUPER SHIFT, C, exec, clipboard"
         "SUPER SHIFT, E, exec, asura-shell-launcher /emo"
@@ -34,13 +34,13 @@ in
         "SUPER SHIFT, R, exec, /run/current-system/sw/bin/asura-screen-record-toggle"
         "SUPER SHIFT, X, exec, asura-screenshot region-edit"
         "SUPER, F2, exec, night-shift"
-        "SUPER, N, exec, noctalia msg panel-toggle control-center"
-        "SUPER, D, exec, noctalia msg panel-toggle control-center"
-        "SUPER, I, exec, noctalia msg settings-toggle"
-        "CTRL ALT, Delete, exec, noctalia msg session logout"
-        "SUPER, BackSpace, exec, noctalia msg panel-toggle session"
-        "SUPER, Period, exec, asura-shell-launcher /emo"
-        "CTRL SUPER, R, exec, noctalia msg config-reload"
+        "SUPER, N, exec, asura-vibeshell run dashboard-notes"
+        "SUPER, D, exec, asura-vibeshell run config"
+        "SUPER, I, exec, asura-vibeshell run config"
+        "CTRL ALT, Delete, exec, asura-vibeshell run powermenu"
+        "SUPER, BackSpace, exec, asura-vibeshell run powermenu"
+        "SUPER, Period, exec, asura-vibeshell run dashboard-emoji"
+        "CTRL SUPER, R, exec, asura-vibeshell reload"
         ", Print, exec, asura-screenshot full"
         "SHIFT, Print, exec, asura-screenshot region"
         "SUPER, Print, exec, asura-screenshot output"
@@ -77,8 +77,8 @@ in
       ];
 
       bindr = [
-        "SUPER, SUPER_L, exec, asura-shell-launcher"
-        "SUPER, SUPER_R, exec, asura-shell-launcher"
+        "SUPER, SUPER_L, exec, asura-vibeshell run notch-launcher"
+        "SUPER, SUPER_R, exec, asura-vibeshell run notch-launcher"
       ];
 
       bindl = [

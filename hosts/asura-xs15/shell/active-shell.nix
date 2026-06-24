@@ -12,7 +12,7 @@
       "noctalia"
       "vibeshell"
     ];
-    default = "noctalia";
+    default = "vibeshell";
     description = "Active desktop shell for this host. Supported: waybar, noctalia, vibeshell.";
   };
 

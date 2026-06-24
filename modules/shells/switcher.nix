@@ -89,7 +89,7 @@ let
         if [ -r "$active_file" ]; then
           tr -d '[:space:]' < "$active_file"
         else
-          printf '%s\n' noctalia
+          printf '%s\n' vibeshell
         fi
       }
 
@@ -167,7 +167,7 @@ let
         if [ -r /etc/asura-shell/active-shell ]; then
           tr -d '[:space:]' < /etc/asura-shell/active-shell
         else
-          printf '%s\n' noctalia
+          printf '%s\n' vibeshell
         fi
       )"
 
