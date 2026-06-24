@@ -175,5 +175,5 @@ AI memory databases.
 Repository target is public:
 
 ```bash
-gh repo create Valo-Asura/asura-xs15-nixos --public --source=/etc/nixos --remote=origin --push
+gh repo view Valo-Asura/nixos-singular-PC-laptop
 ```

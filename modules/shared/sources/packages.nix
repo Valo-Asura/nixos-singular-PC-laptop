@@ -498,7 +498,6 @@ let
     printf '%s\n' "$file"
   '';
 
-  hyprmod = pkgs.callPackage ./hyprmod.nix { };
 in
 {
   environment.systemPackages =
@@ -620,7 +619,6 @@ in
       inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.default
 
       # Hyprland Tools
-      hyprmod
       hyprsysteminfo
       hyprshutdown
 

@@ -5,23 +5,11 @@
 > `asura-pc` host. The current implementation is laptop-first and uses shared
 > desktop/shell modules with per-host overrides.
 
-## Showcase
+## Current Screenshots
 
-| Desktop Workspace | Lockscreen | Vibewall Grid |
+| Noctalia Desktop | VibeShell Live | VibeShell Wi-Fi Panel |
 | :--- | :--- | :--- |
-| ![Desktop Workspace](screenshots/desktop-demo.png) | ![Lockscreen](screenshots/lockscreen.png) | ![Vibewall Grid](screenshots/vibewallrezero-grid.png) |
-
-| Vibewall Slice | Vibewall Hex | More/ehh image |
-| :--- | :--- | :--- |
-| ![Vibewall Slice](screenshots/vibewallrezero-slice.png) | ![Vibewall Hex](screenshots/vibewallrezero-hex.png) | ![Video Wallpaper](screenshots/vibewallrezero-video-applied.png) |
-
-| Vibewall Mosaic | Wallhaven Browser |
-| :--- | :--- |
-| ![Vibewall Mosaic](screenshots/vibewallrezero-mosaic.png) | ![Wallhaven Browser](screenshots/vibewallrezero-wallhaven.png) |
-
-| Transparent Active Workspace Overlay |
-| :--- |
-| ![Vibewall transparent overlay](screenshots/vibewallrezero-transparent-overlay.png) |
+| ![Noctalia desktop](screenshots/noctalia-restored-20260621.png) | ![VibeShell live](screenshots/vibeshell-live-final-20260623.png) | ![VibeShell Wi-Fi panel](screenshots/vibeshell-click-wifi-panel-current-20260623.png) |
 
 | VibeShell WIP Rail | VibeShell Wi-Fi Panel | VibeShell No-Dashboard Rail |
 | :--- | :--- | :--- |
@@ -47,7 +35,7 @@ sudo nixos-rebuild switch --flake /etc/nixos#asura-xs15
 | Host | `asura-xs15` |
 | Desktop | Hyprland `v0.55.3` from the official Hyprland flake plus VibeShell as the default shell |
 | Secondary shells | Only `noctalia` and `waybar` remain alongside the shared default `vibeshell`; shell switching is handled by `asura-shell-switch` |
-| Lockscreen | Hyprlock via `vibeshell-safe-lock`, using `screenshots/lockscreen.png`; |
+| Lockscreen | Hyprlock via `vibeshell-safe-lock`, using `/etc/nixos/assets/she.jpg` |
 | File manager | Nautilus default, PCManFM-Qt available, admin launchers/scripts, Xarchiver as the only archive UI |
 | Theme | Dark GTK/libadwaita settings, Papirus-Dark icons, Bibata Modern Amber cursor at 24 px |
 | Wallpaper | Shared `skwd-wall` backend; `vibewallREzero` is retained only as a disabled source package |
@@ -73,12 +61,7 @@ thermal-status                # temperatures, tuned/thermald/NBFC state
 nbfc-gtk --fans               # launch GTK fan control UI
 systemd-analyze blame         # inspect boot/app-start blockers
 asura-dark-mode-refresh       # reapply GTK/libadwaita dark settings in the active session
-vibewall scan                 # index /home/asura/Wallpaper images/videos and build thumbnails
-vibewall toggle               # open/close the native picker used by SUPER+W
-vibewall apply FILE           # apply an image via Noctalia or a video via mpvpaper
-vibewall restore              # restore last wallpaper on Hyprland login
-vibewall wallhaven search "anime landscape" --page 1
-vibewall picker --wallhaven   # open cached Wallhaven browser directly
+skwd-wall                     # open the active shared wallpaper picker
 ai-memory-mcp-status          # show live AI memory MCP processes/RSS
 ai-memory-mcp-stop            # stop current AI memory MCP workers
 asura-ai-memory paths         # print shared memory + opt-in MCP config paths
@@ -95,7 +78,7 @@ asura-shell-switch autostart    # start the configured shell
 asura-shell-switch vibeshell    # start shared default VibeShell
 asura-shell-switch noctalia     # start shared Noctalia
 asura-shell-switch waybar       # start shared Waybar
-asura-shell-launcher          # profile-aware launcher used by bare Super
+asura-shell-launcher          # shared launcher used by bare Super
 asura-shell-launcher /tools   # quick actions/toolbox route used by SUPER+A
 asura-vibeshell run launcher  # VibeShell launcher surface
 asura-vibeshell run config    # VibeShell settings surface
@@ -201,10 +184,7 @@ Important carry-overs:
   I/O spikes during first login.
 - Desktop cache warming is delayed and capped; it no longer reads package
   closures immediately after login.
-- `vibewall toggle` starts the systemd user daemon first, so the first
-  `SUPER+W` press opens the picker; clicking outside the centered stage closes
-  it. The daemon reaps picker children on `SIGCHLD`, so closed pickers should
-  not linger as zombies and affect later toggles.
+- `skwd-wall` is the active shared wallpaper entry point for `SUPER+W`.
 - Nautilus floats centered for quick file checks.
 - XDM no longer opens its GTK app at boot. Browser integration stays declared
   through the bundled `/opt/xdman/chrome-extension`, Chromium-family launchers,
@@ -243,12 +223,9 @@ Important carry-overs:
 - Lockscreen, wallpaper, launcher, clipboard, and session actions route through
   Noctalia IPC. Screenshots intentionally bypass shell IPC so proof captures
   keep working while optional shells or open panels are visible.
-- VibeShell is the current WIP replacement candidate for Noctalia v5, not the
-  stable default yet. The 2026-06-23 pass keeps the current dark theme defaults,
-  removes the dashboard icon from the active hover rail, hides EasyEffects from
-  the tray, routes the wallpaper icon to `vibewall toggle`, routes recorder
-  controls through `asura-screen-record-toggle`, and fixes stale stacked panel
-  ghosting by unmapping inactive hover surfaces.
+- VibeShell is the shared Quickshell config under `shells/vibeshell/`. Current
+  launcher, tools, recorder, and wallpaper entry points route through
+  `asura-shell-launcher`, `asura-screen-record-toggle`, and `skwd-wall`.
 - VibeShell dashboard entry points are compatibility aliases only. Active
   routes now open the launcher, settings, Vibewall, notes, Wi-Fi/settings, or
   power surfaces directly. Some legacy dashboard QML files remain because
@@ -268,5 +245,5 @@ grep in `docs/VALIDATION.md` before pushing.
 The GitHub repo target is public:
 
 ```bash
-gh repo create Valo-Asura/asura-xs15-nixos --public --source=/etc/nixos --remote=origin --push
+gh repo view Valo-Asura/nixos-singular-PC-laptop
 ```

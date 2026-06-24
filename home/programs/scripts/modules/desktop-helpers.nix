@@ -168,15 +168,11 @@ let
   asuraDisplayManager = pkgs.writeShellScriptBin "asura-display-manager" ''
     set -euo pipefail
 
-    if command -v hyprmod >/dev/null 2>&1; then
-      exec hyprmod
-    fi
-
     if command -v nwg-displays >/dev/null 2>&1; then
       exec nwg-displays
     fi
 
-    ${notify} "Display manager unavailable" "Install hyprmod or nwg-displays."
+    ${notify} "Display manager unavailable" "Install nwg-displays."
   '';
 
   asuraAirplaneToggle = pkgs.writeShellScriptBin "asura-airplane-toggle" ''

@@ -4,7 +4,7 @@ Active host: `hosts/asura-xs15`
 
 Future host: `hosts/asura-pc` placeholder only
 
-Legacy root-level config is preserved for safety, but the flake imports the target tree below.
+The flake imports the target tree below. Legacy root-level shell/profile trees are removed.
 
 ```text
 /etc/nixos

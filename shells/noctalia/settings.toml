@@ -109,7 +109,7 @@ address = "rishikesh, India"
 blur_intensity = 0.0
 blurred_desktop = false
 tint_intensity = 0.15
-wallpaper = "/etc/nixos/screenshots/lockscreen.png"
+wallpaper = "/etc/nixos/assets/she.jpg"
 
 [lockscreen_widgets]
 enabled = false
