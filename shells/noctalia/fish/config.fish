@@ -3,7 +3,7 @@ if test -f /usr/share/cachyos-fish-config/cachyos-config.fish
 end
 
 set -e ELECTRON_RUN_AS_NODE
-set -gx BROWSER brave-origin-beta
+set -gx BROWSER firefox
 fish_add_path -g ~/.local/bin ~/.local/opt/cursor ~/.local/opt/antigravity ~/.local/opt/antigravity-ide
 
 # overwrite greeting

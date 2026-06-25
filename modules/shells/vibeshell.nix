@@ -70,6 +70,7 @@ let
         procps
         pulseaudio
         quickshell
+        sqlite
         slurp
         util-linux
         wl-clipboard

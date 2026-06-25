@@ -584,17 +584,22 @@ Item {
                 var quotedDb = shellQuote(ClipboardService.dbPath);
                 var maxCopyBytes = 524288;
                 var maxImageBytes = 8388608;
+                
+                if (copyProcess.running) {
+                    copyProcess.running = false;
+                }
+                
                 if (item.isImage && item.binaryPath) {
                     // Copy image with correct MIME type, but do not let very large history entries stall clipboard owners.
                     var quotedPath = shellQuote(item.binaryPath);
                     var quotedMime = shellQuote(item.mime);
-                    copyProcess.command = ["sh", "-c", "size=$(stat -c%s " + quotedPath + " 2>/dev/null || echo 0); [ \"$size\" -gt 0 ] && [ \"$size\" -le " + maxImageBytes + " ] && timeout 2s wl-copy --type " + quotedMime + " < " + quotedPath];
+                    copyProcess.command = ["sh", "-c", "size=$(stat -c%s " + quotedPath + " 2>/dev/null || echo 0); [ \"$size\" -gt 0 ] && [ \"$size\" -le " + maxImageBytes + " ] && wl-copy --type " + quotedMime + " < " + quotedPath];
                 } else if (item.isFile) {
                     // Copy file URI with text/uri-list MIME type, removing carriage returns
-                    copyProcess.command = ["sh", "-c", "size=$(sqlite3 " + quotedDb + " \"SELECT size FROM clipboard_items WHERE id = " + itemId + ";\"); [ \"${size:-0}\" -le 65536 ] && sqlite3 " + quotedDb + " \"SELECT full_content FROM clipboard_items WHERE id = " + itemId + ";\" | tr -d '\\r' | timeout 2s wl-copy --type text/uri-list"];
+                    copyProcess.command = ["sh", "-c", "size=$(sqlite3 " + quotedDb + " \"SELECT size FROM clipboard_items WHERE id = " + itemId + ";\"); [ \"${size:-0}\" -le 65536 ] && sqlite3 " + quotedDb + " \"SELECT full_content FROM clipboard_items WHERE id = " + itemId + ";\" | tr -d '\\r' | wl-copy --type text/uri-list"];
                 } else {
                     // Copy text as plain text
-                    copyProcess.command = ["sh", "-c", "size=$(sqlite3 " + quotedDb + " \"SELECT size FROM clipboard_items WHERE id = " + itemId + ";\"); [ \"${size:-0}\" -le " + maxCopyBytes + " ] && sqlite3 " + quotedDb + " \"SELECT full_content FROM clipboard_items WHERE id = " + itemId + ";\" | timeout 2s wl-copy"];
+                    copyProcess.command = ["sh", "-c", "size=$(sqlite3 " + quotedDb + " \"SELECT size FROM clipboard_items WHERE id = " + itemId + ";\"); [ \"${size:-0}\" -le " + maxCopyBytes + " ] && sqlite3 " + quotedDb + " \"SELECT full_content FROM clipboard_items WHERE id = " + itemId + ";\" | wl-copy"];
                 }
                 copyProcess.running = true;
                 break;

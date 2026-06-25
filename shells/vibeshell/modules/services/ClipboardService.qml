@@ -41,14 +41,12 @@ QtObject {
         running: root._initialized
         command: [watchScriptPath, checkScriptPath, dbPath, insertScriptPath, binaryDataDir]
         
-        stdout: StdioCollector {
-            onStreamFinished: {
+        stdout: SplitParser {
+            onRead: (data) => {
                 // When watcher outputs something, refresh the list
-                var lines = text.trim().split('\n');
-                for (var i = 0; i < lines.length; i++) {
-                    if (lines[i] === "REFRESH_LIST") {
-                        Qt.callLater(root.list);
-                    }
+                var trimmed = data ? data.trim() : "";
+                if (trimmed === "REFRESH_LIST") {
+                    Qt.callLater(root.list);
                 }
             }
         }
