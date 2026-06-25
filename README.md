@@ -56,7 +56,7 @@ Clickable repo map. Each linked node opens the matching file or folder.
   - [flake.nix](flake.nix) `# single flake; exports asura-xs15 and asura-pc`
   - [flake.lock](flake.lock) `# locked nixos-unstable, Hyprland stable, CachyOS kernel, shells`
   - [README.md](README.md) `# compact entrypoint and command list`
-  - [STRUCTURE.md](STRUCTURE.md) `# fuller tree review`
+  - [STRUCTURE.md](STRUCTURE.md) `# full clickable tree map`
   - [AGENTS.md](AGENTS.md) `# local agent rules for this repo`
   - [lib/](lib/) `# shared host helpers`
     - [lib/mkHost.nix](lib/mkHost.nix) `# common host constructor`
