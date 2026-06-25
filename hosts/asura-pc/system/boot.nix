@@ -68,6 +68,13 @@ in
       limine.enable = false;
     };
 
+    lanzaboote = {
+      # Secure Boot is staged but intentionally disabled until sbctl keys are
+      # enrolled and `sbctl verify` confirms all boot files are signed.
+      enable = false;
+      pkiBundle = pkiBundle;
+    };
+
     plymouth = {
       enable = true;
       theme = "circle_hud";

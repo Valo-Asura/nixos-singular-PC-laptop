@@ -277,6 +277,27 @@ let
             tail = existing.split(marker_end, 1)[1].lstrip()
             existing = (head + "\n\n" + tail).strip()
 
+        def strip_toml_tables(text, table_names):
+            lines = text.splitlines()
+            out = []
+            skip = False
+            for line in lines:
+                stripped = line.strip()
+                if stripped.startswith("[") and stripped.endswith("]"):
+                    table = stripped.strip("[]")
+                    skip = table in table_names
+                if not skip:
+                    out.append(line)
+            return "\n".join(out).strip()
+
+        existing = strip_toml_tables(
+            existing,
+            {
+                "mcp_servers.ai-memory-files",
+                "mcp_servers.ai-memory-sqlite",
+            },
+        )
+
         block = f"""
     {marker_start}
 
@@ -289,12 +310,6 @@ let
     # SQLite MCP is intentionally opt-in to avoid long-lived Python/uvx MCP
     # processes in every editor session. Use {ROOT}/mcp/config.sqlite-opt-in.json
     # when an agent needs the heavier SQLite server.
-
-    [plugins."github@openai-curated"]
-    enabled = true
-
-    [plugins."notion@openai-curated"]
-    enabled = true
 
     {marker_end}
     """.strip()
