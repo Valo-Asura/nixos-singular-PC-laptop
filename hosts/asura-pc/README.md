@@ -25,14 +25,24 @@ Keep garbage collection off until the newest generation has booted cleanly.
 
 - PC Plymouth is disabled until the newest generation boots cleanly.
 - Boot status is intentionally visible with `systemd.show_status=true`.
+- The PC uses classic NixOS stage-1 initrd temporarily because the new
+  CachyOS generation failed in systemd initrd with
+  `Switch root target contains no usable init`.
 - The PC does not define `rescue-no-nvidia`; that workaround is laptop-only.
 - NVIDIA remains enabled, but it loads after initrd instead of inside initrd.
 - systemd-boot keeps 5 generations to preserve rollback room while reducing menu noise.
 
 After rebuilding, old `rescue-no-nvidia`, Limine, Atlas, and missing-file entries
-are removed from `/boot/loader/entries` by the activation script. Duplicate
-Windows firmware entries registered against the Linux ESP are removed, while the
-real Windows Boot Manager entry on the Windows ESP is preserved.
+are removed from `/boot/loader/entries` during systemd-boot installation and
+activation. Duplicate Windows firmware entries registered against the Linux ESP
+are removed, while the real Windows Boot Manager entry on the Windows ESP is
+preserved.
+
+Manual cleanup command, if a boot-only rebuild left stale menu entries:
+
+```bash
+sudo asura-pc-clean-boot-entries
+```
 
 ## Secure Boot Next Steps
 

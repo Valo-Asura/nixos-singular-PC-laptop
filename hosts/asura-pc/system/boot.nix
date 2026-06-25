@@ -37,17 +37,217 @@ let
       runHook postInstall
     '';
   };
+
+  cleanStaleLoaderEntries = pkgs.writeShellScriptBin "asura-pc-clean-loader-entries" ''
+    set -u
+
+    export PATH=${
+      lib.makeBinPath [
+        pkgs.coreutils
+        pkgs.gnugrep
+      ]
+    }
+
+    entries_dir="/boot/loader/entries"
+    boot_dir="/boot"
+
+    [ -d "$entries_dir" ] || exit 0
+
+    for entry in "$entries_dir"/*.conf; do
+      [ -e "$entry" ] || continue
+      name="$(basename "$entry")"
+
+      # Keep explicit Windows chainloaders. They do not reference NixOS kernels.
+      if [ "$name" = "windows.conf" ]; then
+        continue
+      fi
+
+      if grep -Eiq 'Atlas|Limine|UEFI OS|rescue-no-nvidia' "$entry"; then
+        echo "Removing stale third-party loader entry: $entry"
+        rm -f "$entry"
+        continue
+      fi
+
+      missing_ref=0
+      while IFS= read -r line; do
+        set -- $line
+        key="''${1:-}"
+        path="''${2:-}"
+
+        case "$key" in
+          linux|initrd|efi|uki)
+            [ -n "$path" ] || continue
+            case "$path" in
+              \#*) continue ;;
+            esac
+
+            relative="''${path#/}"
+            if [ ! -e "$boot_dir/$relative" ]; then
+              missing_ref=1
+            fi
+            ;;
+        esac
+      done < "$entry"
+
+      if [ "$missing_ref" = 1 ]; then
+        echo "Removing stale loader entry with missing boot file: $entry"
+        rm -f "$entry"
+      fi
+    done
+  '';
+
+  cleanStaleEfiBootEntries = pkgs.writeShellScriptBin "asura-pc-clean-efi-boot-entries" ''
+    set -u
+
+    export PATH=${
+      lib.makeBinPath [
+        pkgs.coreutils
+        pkgs.efibootmgr
+        pkgs.gawk
+        pkgs.gnugrep
+        pkgs.gnused
+      ]
+    }
+
+    [ -d /sys/firmware/efi/efivars ] || exit 0
+
+    status="$(efibootmgr -v 2>/dev/null || true)"
+    [ -n "$status" ] || exit 0
+
+    printf '%s\n' "$status" \
+      | awk '
+        /^Boot[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][* ]/ {
+          id = substr($1, 5, 4)
+          desc = substr($0, index($0, $2))
+          print id "\t" desc
+        }
+      ' \
+      | while IFS="$(printf '\t')" read -r id desc; do
+        [ -n "$id" ] || continue
+
+        should_delete=0
+        case "$desc" in
+          Windows\ Boot\ Manager*)
+            # Keep the real Windows firmware entry, but remove duplicate
+            # Windows entries accidentally registered against the Linux ESP.
+            if printf '%s\n' "$desc" | grep -qi '${linuxEspPartUuid}'; then
+              should_delete=1
+            fi
+            ;;
+          Limine*|UEFI\ OS*|*Atlas*)
+            should_delete=1
+            ;;
+        esac
+
+        if printf '%s\n' "$desc" | grep -Fqi '\EFI\nixos\' \
+          || printf '%s\n' "$desc" | grep -Fqi '/EFI/nixos/'; then
+          should_delete=1
+        fi
+
+        if printf '%s\n' "$desc" | grep -q '^Linux Boot Manager' \
+          && ! printf '%s\n' "$desc" | grep -qi '${linuxEspPartUuid}'; then
+          should_delete=1
+        fi
+
+        if [ "$should_delete" = 1 ]; then
+          echo "Removing stale EFI boot entry Boot$id: $desc"
+          efibootmgr -b "$id" -B || true
+        fi
+      done
+
+    status="$(efibootmgr -v 2>/dev/null || true)"
+    linux_entry="$(printf '%s\n' "$status" | grep -i "Linux Boot Manager.*${linuxEspPartUuid}" | sed -n 's/^Boot\([0-9A-Fa-f]\{4\}\).*/\1/p' | head -n1)"
+    windows_entries="$(printf '%s\n' "$status" | grep -i '^Boot[0-9A-Fa-f]\{4\}.*Windows Boot Manager' | sed -n 's/^Boot\([0-9A-Fa-f]\{4\}\).*/\1/p' | paste -sd, -)"
+    current_order="$(printf '%s\n' "$status" | sed -n 's/^BootOrder: //p' | head -n1)"
+
+    [ -n "$linux_entry" ] || exit 0
+    [ -n "$current_order" ] || exit 0
+
+    rest="$(printf '%s\n' "$current_order" \
+      | awk -v linux="$linux_entry" -v windows="$windows_entries" '
+        BEGIN {
+          RS = ","
+          ORS = ""
+          split(windows, win, ",")
+          for (i in win) skip[win[i]] = 1
+          skip[linux] = 1
+        }
+        $0 != "" && !($0 in skip) {
+          if (out != "") out = out ","
+          out = out $0
+        }
+        END { print out }
+      ')"
+
+    new_order="$linux_entry"
+    if [ -n "$windows_entries" ]; then
+      new_order="$new_order,$windows_entries"
+    fi
+    if [ -n "$rest" ]; then
+      new_order="$new_order,$rest"
+    fi
+
+    if [ "$new_order" != "$current_order" ]; then
+      efibootmgr -o "$new_order" || true
+    fi
+  '';
+
+  syncWindowsBootEntry = pkgs.writeShellScriptBin "asura-pc-sync-windows-boot-entry" ''
+    set -u
+
+    export PATH=${
+      lib.makeBinPath [
+        pkgs.coreutils
+        pkgs.util-linux
+      ]
+    }
+
+    windows_esp="/dev/disk/by-partuuid/${windowsEspPartUuid}"
+    mount_dir="$(mktemp -d)"
+
+    cleanup() {
+      umount "$mount_dir" >/dev/null 2>&1 || true
+      rmdir "$mount_dir" >/dev/null 2>&1 || true
+    }
+    trap cleanup EXIT
+
+    if [ -e "$windows_esp" ] && mount -o ro "$windows_esp" "$mount_dir" >/dev/null 2>&1; then
+      if [ -f "$mount_dir/EFI/Microsoft/Boot/bootmgfw.efi" ]; then
+        mkdir -p /boot/EFI/Microsoft /boot/loader/entries
+        rm -rf /boot/EFI/Microsoft/Boot
+        cp -a "$mount_dir/EFI/Microsoft/Boot" /boot/EFI/Microsoft/Boot
+        printf '%s\n' \
+          "title Windows Boot Manager" \
+          "efi /EFI/Microsoft/Boot/bootmgfw.efi" \
+          "sort-key z_windows" \
+          > /boot/loader/entries/windows.conf
+      fi
+    fi
+  '';
+
+  cleanBootEntries = pkgs.writeShellScriptBin "asura-pc-clean-boot-entries" ''
+    set -u
+
+    ${syncWindowsBootEntry}/bin/asura-pc-sync-windows-boot-entry || true
+    ${cleanStaleLoaderEntries}/bin/asura-pc-clean-loader-entries || true
+    ${cleanStaleEfiBootEntries}/bin/asura-pc-clean-efi-boot-entries || true
+  '';
 in
 {
   environment.systemPackages = with pkgs; [
     sbctl
     efibootmgr
     tpm2-tools
+    cleanBootEntries
   ];
 
   boot = {
     consoleLogLevel = 4;
     initrd = {
+      # The PC currently fails in systemd initrd with
+      # "Switch root target contains no usable init" on the CachyOS generation.
+      # Use the classic NixOS stage-1 until the upstream path is proven here.
+      systemd.enable = lib.mkForce false;
       verbose = false;
       stage1Greeting = "";
     };
@@ -62,6 +262,9 @@ in
         consoleMode = "max";
         configurationLimit = 5;
         rebootForBitlocker = true;
+        extraInstallCommands = ''
+          ${cleanBootEntries}/bin/asura-pc-clean-boot-entries || true
+        '';
       };
 
       grub.enable = false;
@@ -112,169 +315,14 @@ in
   '';
 
   system.activationScripts.cleanStaleLoaderEntries.text = ''
-    entries_dir="/boot/loader/entries"
-    boot_dir="/boot"
-
-    if [ -d "$entries_dir" ]; then
-      for entry in "$entries_dir"/*.conf; do
-        [ -e "$entry" ] || continue
-        name="$(${pkgs.coreutils}/bin/basename "$entry")"
-
-        # Keep explicit Windows chainloaders. They do not reference NixOS kernels.
-        if [ "$name" = "windows.conf" ]; then
-          continue
-        fi
-
-        if ${pkgs.gnugrep}/bin/grep -Eiq 'Atlas|Limine|UEFI OS|rescue-no-nvidia' "$entry"; then
-          echo "Removing stale third-party loader entry: $entry"
-          ${pkgs.coreutils}/bin/rm -f "$entry"
-          continue
-        fi
-
-        missing_ref=0
-        while IFS= read -r line; do
-          set -- $line
-          key="''${1:-}"
-          path="''${2:-}"
-
-          case "$key" in
-            linux|initrd|efi|uki)
-              [ -n "$path" ] || continue
-              case "$path" in
-                \#*) continue ;;
-              esac
-
-              relative="''${path#/}"
-              if [ ! -e "$boot_dir/$relative" ]; then
-                missing_ref=1
-              fi
-              ;;
-          esac
-        done < "$entry"
-
-        if [ "$missing_ref" = 1 ]; then
-          echo "Removing stale loader entry with missing boot file: $entry"
-          ${pkgs.coreutils}/bin/rm -f "$entry"
-        fi
-      done
-    fi
+    ${cleanStaleLoaderEntries}/bin/asura-pc-clean-loader-entries || true
   '';
 
   system.activationScripts.cleanStaleEfiBootEntries.text = ''
-    if [ ! -d /sys/firmware/efi/efivars ]; then
-      exit 0
-    fi
-
-    status="$(${pkgs.efibootmgr}/bin/efibootmgr -v 2>/dev/null || true)"
-    if [ -z "$status" ]; then
-      exit 0
-    fi
-
-    printf '%s\n' "$status" \
-      | ${pkgs.gawk}/bin/awk '
-        /^Boot[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][* ]/ {
-          id = substr($1, 5, 4)
-          desc = substr($0, index($0, $2))
-          print id "\t" desc
-        }
-      ' \
-      | while IFS="$(printf '\t')" read -r id desc; do
-        [ -n "$id" ] || continue
-
-        should_delete=0
-        case "$desc" in
-          Windows\ Boot\ Manager*)
-            # Keep the real Windows firmware entry, but remove duplicate
-            # Windows entries accidentally registered against the Linux ESP.
-            if printf '%s\n' "$desc" | ${pkgs.gnugrep}/bin/grep -qi '${linuxEspPartUuid}'; then
-              should_delete=1
-            else
-              should_delete=0
-            fi
-            ;;
-          Limine*|UEFI\ OS*|*Atlas*)
-            should_delete=1
-            ;;
-        esac
-
-        if printf '%s\n' "$desc" | ${pkgs.gnugrep}/bin/grep -Eiq '\\EFI\\nixos\\|/EFI/nixos/'; then
-          should_delete=1
-        fi
-
-        if printf '%s\n' "$desc" | ${pkgs.gnugrep}/bin/grep -q '^Linux Boot Manager' \
-          && ! printf '%s\n' "$desc" | ${pkgs.gnugrep}/bin/grep -qi '${linuxEspPartUuid}'; then
-          should_delete=1
-        fi
-
-        if [ "$should_delete" = 1 ]; then
-          echo "Removing stale EFI boot entry Boot$id: $desc"
-          ${pkgs.efibootmgr}/bin/efibootmgr -b "$id" -B || true
-        fi
-      done
-
-    status="$(${pkgs.efibootmgr}/bin/efibootmgr -v 2>/dev/null || true)"
-    linux_entry="$(printf '%s\n' "$status" | ${pkgs.gnugrep}/bin/grep -i "Linux Boot Manager.*${linuxEspPartUuid}" | ${pkgs.gnused}/bin/sed -n 's/^Boot\([0-9A-Fa-f]\{4\}\).*/\1/p' | ${pkgs.coreutils}/bin/head -n1)"
-    windows_entries="$(printf '%s\n' "$status" | ${pkgs.gnugrep}/bin/grep -i '^Boot[0-9A-Fa-f]\{4\}.*Windows Boot Manager' | ${pkgs.gnused}/bin/sed -n 's/^Boot\([0-9A-Fa-f]\{4\}\).*/\1/p' | ${pkgs.coreutils}/bin/paste -sd, -)"
-    current_order="$(printf '%s\n' "$status" | ${pkgs.gnused}/bin/sed -n 's/^BootOrder: //p' | ${pkgs.coreutils}/bin/head -n1)"
-
-    if [ -z "$linux_entry" ] || [ -z "$current_order" ]; then
-      exit 0
-    fi
-
-    rest="$(printf '%s\n' "$current_order" \
-      | ${pkgs.gawk}/bin/awk -v linux="$linux_entry" -v windows="$windows_entries" '
-        BEGIN {
-          RS = ","
-          ORS = ""
-          split(windows, win, ",")
-          for (i in win) skip[win[i]] = 1
-          skip[linux] = 1
-        }
-        $0 != "" && !($0 in skip) {
-          if (out != "") out = out ","
-          out = out $0
-        }
-        END { print out }
-      ')"
-
-    new_order="$linux_entry"
-    if [ -n "$windows_entries" ]; then
-      new_order="$new_order,$windows_entries"
-    fi
-    if [ -n "$rest" ]; then
-      new_order="$new_order,$rest"
-    fi
-
-    if [ "$new_order" != "$current_order" ]; then
-      ${pkgs.efibootmgr}/bin/efibootmgr -o "$new_order" || true
-    fi
+    ${cleanStaleEfiBootEntries}/bin/asura-pc-clean-efi-boot-entries || true
   '';
 
   system.activationScripts.syncWindowsBootEntry.text = ''
-    windows_esp="/dev/disk/by-partuuid/${windowsEspPartUuid}"
-    mount_dir="$(${pkgs.coreutils}/bin/mktemp -d)"
-
-    if [ -d /boot/loader/entries ]; then
-      ${pkgs.coreutils}/bin/rm -f /boot/loader/entries/*[Aa]tlas*.conf
-    fi
-
-    cleanup() {
-      ${pkgs.util-linux}/bin/umount "$mount_dir" >/dev/null 2>&1 || true
-      ${pkgs.coreutils}/bin/rmdir "$mount_dir" >/dev/null 2>&1 || true
-    }
-    trap cleanup EXIT
-
-    if [ -e "$windows_esp" ] && ${pkgs.util-linux}/bin/mount -o ro "$windows_esp" "$mount_dir" >/dev/null 2>&1; then
-      if [ -f "$mount_dir/EFI/Microsoft/Boot/bootmgfw.efi" ]; then
-        ${pkgs.coreutils}/bin/mkdir -p /boot/EFI/Microsoft /boot/loader/entries
-        ${pkgs.coreutils}/bin/rm -rf /boot/EFI/Microsoft/Boot
-        ${pkgs.coreutils}/bin/cp -a "$mount_dir/EFI/Microsoft/Boot" /boot/EFI/Microsoft/Boot
-        ${pkgs.coreutils}/bin/cat > /boot/loader/entries/windows.conf <<'EOF'
-title Windows Boot Manager
-efi /EFI/Microsoft/Boot/bootmgfw.efi
-sort-key z_windows
-EOF
-      fi
-    fi
+    ${syncWindowsBootEntry}/bin/asura-pc-sync-windows-boot-entry || true
   '';
 }
