@@ -223,7 +223,7 @@
         else
           cat > "$wallpaper_state" <<EOF
     {
-        "activeColorPreset": "Rose Pine",
+        "activeColorPreset": "Cherry Blossom",
         "currentWall": "$fallback_wall",
         "matugenScheme": "scheme-tonal-spot",
         "wallPath": "$wallpaper_dir"
