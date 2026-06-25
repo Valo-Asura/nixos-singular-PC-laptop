@@ -4,6 +4,7 @@
 let
   pkiBundle = "/var/lib/sbctl";
   linuxEspPartUuid = "30d0727b-1228-439e-a04f-0d9402748e9d";
+  windowsEspPartUuid = "98a6f918-4a0b-4479-a940-784bb92cfa77";
 
   circleHudPlymouth = pkgs.stdenvNoCC.mkDerivation {
     pname = "asura-pc-circle-hud-plymouth-theme";
@@ -224,6 +225,12 @@ in
       limine = {
         enable = true;
         secureBoot.enable = true;
+        extraEntries = ''
+          /Windows Boot Manager
+            protocol: efi
+            path: guid(${windowsEspPartUuid}):/EFI/Microsoft/Boot/bootmgfw.efi
+            if_fw_type: UEFI
+        '';
       };
 
       systemd-boot.enable = lib.mkForce false;
