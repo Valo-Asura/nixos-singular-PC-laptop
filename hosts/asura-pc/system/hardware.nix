@@ -56,12 +56,10 @@ in
     options v4l2loopback devices=1 video_nr=9 card_label="OBS Virtual Camera" exclusive_caps=1
   '';
 
-  boot.initrd.kernelModules = [
-    "nvidia"
-    "nvidia_modeset"
-    "nvidia_uvm"
-    "nvidia_drm"
-  ];
+  # Load NVIDIA after the real root is mounted. The PC does not need the
+  # proprietary NVIDIA stack in initrd, and early KMS made boot failures look
+  # like a Plymouth hang.
+  boot.initrd.kernelModules = [ ];
 
   boot.kernelModules = [
     "wl"

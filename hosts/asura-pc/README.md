@@ -21,6 +21,19 @@ sudo nixos-rebuild boot --flake /etc/nixos#asura-pc
 
 Keep garbage collection off until the newest generation has booted cleanly.
 
+## Boot Recovery Notes
+
+- PC Plymouth is disabled until the newest generation boots cleanly.
+- Boot status is intentionally visible with `systemd.show_status=true`.
+- The PC does not define `rescue-no-nvidia`; that workaround is laptop-only.
+- NVIDIA remains enabled, but it loads after initrd instead of inside initrd.
+- systemd-boot keeps 5 generations to preserve rollback room while reducing menu noise.
+
+After rebuilding, old `rescue-no-nvidia`, Limine, Atlas, and missing-file entries
+are removed from `/boot/loader/entries` by the activation script. Duplicate
+Windows firmware entries registered against the Linux ESP are removed, while the
+real Windows Boot Manager entry on the Windows ESP is preserved.
+
 ## Secure Boot Next Steps
 
 Current state:

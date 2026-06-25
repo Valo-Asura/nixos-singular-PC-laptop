@@ -46,7 +46,7 @@ in
   ];
 
   boot = {
-    consoleLogLevel = 3;
+    consoleLogLevel = 4;
     initrd = {
       verbose = false;
       stage1Greeting = "";
@@ -60,7 +60,7 @@ in
         enable = lib.mkForce true;
         editor = false;
         consoleMode = "max";
-        configurationLimit = 8;
+        configurationLimit = 5;
         rebootForBitlocker = true;
       };
 
@@ -76,19 +76,19 @@ in
     };
 
     plymouth = {
-      enable = true;
+      # Keep PC boots diagnosable until the new generation is confirmed stable.
+      # The last regression looked like a Plymouth hang because boot status was hidden.
+      enable = lib.mkForce false;
       theme = "circle_hud";
       themePackages = [ circleHudPlymouth ];
     };
 
     kernelParams = [
-      "quiet"
-      "splash"
-      "loglevel=3"
-      "rd.systemd.show_status=false"
-      "systemd.show_status=false"
-      "rd.udev.log_level=3"
-      "udev.log_level=3"
+      "loglevel=4"
+      "rd.systemd.show_status=true"
+      "systemd.show_status=true"
+      "rd.udev.log_level=info"
+      "udev.log_level=info"
       "vt.global_cursor_default=0"
       "video=HDMI-A-1:1920x1080@144"
       "nvidia-drm.modeset=1"
@@ -98,20 +98,6 @@ in
       "split_lock_detect=off"
       "cryptomgr.notests"
     ];
-  };
-
-  specialisation.rescue-no-nvidia.configuration = {
-    boot = {
-      plymouth.enable = lib.mkForce false;
-      kernelParams = [
-        "systemd.unit=multi-user.target"
-        "plymouth.enable=0"
-        "modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm"
-        "rd.systemd.show_status=true"
-        "systemd.show_status=true"
-        "loglevel=6"
-      ];
-    };
   };
 
   system.activationScripts.createSbctlKeys.text = ''
@@ -139,7 +125,7 @@ in
           continue
         fi
 
-        if ${pkgs.gnugrep}/bin/grep -Eiq 'Atlas|Limine|UEFI OS' "$entry"; then
+        if ${pkgs.gnugrep}/bin/grep -Eiq 'Atlas|Limine|UEFI OS|rescue-no-nvidia' "$entry"; then
           echo "Removing stale third-party loader entry: $entry"
           ${pkgs.coreutils}/bin/rm -f "$entry"
           continue
@@ -198,7 +184,13 @@ in
         should_delete=0
         case "$desc" in
           Windows\ Boot\ Manager*)
-            should_delete=0
+            # Keep the real Windows firmware entry, but remove duplicate
+            # Windows entries accidentally registered against the Linux ESP.
+            if printf '%s\n' "$desc" | ${pkgs.gnugrep}/bin/grep -qi '${linuxEspPartUuid}'; then
+              should_delete=1
+            else
+              should_delete=0
+            fi
             ;;
           Limine*|UEFI\ OS*|*Atlas*)
             should_delete=1
