@@ -143,9 +143,9 @@ release_vibeshell_lock() {
 
 case "${1:-}" in
 update)
-	echo "Vibeshell is vendored in /etc/nixos/asuraPc/vibeshell."
+	echo "Vibeshell is vendored in /etc/nixos/shells/vibeshell."
 	echo "Update Quickshell with: sudo nix flake update quickshell --flake /etc/nixos"
-	echo "Then rebuild with: sudo nixos-rebuild switch --flake /etc/nixos#nixos"
+	echo "Then rebuild with: sudo nixos-rebuild boot --flake /etc/nixos#asura-pc"
 	;;
 refresh)
 	echo "Refreshing Vibeshell profile..."

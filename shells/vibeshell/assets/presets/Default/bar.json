@@ -9,8 +9,13 @@
     "playerTitleIntroMs": 2800,
     "barColor": [
         [
-            "surface",
-            0
+            "primary",
+            0.22
         ]
-    ]
+    ],
+    "height": 36,
+    "padding": 2,
+    "spacing": 4,
+    "radius": 16,
+    "backgroundOpacity": 0.92
 }

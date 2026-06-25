@@ -192,7 +192,7 @@ Singleton {
             property string monoFont: "Iosevka Nerd Font Mono"
             property int monoFontSize: 14
             property bool tintIcons: false
-            property bool enableCorners: false
+            property bool enableCorners: true
             property int animDuration: 300
             property real shadowOpacity: 0.5
             property string shadowColor: "shadow"
@@ -256,7 +256,7 @@ Singleton {
 
             property JsonObject srBarBg: JsonObject {
                 property string label: "Bar BG"
-                property list<var> gradient: [["surfaceDim", 0.0]]
+                property list<var> gradient: [["background", 0.0], ["surfaceDim", 1.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
                 property real gradientCenterX: 0.5
@@ -267,9 +267,9 @@ Singleton {
                 property real halftoneEnd: 1.0
                 property string halftoneDotColor: "surface"
                 property string halftoneBackgroundColor: "surfaceDim"
-                property list<var> border: ["surfaceBright", 0]
+                property list<var> border: ["primary", 1]
                 property string itemColor: "overBackground"
-                property real opacity: 0.0
+                property real opacity: 1.0
             }
 
             property JsonObject srPane: JsonObject {
@@ -586,14 +586,14 @@ Singleton {
             property list<string> screenList: []
             property bool enableFirefoxPlayer: false
             property int playerTitleIntroMs: 2800
-            property list<var> barColor: [["surface", 0.0]]
-            property int height: 44
+            property list<var> barColor: [["primary", 0.22]]
+            property int height: 36
             property int width: 0
-            property int padding: 4
+            property int padding: 2
             property int margin: 0
             property int spacing: 4
-            property int radius: 18
-            property real backgroundOpacity: 1.0
+            property int radius: 16
+            property real backgroundOpacity: 0.92
             // Auto-hide properties
             property bool pinnedOnStartup: true
             property bool hoverToReveal: true

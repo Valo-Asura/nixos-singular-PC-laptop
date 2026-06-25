@@ -23,7 +23,7 @@ WlSessionLockSurface {
     property bool authenticating: false
     property string errorMessage: ""
     property int failLockSecondsLeft: 0
-    readonly property string fallbackLockscreenImagePath: "/etc/nixos/asuraPc/hyprland/lock-images/lockscreen.png"
+    readonly property string fallbackLockscreenImagePath: "/etc/nixos/assets/she.jpg"
     readonly property string configuredLockscreenImagePath: Config.lockscreen?.imagePath ?? ""
     readonly property string generatedLockscreenFramePath: {
         if (!GlobalStates.wallpaperManager)

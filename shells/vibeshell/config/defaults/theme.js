@@ -9,7 +9,7 @@ var data = {
     "monoFont": "Iosevka Nerd Font Mono",
     "monoFontSize": 14,
     "tintIcons": false,
-    "enableCorners": false,
+    "enableCorners": true,
     "animDuration": 300,
     "shadowOpacity": 0.5,
     "shadowColor": "shadow",
@@ -69,7 +69,7 @@ var data = {
     },
     "srBarBg": {
         "label": "Bar BG",
-        "gradient": [["surfaceDim", 0.0]],
+        "gradient": [["background", 0.0], ["surfaceDim", 1.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
         "gradientCenterX": 0.5,
@@ -80,9 +80,9 @@ var data = {
         "halftoneEnd": 1.0,
         "halftoneDotColor": "surface",
         "halftoneBackgroundColor": "surfaceDim",
-        "border": ["surfaceBright", 0],
+        "border": ["primary", 1],
         "itemColor": "overBackground",
-        "opacity": 0.0
+        "opacity": 1.0
     },
     "srPane": {
         "label": "Pane",

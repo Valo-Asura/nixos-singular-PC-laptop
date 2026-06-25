@@ -29,12 +29,13 @@
         install_mutable_config ${./binds.json} "$HOME/.config/Vibeshell/binds.json"
         install_mutable_config ${./system.json} "$HOME/.config/Vibeshell/config/system.json"
 
+        lockscreen_fallback="/etc/nixos/assets/she.jpg"
         lockscreen_config="$HOME/.config/Vibeshell/config/lockscreen.json"
         if [ -f "$lockscreen_config" ]; then
           tmp="$(mktemp)"
-          ${pkgs.jq}/bin/jq '
-            if .imagePath == "/etc/nixos/asuraPc/hyprland/lock-images/lockscreen.png"
-            then .imagePath = ""
+          ${pkgs.jq}/bin/jq --arg fallback "$lockscreen_fallback" '
+            if ((.imagePath // "") | endswith("/hyprland/lock-images/lockscreen.png"))
+            then .imagePath = $fallback
             else .
             end
           ' "$lockscreen_config" > "$tmp" \
@@ -91,9 +92,56 @@
             | .enableCorners = true
             | .shadowBlur = 1
             | .shadowOpacity = 0.5
+            | .srBarBg.gradient = [["background", 0], ["surfaceDim", 1]]
+            | .srBarBg.border = ["primary", 1]
+            | .srBarBg.opacity = 1
           ' "$theme_config" > "$tmp" \
             && install -m 0644 "$tmp" "$theme_config"
           rm -f "$tmp"
+        fi
+
+        bar_config="$HOME/.config/Vibeshell/config/bar.json"
+        mkdir -p "$(dirname "$bar_config")"
+        if [ -f "$bar_config" ]; then
+          tmp="$(mktemp)"
+          ${pkgs.jq}/bin/jq '
+            .position = "top"
+            | .barColor = [["primary", 0.22]]
+            | .height = 36
+            | .padding = 2
+            | .spacing = 4
+            | .radius = 16
+            | .backgroundOpacity = 0.92
+          ' "$bar_config" > "$tmp" \
+            && install -m 0644 "$tmp" "$bar_config"
+          rm -f "$tmp"
+        else
+          cat > "$bar_config" <<'EOF'
+    {
+        "enabled": true,
+        "position": "top",
+        "launcherIcon": "",
+        "launcherIconTint": true,
+        "launcherIconFullTint": true,
+        "launcherIconSize": 18,
+        "screenList": [],
+        "enableFirefoxPlayer": false,
+        "playerTitleIntroMs": 2800,
+        "barColor": [["primary", 0.22]],
+        "height": 36,
+        "width": 0,
+        "padding": 2,
+        "margin": 0,
+        "spacing": 4,
+        "radius": 16,
+        "backgroundOpacity": 0.92,
+        "pinnedOnStartup": true,
+        "hoverToReveal": true,
+        "hoverRegionHeight": 8,
+        "showPinButton": true,
+        "availableOnFullscreen": false
+    }
+    EOF
         fi
 
         notch_config="$HOME/.config/Vibeshell/config/notch.json"
@@ -163,7 +211,7 @@
             .wallPath = $dir
             | if (
                 (.currentWall // "") == ""
-                or .currentWall == "/etc/nixos/asuraPc/assets/sans.png"
+                or ((.currentWall // "") | endswith("/assets/sans.png"))
                 or ((.currentWall // "") | test("(?i)\\.(gif|mp4|webm|mov|avi|mkv)$"))
               )
               then .currentWall = $fallback
@@ -188,20 +236,20 @@
         mkdir -p "$(dirname "$lockscreen_config")"
         if [ -f "$lockscreen_config" ]; then
           tmp="$(mktemp)"
-          ${pkgs.jq}/bin/jq '
+          ${pkgs.jq}/bin/jq --arg fallback "$lockscreen_fallback" '
             .position = (.position // "bottom")
             | if ((.imagePath // "") | length) == 0
-              then .imagePath = "/etc/nixos/asuraPc/hyprland/lock-images/lockscreen.png"
+              then .imagePath = $fallback
               else .
               end
           ' "$lockscreen_config" > "$tmp" \
             && install -m 0644 "$tmp" "$lockscreen_config"
           rm -f "$tmp"
         else
-          cat > "$lockscreen_config" <<'EOF'
+          cat > "$lockscreen_config" <<EOF
     {
         "position": "bottom",
-        "imagePath": "/etc/nixos/asuraPc/hyprland/lock-images/lockscreen.png"
+        "imagePath": "$lockscreen_fallback"
     }
     EOF
         fi

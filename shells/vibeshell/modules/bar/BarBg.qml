@@ -14,6 +14,15 @@ Item {
     readonly property int cornerSize: Config.theme.enableCorners ? Math.max(Config.bar?.radius ?? Styling.radius(4), 0) : 0
     readonly property bool isHorizontal: position === "top" || position === "bottom"
     readonly property bool cornersVisible: Config.theme.enableCorners && cornerSize > 0
+    readonly property var barTintLayer: {
+        const layers = Config.bar?.barColor ?? [];
+        return layers.length > 0 ? layers[0] : ["primary", 0.22];
+    }
+    readonly property string barTintColor: (barTintLayer && barTintLayer.length > 0) ? barTintLayer[0] : "primary"
+    readonly property real barTintOpacity: {
+        const value = (barTintLayer && barTintLayer.length > 1) ? Number(barTintLayer[1]) : 0.22;
+        return Math.max(0, Math.min(isNaN(value) ? 0.22 : value, 1));
+    }
 
     // StyledRect expandido que cubre bar + corners
     StyledRect {
@@ -35,6 +44,13 @@ Item {
             maskSource: barMask
             maskThresholdMin: 0.5
             maskSpreadAtMin: 1.0
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: Config.resolveColor(root.barTintColor)
+            opacity: root.barTintOpacity
+            visible: opacity > 0
         }
     }
 
