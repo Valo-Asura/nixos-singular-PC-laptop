@@ -53,7 +53,7 @@ in
     };
 
     loader = {
-      efi.canTouchEfiVariables = lib.mkForce false;
+      efi.canTouchEfiVariables = lib.mkForce true;
       timeout = 12;
 
       systemd-boot = {
@@ -118,8 +118,137 @@ in
     fi
   '';
 
-  system.activationScripts.preferSignedBootEntry.text = ''
-    echo "Skipping EFI boot-order rewrite; boot.loader.efi.canTouchEfiVariables is disabled."
+  system.activationScripts.cleanStaleLoaderEntries.text = ''
+    entries_dir="/boot/loader/entries"
+    boot_dir="/boot"
+
+    if [ -d "$entries_dir" ]; then
+      for entry in "$entries_dir"/*.conf; do
+        [ -e "$entry" ] || continue
+        name="$(${pkgs.coreutils}/bin/basename "$entry")"
+
+        # Keep explicit Windows chainloaders. They do not reference NixOS kernels.
+        if [ "$name" = "windows.conf" ]; then
+          continue
+        fi
+
+        if ${pkgs.gnugrep}/bin/grep -Eiq 'Atlas|Limine|UEFI OS' "$entry"; then
+          echo "Removing stale third-party loader entry: $entry"
+          ${pkgs.coreutils}/bin/rm -f "$entry"
+          continue
+        fi
+
+        missing_ref=0
+        while IFS= read -r line; do
+          set -- $line
+          key="''${1:-}"
+          path="''${2:-}"
+
+          case "$key" in
+            linux|initrd|efi|uki)
+              [ -n "$path" ] || continue
+              case "$path" in
+                \#*) continue ;;
+              esac
+
+              relative="''${path#/}"
+              if [ ! -e "$boot_dir/$relative" ]; then
+                missing_ref=1
+              fi
+              ;;
+          esac
+        done < "$entry"
+
+        if [ "$missing_ref" = 1 ]; then
+          echo "Removing stale loader entry with missing boot file: $entry"
+          ${pkgs.coreutils}/bin/rm -f "$entry"
+        fi
+      done
+    fi
+  '';
+
+  system.activationScripts.cleanStaleEfiBootEntries.text = ''
+    if [ ! -d /sys/firmware/efi/efivars ]; then
+      exit 0
+    fi
+
+    status="$(${pkgs.efibootmgr}/bin/efibootmgr -v 2>/dev/null || true)"
+    if [ -z "$status" ]; then
+      exit 0
+    fi
+
+    printf '%s\n' "$status" \
+      | ${pkgs.gawk}/bin/awk '
+        /^Boot[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][* ]/ {
+          id = substr($1, 5, 4)
+          desc = substr($0, index($0, $2))
+          print id "\t" desc
+        }
+      ' \
+      | while IFS="$(printf '\t')" read -r id desc; do
+        [ -n "$id" ] || continue
+
+        should_delete=0
+        case "$desc" in
+          Windows\ Boot\ Manager*)
+            should_delete=0
+            ;;
+          Limine*|UEFI\ OS*|*Atlas*)
+            should_delete=1
+            ;;
+        esac
+
+        if printf '%s\n' "$desc" | ${pkgs.gnugrep}/bin/grep -Eiq '\\EFI\\nixos\\|/EFI/nixos/'; then
+          should_delete=1
+        fi
+
+        if printf '%s\n' "$desc" | ${pkgs.gnugrep}/bin/grep -q '^Linux Boot Manager' \
+          && ! printf '%s\n' "$desc" | ${pkgs.gnugrep}/bin/grep -qi '${linuxEspPartUuid}'; then
+          should_delete=1
+        fi
+
+        if [ "$should_delete" = 1 ]; then
+          echo "Removing stale EFI boot entry Boot$id: $desc"
+          ${pkgs.efibootmgr}/bin/efibootmgr -b "$id" -B || true
+        fi
+      done
+
+    status="$(${pkgs.efibootmgr}/bin/efibootmgr -v 2>/dev/null || true)"
+    linux_entry="$(printf '%s\n' "$status" | ${pkgs.gnugrep}/bin/grep -i "Linux Boot Manager.*${linuxEspPartUuid}" | ${pkgs.gnused}/bin/sed -n 's/^Boot\([0-9A-Fa-f]\{4\}\).*/\1/p' | ${pkgs.coreutils}/bin/head -n1)"
+    windows_entries="$(printf '%s\n' "$status" | ${pkgs.gnugrep}/bin/grep -i '^Boot[0-9A-Fa-f]\{4\}.*Windows Boot Manager' | ${pkgs.gnused}/bin/sed -n 's/^Boot\([0-9A-Fa-f]\{4\}\).*/\1/p' | ${pkgs.coreutils}/bin/paste -sd, -)"
+    current_order="$(printf '%s\n' "$status" | ${pkgs.gnused}/bin/sed -n 's/^BootOrder: //p' | ${pkgs.coreutils}/bin/head -n1)"
+
+    if [ -z "$linux_entry" ] || [ -z "$current_order" ]; then
+      exit 0
+    fi
+
+    rest="$(printf '%s\n' "$current_order" \
+      | ${pkgs.gawk}/bin/awk -v linux="$linux_entry" -v windows="$windows_entries" '
+        BEGIN {
+          RS = ","
+          ORS = ""
+          split(windows, win, ",")
+          for (i in win) skip[win[i]] = 1
+          skip[linux] = 1
+        }
+        $0 != "" && !($0 in skip) {
+          if (out != "") out = out ","
+          out = out $0
+        }
+        END { print out }
+      ')"
+
+    new_order="$linux_entry"
+    if [ -n "$windows_entries" ]; then
+      new_order="$new_order,$windows_entries"
+    fi
+    if [ -n "$rest" ]; then
+      new_order="$new_order,$rest"
+    fi
+
+    if [ "$new_order" != "$current_order" ]; then
+      ${pkgs.efibootmgr}/bin/efibootmgr -o "$new_order" || true
+    fi
   '';
 
   system.activationScripts.syncWindowsBootEntry.text = ''
