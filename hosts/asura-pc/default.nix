@@ -18,7 +18,6 @@ inputs.nixpkgs.lib.nixosSystem {
   };
 
   modules = [
-    inputs.lanzaboote.nixosModules.lanzaboote
     inputs.stylix.nixosModules.stylix
     inputs.nixos-hardware.nixosModules.common-pc
     inputs.nixos-hardware.nixosModules.common-cpu-amd

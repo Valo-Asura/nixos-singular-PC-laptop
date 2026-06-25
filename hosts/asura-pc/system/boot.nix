@@ -1,4 +1,4 @@
-# PC-specific module: bootloader, Secure Boot helper tools, Plymouth, boot params, and Windows boot entry.
+# PC-specific module: Limine bootloader with Secure Boot, Plymouth, boot params, and Windows boot entry.
 { lib, pkgs, ... }:
 
 let
@@ -134,7 +134,7 @@ let
               should_delete=1
             fi
             ;;
-          Limine*|UEFI\ OS*|*Atlas*)
+          UEFI\ OS*|*Atlas*)
             should_delete=1
             ;;
         esac
@@ -156,35 +156,16 @@ let
       done
 
     status="$(efibootmgr -v 2>/dev/null || true)"
-    linux_entry="$(printf '%s\n' "$status" | grep -i "Linux Boot Manager.*${linuxEspPartUuid}" | sed -n 's/^Boot\([0-9A-Fa-f]\{4\}\).*/\1/p' | head -n1)"
+    limine_entry="$(printf '%s\n' "$status" | grep -i "Limine.*${linuxEspPartUuid}" | sed -n 's/^Boot\([0-9A-Fa-f]\{4\}\).*/\1/p' | head -n1)"
     windows_entries="$(printf '%s\n' "$status" | grep -i '^Boot[0-9A-Fa-f]\{4\}.*Windows Boot Manager' | sed -n 's/^Boot\([0-9A-Fa-f]\{4\}\).*/\1/p' | paste -sd, -)"
     current_order="$(printf '%s\n' "$status" | sed -n 's/^BootOrder: //p' | head -n1)"
 
-    [ -n "$linux_entry" ] || exit 0
+    [ -n "$limine_entry" ] || exit 0
     [ -n "$current_order" ] || exit 0
 
-    rest="$(printf '%s\n' "$current_order" \
-      | awk -v linux="$linux_entry" -v windows="$windows_entries" '
-        BEGIN {
-          RS = ","
-          ORS = ""
-          split(windows, win, ",")
-          for (i in win) skip[win[i]] = 1
-          skip[linux] = 1
-        }
-        $0 != "" && !($0 in skip) {
-          if (out != "") out = out ","
-          out = out $0
-        }
-        END { print out }
-      ')"
-
-    new_order="$linux_entry"
+    new_order="$limine_entry"
     if [ -n "$windows_entries" ]; then
       new_order="$new_order,$windows_entries"
-    fi
-    if [ -n "$rest" ]; then
-      new_order="$new_order,$rest"
     fi
 
     if [ "$new_order" != "$current_order" ]; then
@@ -213,14 +194,9 @@ let
 
     if [ -e "$windows_esp" ] && mount -o ro "$windows_esp" "$mount_dir" >/dev/null 2>&1; then
       if [ -f "$mount_dir/EFI/Microsoft/Boot/bootmgfw.efi" ]; then
-        mkdir -p /boot/EFI/Microsoft /boot/loader/entries
+        mkdir -p /boot/EFI/Microsoft
         rm -rf /boot/EFI/Microsoft/Boot
         cp -a "$mount_dir/EFI/Microsoft/Boot" /boot/EFI/Microsoft/Boot
-        printf '%s\n' \
-          "title Windows Boot Manager" \
-          "efi /EFI/Microsoft/Boot/bootmgfw.efi" \
-          "sort-key z_windows" \
-          > /boot/loader/entries/windows.conf
       fi
     fi
   '';
@@ -244,38 +220,22 @@ in
   boot = {
     consoleLogLevel = 4;
     initrd = {
-      # The PC currently fails in systemd initrd with
-      # "Switch root target contains no usable init" on the CachyOS generation.
-      # Use the classic NixOS stage-1 until the upstream path is proven here.
-      systemd.enable = lib.mkForce false;
+      systemd.enable = lib.mkForce true;
       verbose = false;
-      stage1Greeting = "";
     };
 
     loader = {
       efi.canTouchEfiVariables = lib.mkForce true;
       timeout = 12;
 
-      systemd-boot = {
-        enable = lib.mkForce true;
-        editor = false;
-        consoleMode = "max";
-        configurationLimit = 5;
-        rebootForBitlocker = true;
-        extraInstallCommands = ''
-          ${cleanBootEntries}/bin/asura-pc-clean-boot-entries || true
-        '';
+      # Limine replaces systemd-boot + lanzaboote for simpler native Secure Boot.
+      limine = {
+        enable = true;
+        secureBoot.enable = true;
       };
 
+      systemd-boot.enable = lib.mkForce false;
       grub.enable = false;
-      limine.enable = false;
-    };
-
-    lanzaboote = {
-      # Secure Boot is staged but intentionally disabled until sbctl keys are
-      # enrolled and `sbctl verify` confirms all boot files are signed.
-      enable = false;
-      pkiBundle = pkiBundle;
     };
 
     plymouth = {
