@@ -1,10 +1,9 @@
-# PC-specific module: Limine bootloader with Secure Boot, Plymouth, boot params, and Windows boot entry.
+# PC-specific module: Limine bootloader with Secure Boot, Plymouth, and boot params.
 { lib, pkgs, ... }:
 
 let
   pkiBundle = "/var/lib/sbctl";
   linuxEspPartUuid = "30d0727b-1228-439e-a04f-0d9402748e9d";
-  windowsEspPartUuid = "98a6f918-4a0b-4479-a940-784bb92cfa77";
 
   circleHudPlymouth = pkgs.stdenvNoCC.mkDerivation {
     pname = "asura-pc-circle-hud-plymouth-theme";
@@ -144,8 +143,7 @@ let
           should_delete=1
         fi
 
-        if printf '%s\n' "$desc" | grep -q '^Linux Boot Manager' \
-          && ! printf '%s\n' "$desc" | grep -qi '${linuxEspPartUuid}'; then
+        if printf '%s\n' "$desc" | grep -q '^Linux Boot Manager'; then
           should_delete=1
         fi
 
@@ -173,38 +171,32 @@ let
     fi
   '';
 
-  syncWindowsBootEntry = pkgs.writeShellScriptBin "asura-pc-sync-windows-boot-entry" ''
+  cleanStaleEfiFiles = pkgs.writeShellScriptBin "asura-pc-clean-stale-efi-files" ''
     set -u
 
     export PATH=${
       lib.makeBinPath [
         pkgs.coreutils
-        pkgs.util-linux
       ]
     }
 
-    windows_esp="/dev/disk/by-partuuid/${windowsEspPartUuid}"
-    mount_dir="$(mktemp -d)"
-
-    cleanup() {
-      umount "$mount_dir" >/dev/null 2>&1 || true
-      rmdir "$mount_dir" >/dev/null 2>&1 || true
-    }
-    trap cleanup EXIT
-
-    if [ -e "$windows_esp" ] && mount -o ro "$windows_esp" "$mount_dir" >/dev/null 2>&1; then
-      if [ -f "$mount_dir/EFI/Microsoft/Boot/bootmgfw.efi" ]; then
-        mkdir -p /boot/EFI/Microsoft
-        rm -rf /boot/EFI/Microsoft/Boot
-        cp -a "$mount_dir/EFI/Microsoft/Boot" /boot/EFI/Microsoft/Boot
+    for stale in \
+      /boot/EFI/BOOT \
+      /boot/EFI/Microsoft \
+      /boot/EFI/nixos \
+      /boot/EFI/systemd
+    do
+      if [ -e "$stale" ]; then
+        echo "Removing stale EFI path from Linux ESP: $stale"
+        rm -rf -- "$stale"
       fi
-    fi
+    done
   '';
 
   cleanBootEntries = pkgs.writeShellScriptBin "asura-pc-clean-boot-entries" ''
     set -u
 
-    ${syncWindowsBootEntry}/bin/asura-pc-sync-windows-boot-entry || true
+    ${cleanStaleEfiFiles}/bin/asura-pc-clean-stale-efi-files || true
     ${cleanStaleLoaderEntries}/bin/asura-pc-clean-loader-entries || true
     ${cleanStaleEfiBootEntries}/bin/asura-pc-clean-efi-boot-entries || true
   '';
@@ -282,7 +274,7 @@ in
     ${cleanStaleEfiBootEntries}/bin/asura-pc-clean-efi-boot-entries || true
   '';
 
-  system.activationScripts.syncWindowsBootEntry.text = ''
-    ${syncWindowsBootEntry}/bin/asura-pc-sync-windows-boot-entry || true
+  system.activationScripts.cleanStaleEfiFiles.text = ''
+    ${cleanStaleEfiFiles}/bin/asura-pc-clean-stale-efi-files || true
   '';
 }
