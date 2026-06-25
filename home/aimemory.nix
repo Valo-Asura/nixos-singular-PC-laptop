@@ -290,11 +290,38 @@ let
                     out.append(line)
             return "\n".join(out).strip()
 
+        def dedupe_toml_tables(text, table_names):
+            lines = text.splitlines()
+            out = []
+            seen = set()
+            skip = False
+            for line in lines:
+                stripped = line.strip()
+                if stripped.startswith("[") and stripped.endswith("]"):
+                    table = stripped.strip("[]")
+                    skip = table in table_names and table in seen
+                    if table in table_names:
+                        seen.add(table)
+                if not skip:
+                    out.append(line)
+            return "\n".join(out).strip()
+
         existing = strip_toml_tables(
             existing,
             {
                 "mcp_servers.ai-memory-files",
                 "mcp_servers.ai-memory-sqlite",
+            },
+        )
+        existing = dedupe_toml_tables(
+            existing,
+            {
+                "features",
+                "memories",
+                "plugins.\"github@openai-curated\"",
+                "plugins.\"notion@openai-curated\"",
+                "plugins.\"google-calendar@openai-curated\"",
+                "plugins.\"vercel@openai-curated\"",
             },
         )
 
