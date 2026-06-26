@@ -221,7 +221,7 @@ in
       efi.canTouchEfiVariables = lib.mkForce true;
       timeout = 12;
 
-      # Limine replaces systemd-boot + lanzaboote for simpler native Secure Boot.
+      # Limine handles native Secure Boot on the PC host.
       limine = {
         enable = true;
         secureBoot.enable = true;

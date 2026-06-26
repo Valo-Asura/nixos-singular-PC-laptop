@@ -41,7 +41,7 @@ Clickable repo map. Each linked node opens the matching file or folder.
     - [hosts/asura-pc/default.nix](hosts/asura-pc/default.nix) `# PC imports using shared wiring`
     - [hosts/asura-pc/hardware-configuration.nix](hosts/asura-pc/hardware-configuration.nix) `# generated PC hardware config`
     - [hosts/asura-pc/system/](hosts/asura-pc/system/) `# PC-only boot, AMD/NVIDIA/Broadcom, filesystems, power`
-      - [hosts/asura-pc/system/boot.nix](hosts/asura-pc/system/boot.nix) `# PC bootloader, systemd-boot, stale entry cleanup`
+      - [hosts/asura-pc/system/boot.nix](hosts/asura-pc/system/boot.nix) `# PC bootloader, Limine Secure Boot, stale entry cleanup`
       - [hosts/asura-pc/system/kernel.nix](hosts/asura-pc/system/kernel.nix) `# CachyOS PC kernel settings`
       - [hosts/asura-pc/system/hardware.nix](hosts/asura-pc/system/hardware.nix) `# PC devices and drivers`
       - [hosts/asura-pc/system/display.nix](hosts/asura-pc/system/display.nix) `# PC display/GPU display tuning`

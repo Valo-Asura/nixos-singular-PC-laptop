@@ -171,6 +171,7 @@ Item {
     readonly property int notificationPaddingBottom: Config.notchTheme === "island" ? 20 : 16
     readonly property int notificationPaddingTop: 8
     readonly property bool hasActiveNotifications: Notifications.popupList.length > 0
+    readonly property color batteryStatusColor: Battery.lowWarningActive ? Colors.criticalRed : Colors.cyan
 
     property bool notchHovered: false
     property bool railHovered: false
@@ -349,7 +350,7 @@ Item {
                             text: Icons.lightning
                             font.family: Icons.font
                             font.pixelSize: 14
-                            color: Colors.cyan
+                            color: batteryStatusColor
                             opacity: Battery.isPluggedIn ? 1 : 0
                             scale: Battery.isPluggedIn ? 1 : 0.92
                             transformOrigin: Item.Center
@@ -375,7 +376,7 @@ Item {
                             font.family: Config.theme.font
                             font.pixelSize: Styling.fontSize(-3)
                             font.weight: Font.Bold
-                            color: Colors.cyan
+                            color: batteryStatusColor
                         }
 
                         Item {
@@ -391,7 +392,7 @@ Item {
                                 radius: 3
                                 color: "transparent"
                                 border.width: 1
-                                border.color: Colors.cyan
+                                border.color: batteryStatusColor
                                 opacity: Battery.isPluggedIn ? 1 : 0.82
 
                                 Rectangle {
@@ -401,7 +402,7 @@ Item {
                                     width: Math.max(2, (parent.width - 4) * Math.max(0.06, Math.min(1, Battery.percentage / 100)))
                                     height: parent.height - 4
                                     radius: 2
-                                    color: Colors.cyan
+                                    color: batteryStatusColor
                                     opacity: Battery.isPluggedIn ? 0.88 : 0.72
 
                                     Behavior on width {
@@ -420,7 +421,7 @@ Item {
                                 width: 3
                                 height: 6
                                 radius: 1
-                                color: Colors.cyan
+                                color: batteryStatusColor
                                 opacity: 0.82
                             }
                         }

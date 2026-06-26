@@ -30,13 +30,13 @@ Keep garbage collection off until the newest generation has booted cleanly.
   `Switch root target contains no usable init`.
 - The PC does not define `rescue-no-nvidia`; that workaround is laptop-only.
 - NVIDIA remains enabled, but it loads after initrd instead of inside initrd.
-- systemd-boot keeps 5 generations to preserve rollback room while reducing menu noise.
+- Limine Secure Boot is active and keeps the PC boot path independent from the
+  laptop systemd-boot setup.
 
-After rebuilding, old `rescue-no-nvidia`, Limine, Atlas, and missing-file entries
-are removed from `/boot/loader/entries` during systemd-boot installation and
-activation. Duplicate Windows firmware entries registered against the Linux ESP
-are removed, while the real Windows Boot Manager entry on the Windows ESP is
-preserved.
+After rebuilding, stale Limine, Atlas, old rescue, and missing-file boot entries
+are cleaned from firmware and loader locations where possible. Duplicate Windows
+firmware entries registered against the Linux ESP are removed, while the real
+Windows Boot Manager entry on the Windows ESP is preserved.
 
 Manual cleanup command, if a boot-only rebuild left stale menu entries:
 
@@ -48,12 +48,12 @@ sudo asura-pc-clean-boot-entries
 
 Current state:
 
-- `systemd-boot` is active.
+- `boot.loader.limine.enable = true`.
+- `boot.loader.limine.secureBoot.enable = true`.
 - `boot.loader.efi.canTouchEfiVariables = true`.
-- `boot.lanzaboote.enable = false`.
-- Secure Boot should stay disabled in firmware until signing is complete.
+- `systemd-boot` is forced off for this host.
 
-Safe sequence:
+Safe sequence for this host:
 
 1. Prove normal unsigned boot first.
 
@@ -62,7 +62,7 @@ Safe sequence:
    sudo reboot
    ```
 
-2. Boot the newest `Linux Boot Manager` / NixOS generation successfully with Secure Boot still disabled.
+2. Boot the newest Limine/NixOS generation successfully.
 
 3. Check sbctl state.
 
@@ -85,24 +85,15 @@ Safe sequence:
    sudo sbctl status
    ```
 
-7. Enable Lanzaboote in [system/boot.nix](system/boot.nix):
-
-   ```nix
-   boot.loader.systemd-boot.enable = lib.mkForce false;
-   boot.lanzaboote = {
-     enable = true;
-     pkiBundle = "/var/lib/sbctl";
-   };
-   ```
-
-8. Build the signed boot generation while Secure Boot is still disabled.
+7. Build and verify the Limine Secure Boot generation while Secure Boot is still
+   disabled.
 
    ```bash
    sudo nixos-rebuild boot --flake /etc/nixos#asura-pc
    sudo sbctl verify
    ```
 
-9. Only if `sbctl verify` reports all required boot files signed, enable Secure Boot in firmware.
+8. Only if `sbctl verify` reports all required boot files signed, enable Secure Boot in firmware.
 
 Do not run garbage collection until the newest signed generation has booted with Secure Boot enabled.
 If Windows BitLocker is enabled, save the recovery key or suspend BitLocker before changing Secure Boot keys.

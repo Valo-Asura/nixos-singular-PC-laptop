@@ -16,7 +16,6 @@ inputs.nixpkgs.lib.nixosSystem {
     hostName = hostName;
   };
   modules = [
-    inputs.lanzaboote.nixosModules.lanzaboote
     inputs.stylix.nixosModules.stylix
     inputs.nixos-hardware.nixosModules.common-pc
     inputs.nixos-hardware.nixosModules.common-cpu-intel

@@ -1,5 +1,5 @@
 # Shared Home Manager entrypoint: common user config for all Asura hosts.
-{ inputs, pkgs, ... }:
+{ inputs, lib, pkgs, ... }:
 
 {
   imports = [
@@ -13,6 +13,16 @@
     ./desktop/hyprland
     ./desktop/theming
   ];
+
+  # Mask dunst's D-Bus activation so vibeshell's NotificationServer owns
+  # org.freedesktop.Notifications on Hyprland. The X11 fallback sessions
+  # (bspwm/qtile) start dunst explicitly via their start scripts.
+  systemd.user.services.dunst.Install.WantedBy = lib.mkForce [];
+  xdg.dataFile."dbus-1/services/org.knopwob.dunst.service".text = ''
+    [D-BUS Service]
+    Name=org.freedesktop.Notifications
+    Exec=/bin/false
+  '';
 
   home = {
     username = "asura";

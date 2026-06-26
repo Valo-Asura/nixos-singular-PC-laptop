@@ -33,6 +33,7 @@ let
 
     keys = [
         Key([mod], "Return", lazy.spawn(terminal), desc="Open terminal"),
+        Key([mod], "a", lazy.spawn("rofi -show drun"), desc="App launcher"),
         Key([mod], "d", lazy.spawn("rofi -show drun"), desc="Open launcher"),
         Key([mod], "Tab", lazy.next_layout(), desc="Next layout"),
         Key([mod], "q", lazy.window.kill(), desc="Close focused window"),
@@ -195,7 +196,7 @@ let
       code --ozone-platform=x11
 
     super + a
-      asura-vibeshell run tools
+      ${pkgs.rofi}/bin/rofi -show drun
 
     super + e
       ${pkgs.telegram-desktop}/bin/telegram-desktop

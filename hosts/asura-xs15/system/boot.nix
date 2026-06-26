@@ -2,7 +2,6 @@
 { lib, pkgs, ... }:
 
 let
-  pkiBundle = "/var/lib/sbctl";
   linuxEspPartUuid = "ea0c3f00-a433-4db6-b494-b982ec40415b";
   windowsEspPartUuid = "00000000-0000-0000-0000-000000000000";
   circleHudPlymouth = pkgs.stdenvNoCC.mkDerivation {
@@ -142,11 +141,6 @@ in
       limine.enable = false;
     };
 
-    lanzaboote = {
-      enable = false;
-      pkiBundle = pkiBundle;
-    };
-
     plymouth = {
       enable = true;
       theme = "circle_hud";
@@ -188,11 +182,11 @@ in
 
   system.activationScripts.createSbctlKeys.text = ''
     if [ -f /etc/nixos/enable-sbctl-auto-create ]; then
-      if [ ! -d ${pkiBundle} ]; then
+      if [ ! -d /var/lib/sbctl ]; then
         echo "Auto-creating Secure Boot keys (sbctl)..."
         ${pkgs.sbctl}/bin/sbctl create-keys || true
       else
-        echo "sbctl key bundle already exists at ${pkiBundle}; skipping creation."
+        echo "sbctl key bundle already exists at /var/lib/sbctl; skipping creation."
       fi
     fi
   '';
