@@ -38,7 +38,7 @@
           inner_color = "rgba(1a1010dd)";
           outer_color = "rgba(ffaaaacc)";
           font_color = "rgba(ffe7e7ff)";
-          placeholder_text = "<i>unlock asura-xs15</i>";
+          placeholder_text = "<i>unlock Asura</i>";
           fail_text = "<i>try again</i>";
           check_color = "rgba(f9c2c2ff)";
           fail_color = "rgba(ff6b6bff)";
@@ -48,7 +48,7 @@
       label = [
         {
           monitor = "";
-          text = "$TIME";
+          text = "$TIME12";
           color = "rgba(ffe7e7ff)";
           font_size = 54;
           font_family = "JetBrainsMono Nerd Font";
@@ -58,7 +58,7 @@
         }
         {
           monitor = "";
-          text = "asura-xs15";
+          text = "Asura";
           color = "rgba(ffaaaaff)";
           font_size = 15;
           font_family = "JetBrainsMono Nerd Font";
