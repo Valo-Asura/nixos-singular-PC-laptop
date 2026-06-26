@@ -7,7 +7,7 @@
     ./terminal
     # ./neovim
     ./tmux
-    # ./fastfetch
+    ./fastfetch
     ./scripts
   ];
 }
