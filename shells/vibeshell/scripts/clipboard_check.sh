@@ -84,7 +84,7 @@ check_text_type() {
     text_file=$(mktemp)
     trap 'rm -f "$text_file"' RETURN
 
-    if ! timeout "$WL_PASTE_TIMEOUT" wl-paste --type "$mime" 2>/dev/null >"$text_file"; then
+    if ! timeout "$WL_PASTE_TIMEOUT" wl-paste --no-newline --type "$mime" 2>/dev/null >"$text_file"; then
         return 1
     fi
 

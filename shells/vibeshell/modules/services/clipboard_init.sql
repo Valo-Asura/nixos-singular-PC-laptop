@@ -31,6 +31,15 @@ CREATE VIRTUAL TABLE IF NOT EXISTS clipboard_fts USING fts5(
     content_rowid=id
 );
 
+-- Older insert code stored text through readfile(), which sqlite typed as
+-- BLOB. Keep existing history usable after upgrade.
+UPDATE clipboard_items
+SET
+    preview = CAST(preview AS TEXT),
+    full_content = CAST(full_content AS TEXT)
+WHERE typeof(preview) = 'blob'
+   OR typeof(full_content) = 'blob';
+
 -- Triggers to keep FTS table in sync
 CREATE TRIGGER IF NOT EXISTS clipboard_items_ai AFTER INSERT ON clipboard_items BEGIN
     INSERT INTO clipboard_fts(rowid, preview, full_content)

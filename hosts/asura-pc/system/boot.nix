@@ -211,7 +211,7 @@ in
   ];
 
   boot = {
-    consoleLogLevel = 4;
+    consoleLogLevel = 0;
     initrd = {
       systemd.enable = lib.mkForce true;
       verbose = false;
@@ -238,19 +238,19 @@ in
     };
 
     plymouth = {
-      # Keep PC boots diagnosable until the new generation is confirmed stable.
-      # The last regression looked like a Plymouth hang because boot status was hidden.
-      enable = lib.mkForce false;
+      enable = lib.mkForce true;
       theme = "circle_hud";
       themePackages = [ circleHudPlymouth ];
     };
 
     kernelParams = [
-      "loglevel=4"
-      "rd.systemd.show_status=true"
-      "systemd.show_status=true"
-      "rd.udev.log_level=info"
-      "udev.log_level=info"
+      "quiet"
+      "splash"
+      "loglevel=0"
+      "rd.systemd.show_status=false"
+      "systemd.show_status=false"
+      "rd.udev.log_level=3"
+      "udev.log_level=3"
       "vt.global_cursor_default=0"
       "video=HDMI-A-1:1920x1080@144"
       "nvidia-drm.modeset=1"

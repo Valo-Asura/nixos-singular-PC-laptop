@@ -85,16 +85,19 @@
 
         theme_config="$HOME/.config/Vibeshell/config/theme.json"
         mkdir -p "$(dirname "$theme_config")"
+        if [ ! -f "$theme_config" ]; then
+          install -m 0644 ${./assets/presets/Default/theme.json} "$theme_config"
+        fi
         if [ -f "$theme_config" ]; then
           tmp="$(mktemp)"
           ${pkgs.jq}/bin/jq '
             .animDuration = 300
-            | .enableCorners = true
+            | .enableCorners = false
             | .shadowBlur = 1
             | .shadowOpacity = 0.5
-            | .srBarBg.gradient = [["background", 0], ["surfaceDim", 1]]
-            | .srBarBg.border = ["primary", 1]
-            | .srBarBg.opacity = 1
+            | .srBarBg.gradient = [["surfaceDim", 0]]
+            | .srBarBg.border = ["surfaceBright", 0]
+            | .srBarBg.opacity = 0
           ' "$theme_config" > "$tmp" \
             && install -m 0644 "$tmp" "$theme_config"
           rm -f "$tmp"
@@ -106,12 +109,12 @@
           tmp="$(mktemp)"
           ${pkgs.jq}/bin/jq '
             .position = "top"
-            | .barColor = [["primary", 0.22]]
-            | .height = 36
-            | .padding = 2
+            | .barColor = [["surface", 0]]
+            | .height = 44
+            | .padding = 4
             | .spacing = 4
-            | .radius = 16
-            | .backgroundOpacity = 0.92
+            | .radius = 18
+            | .backgroundOpacity = 1
           ' "$bar_config" > "$tmp" \
             && install -m 0644 "$tmp" "$bar_config"
           rm -f "$tmp"
@@ -127,14 +130,14 @@
         "screenList": [],
         "enableFirefoxPlayer": false,
         "playerTitleIntroMs": 2800,
-        "barColor": [["primary", 0.22]],
-        "height": 36,
+        "barColor": [["surface", 0]],
+        "height": 44,
         "width": 0,
-        "padding": 2,
+        "padding": 4,
         "margin": 0,
         "spacing": 4,
-        "radius": 16,
-        "backgroundOpacity": 0.92,
+        "radius": 18,
+        "backgroundOpacity": 1,
         "pinnedOnStartup": true,
         "hoverToReveal": true,
         "hoverRegionHeight": 8,
@@ -150,7 +153,7 @@
           tmp="$(mktemp)"
           ${pkgs.jq}/bin/jq '
             .theme = "default"
-            | .hoverRegionHeight = 8
+            | .hoverRegionHeight = 16
           ' "$notch_config" > "$tmp" \
             && install -m 0644 "$tmp" "$notch_config"
           rm -f "$tmp"
@@ -158,7 +161,7 @@
           cat > "$notch_config" <<'EOF'
     {
         "theme": "default",
-        "hoverRegionHeight": 8
+        "hoverRegionHeight": 16
     }
     EOF
         fi
@@ -202,13 +205,17 @@
         rm -rf "$HOME/.config/nanobot"
 
         wallpaper_state="$HOME/.local/share/Vibeshell/wallpapers.json"
+        colors_state="$HOME/.local/share/Vibeshell/colors.json"
         wallpaper_dir="$HOME/Pictures/wallpaper"
         fallback_wall="$wallpaper_dir/mystical-journey-through-pink-blossom-canyon.jpg"
         mkdir -p "$(dirname "$wallpaper_state")"
+        install -m 0644 ${./assets/colors/Cherry Blossom/dark.json} "$colors_state"
         if [ -f "$wallpaper_state" ]; then
           tmp="$(mktemp)"
           ${pkgs.jq}/bin/jq --arg dir "$wallpaper_dir" --arg fallback "$fallback_wall" '
-            .wallPath = $dir
+            .activeColorPreset = "Cherry Blossom"
+            | .matugenScheme = "scheme-tonal-spot"
+            | .wallPath = $dir
             | if (
                 (.currentWall // "") == ""
                 or ((.currentWall // "") | endswith("/assets/sans.png"))

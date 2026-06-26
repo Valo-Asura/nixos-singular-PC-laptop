@@ -94,7 +94,7 @@ Clickable repo map. Each linked node opens the matching file or folder.
       - [modules/shared/services.nix](modules/shared/services.nix) `# common services`
       - [modules/shared/nix.nix](modules/shared/nix.nix) `# Nix settings and caches`
     - [modules/desktop/](modules/desktop/) `# shared desktop stack`
-      - [modules/desktop/display-manager.nix](modules/desktop/display-manager.nix) `# greetd and Hyprland session`
+      - [modules/desktop/display-manager.nix](modules/desktop/display-manager.nix) `# greetd, Hyprland, BSPWM fallback, Qtile`
       - [modules/desktop/theming.nix](modules/desktop/theming.nix) `# Stylix/shared visual theme`
       - [modules/desktop/browser-theming.nix](modules/desktop/browser-theming.nix) `# browser theme integration`
       - [modules/desktop/wallpaper.nix](modules/desktop/wallpaper.nix) `# shared skwd-wall wallpaper backend`

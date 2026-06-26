@@ -43,8 +43,8 @@ PREVIEW_FILE=$(mktemp)
 trap 'rm -f "$CONTENT_FILE" "$PREVIEW_FILE"' EXIT
 printf '%s' "$PREVIEW" >"$PREVIEW_FILE"
 
-# Use sqlite3 with -cmd to read from files using readfile() function
-# This avoids all shell escaping issues
+# readfile() returns a BLOB in sqlite. Cast it back to TEXT so QML JSON,
+# search, preview, and copy-back paths all receive normal strings.
 sqlite3 "$DB_PATH" <<EOSQL
 .timeout 5000
 BEGIN TRANSACTION;
@@ -54,8 +54,8 @@ INSERT INTO clipboard_items
 VALUES (
     '${HASH}',
     '${MIME_TYPE}',
-    readfile('${PREVIEW_FILE}'),
-    readfile('${CONTENT_FILE}'),
+    CAST(readfile('${PREVIEW_FILE}') AS TEXT),
+    CAST(readfile('${CONTENT_FILE}') AS TEXT),
     ${IS_IMAGE},
     '${BINARY_PATH}',
     ${SIZE},
@@ -65,6 +65,12 @@ VALUES (
     ${TIMESTAMP}
 )
 ON CONFLICT(content_hash) DO UPDATE SET
+mime_type = excluded.mime_type,
+preview = excluded.preview,
+full_content = excluded.full_content,
+is_image = excluded.is_image,
+binary_path = excluded.binary_path,
+size = excluded.size,
 updated_at = ${TIMESTAMP},
 display_index = 0;
 -- Reindex unpinned items (new item is at 0, others shift down)

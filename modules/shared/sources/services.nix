@@ -97,6 +97,9 @@
     config.qtile.default = [
       "gtk"
     ];
+    config.bspwm.default = [
+      "gtk"
+    ];
   };
 
   security.wrappers."gpu-screen-recorder" = {

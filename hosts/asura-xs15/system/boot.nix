@@ -120,9 +120,9 @@ in
   ];
 
   boot = {
-    consoleLogLevel = 4;
+    consoleLogLevel = 0;
     initrd = {
-      verbose = true;
+      verbose = false;
       stage1Greeting = "";
     };
 
@@ -156,12 +156,13 @@ in
     kernelPackages = pkgs.linuxPackages_latest;
 
     kernelParams = [
+      "quiet"
       "splash"
-      "loglevel=4"
-      "rd.systemd.show_status=true"
-      "systemd.show_status=true"
-      "rd.udev.log_level=info"
-      "udev.log_level=info"
+      "loglevel=0"
+      "rd.systemd.show_status=false"
+      "systemd.show_status=false"
+      "rd.udev.log_level=3"
+      "udev.log_level=3"
       "vt.global_cursor_default=0"
       "video=eDP-1:1920x1080@144"
       "nowatchdog"
