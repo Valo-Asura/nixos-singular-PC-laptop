@@ -45,7 +45,7 @@ Item {
             return "hover";
         return "rest";
     }
-    readonly property int minRestWidth: 168
+    readonly property int minRestWidth: Math.max(Config.notch?.width ?? 168, 120)
     readonly property int minHoverWidth: 264
     readonly property int minLauncherWidth: 486
     readonly property int minDashboardWidth: 430
@@ -70,8 +70,8 @@ Item {
         return minRestWidth;
     }
 
-    property int defaultHeight: Config.showBackground ? (morphActive ? Math.max(stackContainer.height, 44) : 44) : (morphActive ? Math.max(stackContainer.height, 40) : 40)
-    property int islandHeight: morphActive ? Math.max(stackContainer.height, morphMode === "hover" ? 42 : 36) : 36
+    property int defaultHeight: Config.showBackground ? (morphActive ? Math.max(stackContainer.height, 44) : Math.max(Config.notch?.height ?? 44, 24)) : (morphActive ? Math.max(stackContainer.height, 40) : Math.max(Config.notch?.height ?? 40, 24))
+    property int islandHeight: morphActive ? Math.max(stackContainer.height, morphMode === "hover" ? 42 : 36) : Math.max(Config.notch?.height ?? 36, 24)
     readonly property int targetWidth: Math.max(stackContainer.width + totalCornerWidth, minWidthForMode(morphMode))
     readonly property int targetHeight: Config.notchTheme === "default" ? defaultHeight : (Config.notchTheme === "island" ? islandHeight : defaultHeight)
 

@@ -1,6 +1,11 @@
 .pragma library
 
 var data = {
+    "themeMode": "dark",
+    "colorScheme": "Cherry Blossom",
+    "accentPreset": "coral",
+    "useWallpaperColors": false,
+    "iconTheme": "Papirus-Dark",
     "oledMode": false,
     "lightMode": false,
     "roundness": 20,
@@ -11,6 +16,7 @@ var data = {
     "tintIcons": false,
     "enableCorners": true,
     "animDuration": 300,
+    "borderOpacity": 1.0,
     "shadowOpacity": 0.5,
     "shadowColor": "shadow",
     "shadowXOffset": 0,

@@ -17,6 +17,8 @@ Item {
     readonly property int contentWidth: Math.min(width, maxContentWidth)
     readonly property real sideMargin: (width - contentWidth) / 2
 
+    Component.onCompleted: EasyEffectsService.refresh()
+
     // Presets section - fills entire width for scroll/drag
     Flickable {
         id: mainFlickable
@@ -39,7 +41,7 @@ Item {
                     width: root.contentWidth
                     anchors.horizontalCenter: parent.horizontalCenter
                     title: "EasyEffects"
-                    statusText: EasyEffectsService.bypassed ? "Bypassed" : ""
+                    statusText: !EasyEffectsService.available ? "Unavailable" : (EasyEffectsService.bypassed ? "Bypassed" : "Ready")
                     statusColor: Colors.error
                     showToggle: EasyEffectsService.available
                     toggleChecked: !EasyEffectsService.bypassed
@@ -83,7 +85,7 @@ Item {
                     // Not available state
                     Text {
                         visible: !EasyEffectsService.available
-                        text: "EasyEffects not installed"
+                        text: "EasyEffects not found in PATH"
                         font.family: Config.theme.font
                         font.pixelSize: Config.theme.fontSize
                         color: Colors.overSurfaceVariant
@@ -288,7 +290,7 @@ Item {
                     // Empty state
                     Text {
                         visible: EasyEffectsService.available && EasyEffectsService.outputPresets.length === 0 && EasyEffectsService.inputPresets.length === 0
-                        text: "No presets configured"
+                        text: "No EasyEffects presets saved. Open EasyEffects to create or import presets."
                         font.family: Config.theme.font
                         font.pixelSize: Config.theme.fontSize
                         color: Colors.overSurfaceVariant

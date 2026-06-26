@@ -184,6 +184,11 @@ Singleton {
         }
 
         adapter: JsonAdapter {
+            property string themeMode: "dark"
+            property string colorScheme: "Cherry Blossom"
+            property string accentPreset: "coral"
+            property bool useWallpaperColors: false
+            property string iconTheme: "Papirus-Dark"
             property bool oledMode: false
             property bool lightMode: false
             property int roundness: 20
@@ -194,6 +199,7 @@ Singleton {
             property bool tintIcons: false
             property bool enableCorners: true
             property int animDuration: 300
+            property real borderOpacity: 1.0
             property real shadowOpacity: 0.5
             property string shadowColor: "shadow"
             property int shadowXOffset: 0
@@ -600,6 +606,14 @@ Singleton {
             property int hoverRegionHeight: 8
             property bool showPinButton: true
             property bool availableOnFullscreen: false
+            property string clockFormat: "12h"
+            property bool showBatteryModule: true
+            property bool showNetworkModule: true
+            property bool showTrayModule: true
+            property bool showBluetoothModule: true
+            property bool showVolumeModule: true
+            property bool showBrightnessModule: true
+            property bool showPowerModule: true
         }
     }
 
@@ -641,6 +655,7 @@ Singleton {
             property bool alwaysShowNumbers: false
             property bool showNumbers: false
             property bool dynamic: false
+            property string indicatorStyle: "pills"
         }
     }
 
@@ -717,7 +732,11 @@ Singleton {
         }
 
         adapter: JsonAdapter {
+            property bool enabled: true
             property string theme: "default"
+            property string position: "top-center"
+            property int width: 168
+            property int height: 36
             property int hoverRegionHeight: 8
         }
     }
@@ -3390,6 +3409,9 @@ Singleton {
     property QtObject pinnedApps: pinnedAppsLoader.adapter
 
     // Save functions for modules
+    function saveTheme() {
+        themeLoader.writeAdapter();
+    }
     function saveBar() {
         barLoader.writeAdapter();
     }

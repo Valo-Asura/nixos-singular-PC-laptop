@@ -46,6 +46,7 @@ ClippingRectangle {
     readonly property color halftoneBackgroundColor: Config.resolveColor(variantConfig.halftoneBackgroundColor)
 
     readonly property var borderData: variantConfig.border
+    readonly property color resolvedBorderColor: borderData ? Config.resolveColor(borderData[0]) : "transparent"
 
     readonly property color itemColor: Config.resolveColor(variantConfig.itemColor)
     property color item: itemColor
@@ -171,7 +172,7 @@ ClippingRectangle {
         anchors.fill: parent
         radius: root.radius
         color: "transparent"
-        border.color: borderData ? Config.resolveColor(borderData[0]) : "transparent"
+        border.color: borderData ? Qt.rgba(root.resolvedBorderColor.r, root.resolvedBorderColor.g, root.resolvedBorderColor.b, root.resolvedBorderColor.a * Math.max(0, Math.min(1, Config.theme.borderOpacity ?? 1))) : "transparent"
         border.width: borderData ? borderData[1] : 0
         visible: root.enableBorder && borderData !== undefined
     }

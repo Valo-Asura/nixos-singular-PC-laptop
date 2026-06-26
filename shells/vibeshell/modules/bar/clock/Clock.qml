@@ -619,6 +619,15 @@ Item {
     function formatTime12h(now) {
         var hours24 = now.getHours();
         var minutes = now.getMinutes();
+        if ((Config.bar.clockFormat ?? "12h") === "24h") {
+            var hh24 = (hours24 < 10 ? "0" : "") + hours24;
+            var mm24 = (minutes < 10 ? "0" : "") + minutes;
+            return {
+                time: hh24 + ":" + mm24,
+                hours: hh24,
+                minutes: mm24
+            };
+        }
         var hours12 = hours24 % 12;
         if (hours12 === 0) hours12 = 12;
 

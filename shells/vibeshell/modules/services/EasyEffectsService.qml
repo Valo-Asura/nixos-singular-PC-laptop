@@ -54,6 +54,7 @@ Singleton {
 
     // Refresh all data
     function refresh() {
+        checkAvailableProcess.running = false;
         checkAvailableProcess.running = true;
     }
 
@@ -65,15 +66,23 @@ Singleton {
     // Check if easyeffects is available
     Process {
         id: checkAvailableProcess
-        command: ["which", "easyeffects"]
-        running: false
+        command: ["bash", "-lc", "command -v easyeffects >/dev/null 2>&1"]
+        running: true
         onExited: (exitCode, exitStatus) => {
             root.available = (exitCode === 0);
             if (root.available) {
                 // Fetch initial state
+                bypassStateProcess.running = false;
+                presetsProcess.running = false;
+                activePresetsProcess.running = false;
                 bypassStateProcess.running = true;
                 presetsProcess.running = true;
                 activePresetsProcess.running = true;
+            } else {
+                root.outputPresets = [];
+                root.inputPresets = [];
+                root.activeOutputPreset = "";
+                root.activeInputPreset = "";
             }
         }
     }
@@ -148,7 +157,14 @@ Singleton {
             
             for (const line of lines) {
                 const trimmed = line.trim();
-                if (trimmed.toLowerCase().includes("output")) {
+                const lower = trimmed.toLowerCase();
+                if (lower.startsWith("no output")) {
+                    isOutput = false;
+                    isInput = false;
+                } else if (lower.startsWith("no input")) {
+                    isOutput = false;
+                    isInput = false;
+                } else if (lower.includes("output")) {
                     isOutput = true;
                     isInput = false;
                     // Check if presets are on same line after colon
@@ -156,7 +172,7 @@ Singleton {
                     if (parts.length > 1 && parts[1].trim()) {
                         outputList = parts[1].trim().split(",").map(p => p.trim()).filter(p => p);
                     }
-                } else if (trimmed.toLowerCase().includes("input")) {
+                } else if (lower.includes("input")) {
                     isInput = true;
                     isOutput = false;
                     const parts = trimmed.split(":");
@@ -178,7 +194,7 @@ Singleton {
     // Get active presets
     Process {
         id: activePresetsProcess
-        command: ["easyeffects", "-a"]
+        command: ["easyeffects", "-s"]
         running: false
         property string buffer: ""
         environment: root.utf8Environment
@@ -192,18 +208,28 @@ Singleton {
             activePresetsProcess.buffer = "";
             
             const lines = text.split("\n");
+            let section = "";
+            root.activeOutputPreset = "";
+            root.activeInputPreset = "";
             for (const line of lines) {
-                const trimmed = line.trim().toLowerCase();
-                if (trimmed.includes("output")) {
+                const raw = line.trim();
+                const trimmed = raw.toLowerCase();
+                if (trimmed.startsWith("output")) {
+                    section = "output";
                     const parts = line.split(":");
-                    if (parts.length > 1) {
+                    if (parts.length > 1 && parts[1].trim()) {
                         root.activeOutputPreset = parts[1].trim();
                     }
-                } else if (trimmed.includes("input")) {
+                } else if (trimmed.startsWith("input")) {
+                    section = "input";
                     const parts = line.split(":");
-                    if (parts.length > 1) {
+                    if (parts.length > 1 && parts[1].trim()) {
                         root.activeInputPreset = parts[1].trim();
                     }
+                } else if (raw.length > 0 && section === "output") {
+                    root.activeOutputPreset = raw;
+                } else if (raw.length > 0 && section === "input") {
+                    root.activeInputPreset = raw;
                 }
             }
         }

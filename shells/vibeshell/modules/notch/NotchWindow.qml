@@ -101,6 +101,9 @@ PanelWindow {
 
     // Reveal logic:
     readonly property bool reveal: {
+        if (!(Config.notch?.enabled ?? true) && !screenNotchOpen)
+            return false;
+
         // If not auto-hiding (pinned and not fullscreen), always show
         if (!shouldAutoHide) return true;
         
@@ -117,6 +120,16 @@ PanelWindow {
         }
         
         return false;
+    }
+
+    function notchX(itemWidth) {
+        const margin = Math.max(Config.bar?.margin ?? 0, 16);
+        const position = Config.notch?.position ?? "top-center";
+        if (position === "top-left")
+            return margin;
+        if (position === "top-right")
+            return Math.max(margin, width - itemWidth - margin);
+        return Math.max(0, (width - itemWidth) / 2);
     }
 
 
@@ -332,7 +345,7 @@ PanelWindow {
         width: notchRegionContainer.width + 20
         height: notchPanel.reveal ? notchRegionContainer.height : Math.max(Config.notch?.hoverRegionHeight ?? 8, 8)
 
-        anchors.horizontalCenter: parent.horizontalCenter
+        x: notchPanel.notchX(width)
         anchors.top: parent.top
 
         Behavior on height {
@@ -353,7 +366,7 @@ PanelWindow {
 
     Item {
         id: notchRegionContainer
-        anchors.horizontalCenter: parent.horizontalCenter
+        x: notchPanel.notchX(width)
         anchors.top: parent.top
         width: Math.max(notchAnimationContainer.width, notificationPopupContainer.visible ? notificationPopupContainer.width : 0)
         height: notchAnimationContainer.height + (notificationPopupContainer.visible ? notificationPopupContainer.height + notificationPopupContainer.anchors.topMargin : 0)

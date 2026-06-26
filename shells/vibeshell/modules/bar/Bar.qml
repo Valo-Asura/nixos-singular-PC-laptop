@@ -555,6 +555,7 @@ PanelWindow {
                 SysTray {
                    bar: panel
                    layer.enabled: Config.showBackground
+                   visible: Config.bar?.showTrayModule ?? true
                    Layout.alignment: Qt.AlignVCenter
                 }
 
@@ -562,6 +563,7 @@ PanelWindow {
                     id: controlsButton
                     bar: panel
                     layerEnabled: Config.showBackground
+                    visible: (Config.bar?.showBatteryModule ?? true) || (Config.bar?.showNetworkModule ?? true) || (Config.bar?.showBluetoothModule ?? true) || (Config.bar?.showVolumeModule ?? true) || (Config.bar?.showBrightnessModule ?? true)
                     Layout.alignment: Qt.AlignVCenter
                 }
 
@@ -581,7 +583,7 @@ PanelWindow {
                     id: powerButton
                     Layout.preferredWidth: 36
                     Layout.preferredHeight: 36
-                    visible: true
+                    visible: Config.bar?.showPowerModule ?? true
                     Layout.alignment: Qt.AlignVCenter
                     buttonIcon: Icons.shutdown
                     tooltipText: "Power Menu"
@@ -760,6 +762,7 @@ PanelWindow {
                     id: controlsButtonVert
                     bar: panel
                     layerEnabled: Config.showBackground
+                    visible: (Config.bar?.showBatteryModule ?? true) || (Config.bar?.showNetworkModule ?? true) || (Config.bar?.showBluetoothModule ?? true) || (Config.bar?.showVolumeModule ?? true) || (Config.bar?.showBrightnessModule ?? true)
                     Layout.alignment: Qt.AlignHCenter
                 }
 
@@ -780,7 +783,7 @@ PanelWindow {
                     id: powerButtonVert
                     Layout.preferredWidth: 36
                     Layout.preferredHeight: 36
-                    visible: true
+                    visible: Config.bar?.showPowerModule ?? true
                     buttonIcon: Icons.shutdown
                     tooltipText: "Power Menu"
                     Layout.alignment: Qt.AlignHCenter

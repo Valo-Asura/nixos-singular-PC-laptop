@@ -85,7 +85,7 @@ Item {
             GlobalStates.settingsVisible = true;
             break;
         case "dashboard-controls":
-            GlobalStates.settingsVisible = !GlobalStates.settingsVisible;
+            toggleSimpleModule("dashboard");
             break;
         case "dashboard-clipboard":
             toggleDashboardWithPrefix(Config.prefix.clipboard + " ");

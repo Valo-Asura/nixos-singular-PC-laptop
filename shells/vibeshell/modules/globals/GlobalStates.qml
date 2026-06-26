@@ -215,7 +215,7 @@ Singleton {
         return names;
     }
 
-    readonly property var _simpleThemeProps: ["roundness", "oledMode", "lightMode", "font", "fontSize", "monoFont", "monoFontSize", "tintIcons", "enableCorners", "animDuration", "shadowOpacity", "shadowColor", "shadowXOffset", "shadowYOffset", "shadowBlur"]
+    readonly property var _simpleThemeProps: ["themeMode", "colorScheme", "accentPreset", "useWallpaperColors", "iconTheme", "roundness", "oledMode", "lightMode", "font", "fontSize", "monoFont", "monoFontSize", "tintIcons", "enableCorners", "animDuration", "borderOpacity", "shadowOpacity", "shadowColor", "shadowXOffset", "shadowYOffset", "shadowBlur"]
     readonly property var _srVariantProps: ["gradientType", "gradientAngle", "gradientCenterX", "gradientCenterY", "halftoneDotMin", "halftoneDotMax", "halftoneStart", "halftoneEnd", "halftoneDotColor", "halftoneBackgroundColor", "itemColor", "opacity"]
 
     function openSettings() {
@@ -352,9 +352,9 @@ Singleton {
 
     // Shell config sections and their properties
     readonly property var _shellSections: {
-        "bar": ["enabled", "position", "launcherIcon", "launcherIconTint", "launcherIconFullTint", "launcherIconSize", "enableFirefoxPlayer", "playerTitleIntroMs", "screenList", "pinnedOnStartup", "hoverToReveal", "hoverRegionHeight", "showPinButton", "availableOnFullscreen", "height", "width", "padding", "margin", "spacing", "radius", "backgroundOpacity", "barColor"],
-        "notch": ["theme", "hoverRegionHeight"],
-        "workspaces": ["shown", "showAppIcons", "alwaysShowNumbers", "showNumbers", "dynamic"],
+        "bar": ["enabled", "position", "launcherIcon", "launcherIconTint", "launcherIconFullTint", "launcherIconSize", "enableFirefoxPlayer", "playerTitleIntroMs", "screenList", "pinnedOnStartup", "hoverToReveal", "hoverRegionHeight", "showPinButton", "availableOnFullscreen", "height", "width", "padding", "margin", "spacing", "radius", "backgroundOpacity", "barColor", "clockFormat", "showBatteryModule", "showNetworkModule", "showTrayModule", "showBluetoothModule", "showVolumeModule", "showBrightnessModule", "showPowerModule"],
+        "notch": ["enabled", "theme", "position", "width", "height", "hoverRegionHeight"],
+        "workspaces": ["shown", "showAppIcons", "alwaysShowNumbers", "showNumbers", "dynamic", "indicatorStyle"],
         "overview": ["rows", "columns", "scale", "workspaceSpacing"],
         "dock": ["enabled", "theme", "position", "height", "iconSize", "spacing", "margin", "hoverRegionHeight", "pinnedOnStartup", "hoverToReveal", "availableOnFullscreen", "showRunningIndicators", "showPinButton", "showOverviewButton", "screenList"],
         "lockscreen": ["position", "imagePath"],
