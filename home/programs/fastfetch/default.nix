@@ -23,75 +23,78 @@ let
     modules = [
       {
         type = "custom";
-        format = "┌─────────────┐";
+        key = "{#90}┌─────────────┐";
+        format = "";
       }
       {
         type = "title";
-        key = "│ {#90} user      │ ";
+        key = "{#90}│ {#37} user      {#90}│ ";
         format = "{1}";
       }
       {
         type = "uptime";
-        key = "│ {#90} uptime    │ ";
+        key = "{#90}│ {#37} uptime    {#90}│ ";
       }
       {
         type = "display";
-        key = "│ {#90} display   │ ";
+        key = "{#90}│ {#37} display   {#90}│ ";
       }
       {
         type = "os";
-        key = "│ {#90} distro    │ ";
+        key = "{#90}│ {#37} distro    {#90}│ ";
       }
       {
         type = "kernel";
-        key = "│ {#90} kernel    │ ";
+        key = "{#90}│ {#37} kernel    {#90}│ ";
       }
       {
         type = "wm";
-        key = "│ {#90} wm        │ ";
+        key = "{#90}│ {#37} wm        {#90}│ ";
       }
       {
         type = "terminal";
-        key = "│ {#90} term      │ ";
+        key = "{#90}│ {#37} term      {#90}│ ";
       }
       {
         type = "shell";
-        key = "│ {#90} shell     │ ";
+        key = "{#90}│ {#37} shell     {#90}│ ";
       }
       {
         type = "packages";
-        key = "│ {#90} apps      │ ";
+        key = "{#90}│ {#37} apps      {#90}│ ";
       }
       {
         type = "disk";
-        key = "│ {#90} disk      │ ";
+        key = "{#90}│ {#37} disk      {#90}│ ";
       }
       {
         type = "memory";
-        key = "│ {#90} memory    │ ";
+        key = "{#90}│ {#37} memory    {#90}│ ";
       }
       {
         type = "font";
-        key = "│ {#90} font      │ ";
+        key = "{#90}│ {#37} font      {#90}│ ";
       }
       {
         type = "command";
-        key = "│ {#90} OS Age    │ ";
+        key = "{#90}│ {#37} OS Age    {#90}│ ";
         shell = "/bin/sh";
         text = "birth=$(stat -c %Y /); current=$(date +%s); age=$(( (current - birth) / 86400 )); echo \"$age days\"";
       }
       {
         type = "custom";
-        format = "├─────────────┤";
+        key = "{#90}├─────────────┤";
+        format = "";
       }
       {
         type = "colors";
-        key = "│ {#90} colors    │ ";
+        key = "{#90}│ {#37} colors    {#90}│ ";
         symbol = "circle";
       }
       {
         type = "custom";
-        format = "└─────────────┘";
+        key = "{#90}└─────────────┘";
+        format = "";
       }
     ];
   };
