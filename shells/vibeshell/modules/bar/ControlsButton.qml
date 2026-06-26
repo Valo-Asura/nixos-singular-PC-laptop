@@ -14,6 +14,9 @@ Item {
     property bool vertical: bar.orientation === "vertical"
     property bool isHovered: false
     property bool layerEnabled: true
+    property bool showAudioRows: Config.bar?.showVolumeModule ?? true
+    property bool showBrightnessRow: Config.bar?.showBrightnessModule ?? true
+    readonly property int visibleRows: (showAudioRows ? 2 : 0) + (showBrightnessRow ? 1 : 0)
 
     // Popup visibility state (tracks intent, not animation)
     property bool popupOpen: controlsPopup.isOpen
@@ -72,9 +75,7 @@ Item {
         popupPadding: 16
 
         contentWidth: 220
-        // Fixed height calculation to prevent expansion animation on first open
-        // 3 rows * 36px + 2 gaps * 12px = 132px
-        contentHeight: 132 + popupPadding * 2
+        contentHeight: Math.max(36, root.visibleRows * 36 + Math.max(0, root.visibleRows - 1) * 12) + popupPadding * 2
 
         ColumnLayout {
             id: slidersColumn
@@ -84,8 +85,9 @@ Item {
             // Volume Slider
             ControlSliderRow {
                 id: volumeRow
+                visible: root.showAudioRows
                 Layout.fillWidth: true
-                Layout.preferredHeight: 36
+                Layout.preferredHeight: visible ? 36 : 0
                 Layout.rightMargin: 8
 
                 icon: {
@@ -132,8 +134,9 @@ Item {
             // Microphone Slider
             ControlSliderRow {
                 id: micRow
+                visible: root.showAudioRows
                 Layout.fillWidth: true
-                Layout.preferredHeight: 36
+                Layout.preferredHeight: visible ? 36 : 0
                 Layout.rightMargin: 8
 
                 icon: Audio.source?.audio?.muted ? Icons.micSlash : Icons.mic
@@ -169,8 +172,9 @@ Item {
             // Brightness Slider
             ControlSliderRow {
                 id: brightnessRow
+                visible: root.showBrightnessRow
                 Layout.fillWidth: true
-                Layout.preferredHeight: 36
+                Layout.preferredHeight: visible ? 36 : 0
                 Layout.rightMargin: 8
 
                 property var currentMonitor: Brightness.getMonitorForScreen(root.bar.screen)

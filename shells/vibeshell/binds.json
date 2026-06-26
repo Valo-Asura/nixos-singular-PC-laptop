@@ -59,7 +59,7 @@
         "modifiers": [
           "SUPER"
         ],
-        "key": "I",
+        "key": "S",
         "dispatcher": "exec",
         "argument": "vibeshell run config",
         "flags": ""

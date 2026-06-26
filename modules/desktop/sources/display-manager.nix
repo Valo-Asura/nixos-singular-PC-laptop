@@ -243,7 +243,10 @@ let
     super + n
       asura-vibeshell run dashboard-notes
 
-    super + {d,i}
+    super + d
+      asura-vibeshell run dashboard-controls
+
+    super + s
       asura-vibeshell run config
 
     ctrl + alt + Delete

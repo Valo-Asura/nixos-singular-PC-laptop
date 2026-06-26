@@ -607,7 +607,10 @@ Singleton {
             property bool showPinButton: true
             property bool availableOnFullscreen: false
             property string clockFormat: "12h"
+            property bool showWorkspaceModule: true
+            property bool showUptimeModule: true
             property bool showBatteryModule: true
+            property bool showNotificationsModule: true
             property bool showNetworkModule: true
             property bool showTrayModule: true
             property bool showBluetoothModule: true
@@ -734,6 +737,7 @@ Singleton {
         adapter: JsonAdapter {
             property bool enabled: true
             property string theme: "default"
+            property string style: "default"
             property string position: "top-center"
             property int width: 168
             property int height: 36
@@ -1434,7 +1438,7 @@ Singleton {
                 property JsonObject system: JsonObject {
                     property JsonObject config: JsonObject {
                         property list<string> modifiers: ["SUPER"]
-                        property string key: "I"
+                        property string key: "S"
                         property string dispatcher: "exec"
                         property string argument: "vibeshell run config"
                         property string flags: ""
@@ -1515,7 +1519,7 @@ Singleton {
                     "widgets": { "modifiers": [], "key": "SUPER_L", "dispatcher": "exec", "argument": "asura-shell-launcher", "flags": "" }
                 },
                 "system": {
-                    "config": { "modifiers": ["SUPER"], "key": "I", "dispatcher": "exec", "argument": "vibeshell run config", "flags": "" },
+                    "config": { "modifiers": ["SUPER"], "key": "S", "dispatcher": "exec", "argument": "vibeshell run config", "flags": "" },
                     "lockscreen": { "modifiers": ["SUPER"], "key": "L", "dispatcher": "exec", "argument": "vibeshell-safe-lock", "flags": "" },
                     "overview": { "modifiers": ["SUPER"], "key": "TAB", "dispatcher": "exec", "argument": "vibeshell run overview", "flags": "" },
                     "powermenu": { "modifiers": ["SUPER"], "key": "ESCAPE", "dispatcher": "exec", "argument": "vibeshell run powermenu", "flags": "" },

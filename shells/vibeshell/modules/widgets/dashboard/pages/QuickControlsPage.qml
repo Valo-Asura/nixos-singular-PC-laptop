@@ -102,13 +102,13 @@ Item {
         spacing: 12
 
         Column {
-            width: 204
+            width: 252
             height: parent.height
-            spacing: 10
+            spacing: 8
 
             Row {
                 width: parent.width
-                height: 48
+                height: 42
                 spacing: 10
 
                 Column {
@@ -171,6 +171,7 @@ Item {
 
             QuickTile {
                 width: parent.width
+                height: 54
                 icon: NetworkService.wifiEnabled ? NetworkService.wifiIconForStrength(NetworkService.networkStrength) : Icons.wifiOff
                 title: NetworkService.networkName.length > 0 ? NetworkService.networkName : "Wi-Fi"
                 subtitle: NetworkService.wifiStatus
@@ -182,6 +183,7 @@ Item {
 
             QuickTile {
                 width: parent.width
+                height: 54
                 icon: BluetoothService.connected ? Icons.bluetoothConnected : (BluetoothService.enabled ? Icons.bluetooth : Icons.bluetoothOff)
                 title: "Bluetooth"
                 subtitle: BluetoothService.connected ? BluetoothService.connectedDevices + " connected" : (BluetoothService.enabled ? "On" : "Off")
@@ -200,6 +202,7 @@ Item {
 
             QuickSlider {
                 width: parent.width
+                height: 48
                 icon: Audio.sink?.audio?.muted ? Icons.speakerX : Icons.speakerHigh
                 value: Audio.sink?.audio?.volume ?? 0
                 label: "Audio"
@@ -210,6 +213,7 @@ Item {
 
             QuickSlider {
                 width: parent.width
+                height: 48
                 icon: Icons.sun
                 value: root.focusedBrightnessMonitor ? root.focusedBrightnessMonitor.brightness : 0
                 label: "Brightness"
@@ -222,7 +226,7 @@ Item {
 
             QuickTile {
                 width: parent.width
-                height: 58
+                height: 50
                 icon: Battery.getBatteryIcon()
                 title: "Battery"
                 subtitle: Battery.available ? (Math.round(Battery.percentage) + "% - " + (Battery.isPluggedIn ? "Charging" : "Discharging")) : "Unavailable"
@@ -237,6 +241,7 @@ Item {
 
                 MiniToggle {
                     width: (parent.width - parent.spacing) / 2
+                    height: 44
                     icon: Icons.nightLight
                     title: "Night Light"
                     subtitle: NightLightService.active ? "On" : "Off"
@@ -246,6 +251,7 @@ Item {
 
                 MiniToggle {
                     width: (parent.width - parent.spacing) / 2
+                    height: 44
                     icon: Notifications.silent ? Icons.bellZ : Icons.bell
                     title: "Do Not Disturb"
                     subtitle: Notifications.silent ? "On" : "Off"
@@ -255,6 +261,7 @@ Item {
 
                 MiniToggle {
                     width: (parent.width - parent.spacing) / 2
+                    height: 44
                     icon: Icons.globe
                     title: "Airplane Mode"
                     subtitle: root.airplaneMode ? "On" : "Off"
@@ -264,6 +271,7 @@ Item {
 
                 MiniToggle {
                     width: (parent.width - parent.spacing) / 2
+                    height: 44
                     icon: Icons.caffeine
                     title: "Power Saver"
                     subtitle: root.powerSaver ? "On" : "Off"
@@ -273,6 +281,7 @@ Item {
 
                 MiniToggle {
                     width: (parent.width - parent.spacing) / 2
+                    height: 44
                     icon: Config.theme.lightMode ? Icons.sun : Icons.moon
                     title: "Dark Theme"
                     subtitle: Config.theme.lightMode ? "Off" : "On"
@@ -282,6 +291,7 @@ Item {
 
                 MiniToggle {
                     width: (parent.width - parent.spacing) / 2
+                    height: 44
                     icon: Icons.recordScreen
                     title: "Screen Cast"
                     subtitle: ScreenRecorder.isRecording ? ScreenRecorder.duration : "Off"
@@ -299,7 +309,7 @@ Item {
         }
 
         Column {
-            width: parent.width - 204 - 1 - parent.spacing * 2
+            width: parent.width - 252 - 1 - parent.spacing * 2
             height: parent.height
             spacing: 10
 
@@ -331,7 +341,7 @@ Item {
             ListView {
                 id: wifiList
                 width: parent.width
-                height: parent.height - 74
+                height: parent.height - 70
                 clip: true
                 spacing: 6
                 model: NetworkService.friendlyWifiNetworks
@@ -362,7 +372,7 @@ Item {
         signal clicked
         signal arrowClicked
 
-        height: 62
+        height: 54
         variant: active || tileMouse.containsMouse ? "primary" : "common"
         radius: Styling.radius(10)
 
@@ -440,7 +450,7 @@ Item {
         signal moved(real value)
         signal iconClicked
 
-        height: 54
+        height: 48
         variant: "common"
         radius: Styling.radius(10)
 
@@ -553,7 +563,7 @@ Item {
         property bool active: false
         signal clicked
 
-        height: 50
+        height: 44
         variant: active || buttonMouse.containsMouse ? "primary" : "pane"
         radius: Styling.radius(9)
 

@@ -411,6 +411,7 @@ PanelWindow {
 
                 Workspaces {
                     orientation: panel.orientation
+                    visible: Config.bar?.showWorkspaceModule ?? true
                     bar: QtObject {
                         property var screen: panel.screen
                     }
@@ -544,11 +545,13 @@ PanelWindow {
 
                 Bar.NotesButton {
                     id: notesButton
+                    visible: Config.bar?.showNotificationsModule ?? true
                     Layout.alignment: Qt.AlignVCenter
                 }
 
                 Bar.MonitorButton {
                     id: monitorButton
+                    visible: Config.bar?.showUptimeModule ?? true
                     Layout.alignment: Qt.AlignVCenter
                 }
 
@@ -610,6 +613,7 @@ PanelWindow {
                 SysTray {
                     bar: panel
                     layer.enabled: Config.showBackground
+                    visible: Config.bar?.showTrayModule ?? true
                     Layout.alignment: Qt.AlignHCenter
                 }
 
@@ -620,12 +624,14 @@ PanelWindow {
 
                 Bar.NotesButton {
                     id: notesButtonVert
+                    visible: Config.bar?.showNotificationsModule ?? true
                     Layout.preferredHeight: 36
                     Layout.alignment: Qt.AlignHCenter
                 }
 
                 Bar.MonitorButton {
                     id: monitorButtonVert
+                    visible: Config.bar?.showUptimeModule ?? true
                     Layout.preferredHeight: 36
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -674,6 +680,7 @@ PanelWindow {
                         Workspaces {
                             id: workspacesVert
                             orientation: panel.orientation
+                            visible: Config.bar?.showWorkspaceModule ?? true
                             bar: QtObject {
                                 property var screen: panel.screen
                             }

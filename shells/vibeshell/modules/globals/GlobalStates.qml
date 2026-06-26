@@ -352,8 +352,8 @@ Singleton {
 
     // Shell config sections and their properties
     readonly property var _shellSections: {
-        "bar": ["enabled", "position", "launcherIcon", "launcherIconTint", "launcherIconFullTint", "launcherIconSize", "enableFirefoxPlayer", "playerTitleIntroMs", "screenList", "pinnedOnStartup", "hoverToReveal", "hoverRegionHeight", "showPinButton", "availableOnFullscreen", "height", "width", "padding", "margin", "spacing", "radius", "backgroundOpacity", "barColor", "clockFormat", "showBatteryModule", "showNetworkModule", "showTrayModule", "showBluetoothModule", "showVolumeModule", "showBrightnessModule", "showPowerModule"],
-        "notch": ["enabled", "theme", "position", "width", "height", "hoverRegionHeight"],
+        "bar": ["enabled", "position", "launcherIcon", "launcherIconTint", "launcherIconFullTint", "launcherIconSize", "enableFirefoxPlayer", "playerTitleIntroMs", "screenList", "pinnedOnStartup", "hoverToReveal", "hoverRegionHeight", "showPinButton", "availableOnFullscreen", "height", "width", "padding", "margin", "spacing", "radius", "backgroundOpacity", "barColor", "clockFormat", "showWorkspaceModule", "showUptimeModule", "showBatteryModule", "showNotificationsModule", "showNetworkModule", "showTrayModule", "showBluetoothModule", "showVolumeModule", "showBrightnessModule", "showPowerModule"],
+        "notch": ["enabled", "theme", "style", "position", "width", "height", "hoverRegionHeight"],
         "workspaces": ["shown", "showAppIcons", "alwaysShowNumbers", "showNumbers", "dynamic", "indicatorStyle"],
         "overview": ["rows", "columns", "scale", "workspaceSpacing"],
         "dock": ["enabled", "theme", "position", "height", "iconSize", "spacing", "margin", "hoverRegionHeight", "pinnedOnStartup", "hoverToReveal", "availableOnFullscreen", "showRunningIndicators", "showPinButton", "showOverviewButton", "screenList"],

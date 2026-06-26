@@ -57,6 +57,9 @@
             | .vibeshell.system.tools.modifiers = ["SUPER"]
             | .vibeshell.system.tools.key = "A"
             | .vibeshell.system.tools.argument = "vibeshell run tools"
+            | .vibeshell.system.config.modifiers = ["SUPER"]
+            | .vibeshell.system.config.key = "S"
+            | .vibeshell.system.config.argument = "vibeshell run config"
             | .vibeshell.system.screenshot.modifiers = []
             | .vibeshell.system.screenshot.key = "Print"
           ' "$binds_config" > "$tmp" \

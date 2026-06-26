@@ -10,7 +10,12 @@ import "pages"
 Item {
     id: root
 
-    implicitWidth: 464
+    readonly property int dashboardPanelWidth: 604
+    readonly property int settingsPanelWidth: 900
+    readonly property int dashboardPanelHeight: 568
+    readonly property int settingsPanelHeight: 668
+
+    implicitWidth: pageController.currentPage === 0 ? dashboardPanelWidth : settingsPanelWidth
     implicitHeight: panel.implicitHeight
     focus: true
 
@@ -108,14 +113,14 @@ Item {
         id: panel
         variant: "bg"
         width: parent.width
-        implicitHeight: 574
+        implicitHeight: pageController.currentPage === 0 ? dashboardPanelHeight : settingsPanelHeight
         radius: Styling.radius(16)
         enableBorder: true
 
         Column {
             anchors.fill: parent
             anchors.margins: 14
-            spacing: 12
+            spacing: 10
 
             Item {
                 id: viewport
@@ -185,7 +190,7 @@ Item {
             Row {
                 id: navRow
                 width: parent.width
-                height: 34
+                height: 30
 
                 PageArrow {
                     controller: pageController
