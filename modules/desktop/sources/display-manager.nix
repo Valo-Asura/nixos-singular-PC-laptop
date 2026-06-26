@@ -151,13 +151,16 @@ let
   '';
 
   bspwmConfig = pkgs.writeShellScript "asura-bspwmrc" ''
-    ${pkgs.bspwm}/bin/bspc monitor -d 1 2 3 4 5 6 7 8 9
+    ${pkgs.bspwm}/bin/bspc monitor -d 1 2 3 4 5 6 7 8 9 10
     ${pkgs.bspwm}/bin/bspc config border_width 2
     ${pkgs.bspwm}/bin/bspc config window_gap 8
     ${pkgs.bspwm}/bin/bspc config split_ratio 0.52
     ${pkgs.bspwm}/bin/bspc config borderless_monocle true
     ${pkgs.bspwm}/bin/bspc config gapless_monocle true
     ${pkgs.bspwm}/bin/bspc config focus_follows_pointer true
+    ${pkgs.bspwm}/bin/bspc config pointer_modifier mod4
+    ${pkgs.bspwm}/bin/bspc config pointer_action1 move
+    ${pkgs.bspwm}/bin/bspc config pointer_action3 resize_corner
     ${pkgs.bspwm}/bin/bspc config normal_border_color "#1e1e2e"
     ${pkgs.bspwm}/bin/bspc config active_border_color "#f8c3d4"
     ${pkgs.bspwm}/bin/bspc config focused_border_color "#ff8080"
@@ -167,32 +170,179 @@ let
   '';
 
   sxhkdConfig = pkgs.writeText "asura-sxhkdrc" ''
-    super + Return
-      ${pkgs.foot}/bin/foot
-
-    super + d
-      ${pkgs.rofi}/bin/rofi -show drun
-
-    super + shift + q
+    super + q
       ${pkgs.bspwm}/bin/bspc node -c
 
-    super + alt + r
-      ${pkgs.bspwm}/bin/bspc wm -r
-
-    super + shift + e
+    super + h
       ${pkgs.bspwm}/bin/bspc quit
 
-    super + {h,j,k,l}
+    super + f
+      asura-file-manager "$HOME"
+
+    super + g
+      ${pkgs.bspwm}/bin/bspc node -t '~floating'
+
+    super + j
+      ${pkgs.bspwm}/bin/bspc node @parent -R 90
+
+    super + b
+      ${pkgs.brave}/bin/brave
+
+    super + t
+      ${pkgs.foot}/bin/foot
+
+    super + c
+      code --ozone-platform=x11
+
+    super + a
+      asura-vibeshell run tools
+
+    super + e
+      ${pkgs.telegram-desktop}/bin/telegram-desktop
+
+    super + w
+      skwd-wall
+
+    super + p
+      asura-display-manager
+
+    super + shift + p
+      asura-monitor-guard --restore
+
+    {ctrl,super} + l
+      ${pkgs.i3lock-color}/bin/i3lock-color --color 191724
+
+    super + v
+      asura-vibeshell run dashboard-clipboard
+
+    super + shift + v
+      ${pkgs.bspwm}/bin/bspc node -t '~floating'
+
+    super + shift + c
+      clipboard
+
+    super + shift + e
+      asura-shell-launcher /emo
+
+    super + shift + s
+      asura-screenshot region
+
+    super + shift + w
+      skwd-wall
+
+    super + shift + r
+      /run/current-system/sw/bin/asura-screen-record-toggle
+
+    super + shift + x
+      asura-screenshot region-edit
+
+    super + F2
+      night-shift
+
+    super + n
+      asura-vibeshell run dashboard-notes
+
+    super + {d,i}
+      asura-vibeshell run config
+
+    ctrl + alt + Delete
+      asura-vibeshell run powermenu
+
+    super + BackSpace
+      asura-vibeshell run powermenu
+
+    super + period
+      asura-vibeshell run dashboard-emoji
+
+    ctrl + super + r
+      asura-vibeshell reload
+
+    Print
+      asura-screenshot full
+
+    shift + Print
+      asura-screenshot region
+
+    super + Print
+      asura-screenshot output
+
+    super + shift + Print
+      asura-screenshot region-edit
+
+    super + {Left,Down,Up,Right}
       ${pkgs.bspwm}/bin/bspc node -f {west,south,north,east}
 
-    super + shift + {h,j,k,l}
-      ${pkgs.bspwm}/bin/bspc node -s {west,south,north,east}
+    alt + Tab
+      ${pkgs.bspwm}/bin/bspc node -f next.local.!hidden.window
+
+    alt + shift + Tab
+      ${pkgs.bspwm}/bin/bspc node -f prev.local.!hidden.window
+
+    super + Tab
+      ${pkgs.bspwm}/bin/bspc node -f next.local.!hidden.window
+
+    super + shift + Tab ; {Left,Right,Up,Down,Escape}
+      {${pkgs.bspwm}/bin/bspc node -z left -30 0,${pkgs.bspwm}/bin/bspc node -z right 30 0,${pkgs.bspwm}/bin/bspc node -z top 0 -30,${pkgs.bspwm}/bin/bspc node -z bottom 0 30,true}
 
     super + {1-9}
       ${pkgs.bspwm}/bin/bspc desktop -f '^{1-9}'
 
     super + shift + {1-9}
       ${pkgs.bspwm}/bin/bspc node -d '^{1-9}'
+
+    super + 0
+      ${pkgs.bspwm}/bin/bspc desktop -f '^10'
+
+    super + shift + 0
+      ${pkgs.bspwm}/bin/bspc node -d '^10'
+
+    XF86AudioMute
+      sound-toggle
+
+    XF86AudioPlay
+      ${pkgs.playerctl}/bin/playerctl play-pause
+
+    XF86AudioNext
+      ${pkgs.playerctl}/bin/playerctl next
+
+    XF86AudioPrev
+      ${pkgs.playerctl}/bin/playerctl previous
+
+    F3
+      sound-toggle
+
+    F5
+      sound-down
+
+    F6
+      sound-up
+
+    F8
+      brightness-down
+
+    F9
+      brightness-up
+
+    F10
+      asura-camera-app
+
+    F11
+      asura-airplane-toggle
+
+    F12
+      night-shift
+
+    XF86AudioRaiseVolume
+      sound-up
+
+    XF86AudioLowerVolume
+      sound-down
+
+    XF86MonBrightnessUp
+      brightness-up
+
+    XF86MonBrightnessDown
+      brightness-down
   '';
 
   bspwmStart = pkgs.writeShellScriptBin "asura-start-bspwm" ''
@@ -210,17 +360,24 @@ let
 
     echo "---- bspwm fallback session: $(date -Is) ----"
 
+    export PATH="/run/current-system/sw/bin:/etc/profiles/per-user/asura/bin:$PATH"
     export PATH="${
       lib.makeBinPath [
         pkgs.bspwm
+        pkgs.brave
+        pkgs.brightnessctl
         pkgs.coreutils
         pkgs.dunst
         pkgs.feh
         pkgs.foot
+        pkgs.i3lock-color
         pkgs.libnotify
+        pkgs.pamixer
+        pkgs.playerctl
         pkgs.procps
         pkgs.rofi
         pkgs.sxhkd
+        pkgs.telegram-desktop
         pkgs.xsetroot
       ]
     }:$PATH"
@@ -402,6 +559,7 @@ in
     pkgs.bspwm
     pkgs.dunst
     pkgs.feh
+    pkgs.i3lock-color
     pkgs.python3Packages.qtile
     pkgs.rofi
     pkgs.sxhkd
