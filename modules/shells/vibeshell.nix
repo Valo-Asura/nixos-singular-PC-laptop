@@ -93,10 +93,18 @@ let
       exec ${vibeshellRoot}/cli.sh "$@"
     '';
   };
+  vibeshellCli = pkgs.writeShellApplication {
+    name = "vibeshell";
+    runtimeInputs = [ asuraVibeshell ];
+    text = ''
+      exec asura-vibeshell "$@"
+    '';
+  };
 in
 {
   environment.systemPackages = [
     asuraVibeshell
+    vibeshellCli
     vibeshellSafeLock
     pkgs.quickshell
   ];
@@ -105,6 +113,7 @@ in
 
   home-manager.users.asura.home.packages = [
     asuraVibeshell
+    vibeshellCli
     vibeshellSafeLock
   ];
 }

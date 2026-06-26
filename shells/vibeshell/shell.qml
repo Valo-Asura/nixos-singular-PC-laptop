@@ -318,4 +318,35 @@ ShellRoot {
             _ = IdleService.lockCmd
         }
     }
+
+    // Coordinate Notch dropdowns and floating windows to prevent overlapping conflicts
+    Connections {
+        target: GlobalStates
+        function onSettingsVisibleChanged() {
+            if (GlobalStates.settingsVisible) {
+                Visibilities.setActiveModule("");
+            }
+        }
+        function onNotesVisibleChanged() {
+            if (GlobalStates.notesVisible) {
+                Visibilities.setActiveModule("");
+            }
+        }
+        function onMonitorVisibleChanged() {
+            if (GlobalStates.monitorVisible) {
+                Visibilities.setActiveModule("");
+            }
+        }
+    }
+
+    Connections {
+        target: Visibilities
+        function onCurrentActiveModuleChanged() {
+            if (Visibilities.currentActiveModule !== "") {
+                GlobalStates.settingsVisible = false;
+                GlobalStates.notesVisible = false;
+                GlobalStates.monitorVisible = false;
+            }
+        }
+    }
 }

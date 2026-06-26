@@ -71,13 +71,13 @@ Singleton {
         Quickshell.execDetached(["xdg-open", "https://nmcheck.gnome.org/"]);
     }
 
-    // Helper function for wifi icon based on strength
-    function wifiIconForStrength(strength: int): string {
-        if (strength > 80) return Icons.wifiHigh;
-        if (strength > 55) return Icons.wifiMedium;
-        if (strength > 30) return Icons.wifiLow;
-        if (strength > 0) return Icons.wifiNone;
-        return Icons.wifiOff;
+    function wifiIconForStrength(strength): string {
+        const s = parseInt(strength) || 0;
+        if (s > 80) return Icons.wifiHigh;
+        if (s > 55) return Icons.wifiMedium;
+        if (s > 30) return Icons.wifiLow;
+        if (s > 0) return Icons.wifiNone;
+        return wifiEnabled ? Icons.wifiNone : Icons.wifiOff;
     }
 
     // Processes
@@ -223,7 +223,7 @@ Singleton {
     Process {
         id: updateNetworkStrength
         running: true
-        command: ["sh", "-c", "nmcli -f IN-USE,SIGNAL,SSID device wifi | awk '/^\\*/{if (NR!=1) {print $2}}'"]
+        command: ["sh", "-c", "nmcli -t -f IN-USE,SIGNAL,SSID device wifi | awk -F: '/^\\*/{print $2}'"]
         stdout: SplitParser {
             onRead: data => {
                 root.networkStrength = parseInt(data) || 0;

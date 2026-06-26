@@ -11,7 +11,7 @@ Singleton {
     readonly property UPowerDevice primaryDevice: UPower.displayDevice
 
     readonly property bool available: primaryDevice !== null && primaryDevice.type === UPowerDevice.Battery
-    readonly property real percentage: available ? primaryDevice.percentage : 0
+    readonly property real percentage: available ? (primaryDevice.percentage * 100) : 0
     readonly property int chargeState: available ? primaryDevice.state : 0
     readonly property bool isCharging: available && (chargeState === 1 || chargeState === 5)
     readonly property bool isPluggedIn: available && (isCharging || chargeState === 4)

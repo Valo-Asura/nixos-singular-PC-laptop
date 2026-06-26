@@ -198,17 +198,26 @@ Rectangle {
         id: processRefreshTimer
         interval: SystemResources.updateInterval
         repeat: true
-        running: true
+        running: GlobalStates.monitorVisible
         onTriggered: {
             if (!processReader.running)
                 processReader.running = true;
         }
     }
 
+    Connections {
+        target: GlobalStates
+        function onMonitorVisibleChanged() {
+            if (GlobalStates.monitorVisible && !processReader.running) {
+                processReader.running = true;
+            }
+        }
+    }
+
     Process {
         id: processReader
         running: false
-        command: ["sh", "-lc", "ps -eo pid=,pcpu=,rss=,comm= --sort=-rss | head -n 18"]
+        command: ["sh", "-c", "ps -eo pid=,pcpu=,rss=,comm= --sort=-rss | head -n 18"]
 
         stdout: StdioCollector {
             waitForEnd: true

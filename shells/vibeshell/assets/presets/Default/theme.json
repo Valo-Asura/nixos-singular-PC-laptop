@@ -138,7 +138,7 @@
         "halftoneBackgroundColor": "surface",
         "border": [
             "surfaceBright",
-            0
+            1
         ],
         "itemColor": "overBackground",
         "opacity": 1

@@ -356,7 +356,7 @@ Item {
                             spacing: 8
 
                             Column {
-                                width: parent.width - 116
+                                width: parent.width - 114
                                 spacing: 2
 
                                 Text {
@@ -380,7 +380,7 @@ Item {
 
                             MiniButton {
                                 controlIndex: 5
-                                width: 52
+                                width: 68
                                 label: PomodoroService.running ? "PAUSE" : "START"
                                 active: PomodoroService.running
                                 onClicked: PomodoroService.toggleRunning()

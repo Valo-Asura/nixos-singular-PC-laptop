@@ -98,6 +98,7 @@
             | .srBarBg.gradient = [["surfaceDim", 0]]
             | .srBarBg.border = ["surfaceBright", 0]
             | .srBarBg.opacity = 0
+            | .srPane.border = ["surfaceBright", 1]
           ' "$theme_config" > "$tmp" \
             && install -m 0644 "$tmp" "$theme_config"
           rm -f "$tmp"

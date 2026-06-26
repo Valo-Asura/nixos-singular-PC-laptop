@@ -639,16 +639,7 @@ Item {
             }
         }
 
-        if (!deleteMode && !renameMode) {
-            newFilteredNotes.unshift({
-                id: "__create__",
-                title: createButtonText,
-                isCreateButton: true,
-                isCreateSpecificButton: isCreateSpecific,
-                noteNameToCreate: noteNameToCreate,
-                icon: "plus"
-            });
-        }
+        // Removed redundant __create__ list-item placeholder unshifting
 
         filteredNotes = newFilteredNotes;
         resultsList.enableScrollAnimation = false;
@@ -892,8 +883,8 @@ Item {
 
     // Move note up/down in order
     function moveNoteUp() {
-        if (selectedIndex <= 1)
-            return; // Can't move create button or first note
+        if (selectedIndex <= 0)
+            return; // First note cannot be moved up further
 
         let note = filteredNotes[selectedIndex];
         if (note.isCreateButton)
@@ -918,7 +909,7 @@ Item {
     }
 
     function moveNoteDown() {
-        if (selectedIndex < 1 || selectedIndex >= filteredNotes.length - 1)
+        if (selectedIndex < 0 || selectedIndex >= filteredNotes.length - 1)
             return;
 
         let note = filteredNotes[selectedIndex];
@@ -3530,10 +3521,21 @@ Item {
                 }
 
                 // Separator
-                Separator {
-                    Layout.preferredWidth: 2
+                Item {
+                    Layout.preferredWidth: 1
                     Layout.fillHeight: true
-                    vert: true
+                    Layout.topMargin: 12
+                    Layout.bottomMargin: 12
+
+                    Rectangle {
+                        anchors.fill: parent
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: "transparent" }
+                            GradientStop { position: 0.2; color: Qt.rgba(Colors.outline.r, Colors.outline.g, Colors.outline.b, 0.4) }
+                            GradientStop { position: 0.8; color: Qt.rgba(Colors.outline.r, Colors.outline.g, Colors.outline.b, 0.4) }
+                            GradientStop { position: 1.0; color: "transparent" }
+                        }
+                    }
                 }
 
                 // Markdown Preview
@@ -3587,18 +3589,55 @@ Item {
         }
 
         // Placeholder when no note selected
-        Rectangle {
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            color: "transparent"
             visible: currentNoteId === ""
 
-            Text {
+            ColumnLayout {
                 anchors.centerIn: parent
-                text: "Select or create a note"
-                font.family: Config.theme.font
-                font.pixelSize: Config.theme.fontSize
-                color: Colors.outline
+                spacing: 16
+
+                Rectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    width: 72
+                    height: 72
+                    radius: 36
+                    color: Qt.rgba(Styling.srItem("primary").r, Styling.srItem("primary").g, Styling.srItem("primary").b, 0.08)
+                    border.width: 1.5
+                    border.color: Qt.rgba(Styling.srItem("primary").r, Styling.srItem("primary").g, Styling.srItem("primary").b, 0.24)
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: Icons.notepad
+                        font.family: Icons.font
+                        font.pixelSize: 32
+                        color: Styling.srItem("primary")
+                    }
+                }
+
+                ColumnLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 4
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "No Note Selected"
+                        font.family: Config.theme.font
+                        font.pixelSize: Styling.fontSize(1)
+                        font.weight: Font.Bold
+                        color: Colors.overBackground
+                    }
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "Select a note from the sidebar or create a new one to begin writing."
+                        font.family: Config.theme.font
+                        font.pixelSize: Styling.fontSize(-2)
+                        color: Colors.outline
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
             }
         }
     }

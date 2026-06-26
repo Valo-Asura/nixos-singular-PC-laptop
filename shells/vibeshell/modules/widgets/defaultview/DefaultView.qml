@@ -583,7 +583,7 @@ Item {
                             font.family: Config.theme.font
                             font.pixelSize: Styling.fontSize(0)
                             font.weight: Font.Bold
-                            color: Styling.srItem("primary")
+                            color: Styling.srItem("overprimary")
                         }
 
                         Text {
@@ -609,6 +609,14 @@ Item {
                         opacity: 0.35
                     }
 
+                    Component { id: linkPanelComp; LinkPanel {} }
+                    Component { id: wifiPanelComp; WifiPanel {} }
+                    Component { id: calendarPanelComp; CalendarPanel {} }
+                    Component { id: pomodoroPanelComp; PomodoroPanel {} }
+                    Component { id: awakePanelComp; AwakePanel {} }
+                    Component { id: systemPreviewPanelComp; SystemPreviewPanel {} }
+                    Component { id: bluetoothPanelComp; BluetoothPanel {} }
+
                     Item {
                         id: panelBody
                         width: parent.width
@@ -616,45 +624,80 @@ Item {
                         clip: true
 
                         PanelSurface {
+                            id: linkSurface
                             anchors.fill: parent
                             active: activePanelIndex === 1
-                            LinkPanel { anchors.fill: parent }
+                            Loader {
+                                width: parent.width
+                                active: linkSurface.active || (linkSurface.opacity > 0.01)
+                                sourceComponent: linkPanelComp
+                            }
                         }
 
                         PanelSurface {
+                            id: wifiSurface
                             anchors.fill: parent
                             active: activePanelIndex === 2
-                            WifiPanel { anchors.fill: parent }
+                            Loader {
+                                width: parent.width
+                                active: wifiSurface.active || (wifiSurface.opacity > 0.01)
+                                sourceComponent: wifiPanelComp
+                            }
                         }
 
                         PanelSurface {
+                            id: calendarSurface
                             anchors.fill: parent
                             active: activePanelIndex === 3
-                            CalendarPanel { anchors.fill: parent }
+                            Loader {
+                                width: parent.width
+                                active: calendarSurface.active || (calendarSurface.opacity > 0.01)
+                                sourceComponent: calendarPanelComp
+                            }
                         }
 
                         PanelSurface {
+                            id: pomodoroSurface
                             anchors.fill: parent
                             active: activePanelIndex === 4
-                            PomodoroPanel { anchors.fill: parent }
+                            Loader {
+                                width: parent.width
+                                active: pomodoroSurface.active || (pomodoroSurface.opacity > 0.01)
+                                sourceComponent: pomodoroPanelComp
+                            }
                         }
 
                         PanelSurface {
+                            id: awakeSurface
                             anchors.fill: parent
                             active: activePanelIndex === 5
-                            AwakePanel { anchors.fill: parent }
+                            Loader {
+                                width: parent.width
+                                active: awakeSurface.active || (awakeSurface.opacity > 0.01)
+                                sourceComponent: awakePanelComp
+                            }
                         }
 
                         PanelSurface {
+                            id: systemPreviewSurface
                             anchors.fill: parent
                             active: activePanelIndex === 6
-                            SystemPreviewPanel { anchors.fill: parent }
+                            Loader {
+                                width: parent.width
+                                active: systemPreviewSurface.active || (systemPreviewSurface.opacity > 0.01)
+                                sourceComponent: systemPreviewPanelComp
+                            }
                         }
 
                         PanelSurface {
+                            id: bluetoothSurface
                             anchors.fill: parent
                             active: activePanelIndex === 7
-                            BluetoothPanel { anchors.fill: parent }
+                            Loader {
+                                width: parent.width
+                                active: bluetoothSurface.active || (bluetoothSurface.opacity > 0.01)
+                                sourceComponent: bluetoothPanelComp
+                            }
                         }
                     }
                 }
@@ -770,6 +813,7 @@ Item {
         property string title: ""
         property string subtitle: ""
         property string value: ""
+        property bool valueIsIcon: false
         property bool active: false
         property bool showChevron: true
         signal triggered
@@ -796,7 +840,7 @@ Item {
                 font.family: Icons.font
                 font.pixelSize: 16
                 horizontalAlignment: Text.AlignHCenter
-                color: rowRoot.active ? Styling.srItem("primary") : Colors.overBackground
+                color: rowRoot.active ? Styling.srItem("overprimary") : Colors.overBackground
             }
 
             Column {
@@ -810,7 +854,7 @@ Item {
                     font.family: Config.theme.font
                     font.pixelSize: Styling.fontSize(-1)
                     font.weight: Font.Bold
-                    color: rowRoot.active ? Styling.srItem("primary") : Colors.overBackground
+                    color: rowRoot.active ? Styling.srItem("overprimary") : Colors.overBackground
                     elide: Text.ElideRight
                 }
 
@@ -830,10 +874,10 @@ Item {
                 width: 34
                 anchors.verticalCenter: parent.verticalCenter
                 text: rowRoot.value
-                font.family: Config.theme.font
-                font.pixelSize: Styling.fontSize(-3)
+                font.family: rowRoot.valueIsIcon ? Icons.font : Config.theme.font
+                font.pixelSize: rowRoot.valueIsIcon ? 16 : Styling.fontSize(-3)
                 font.weight: Font.Bold
-                color: rowRoot.active ? Styling.srItem("primary") : Colors.overBackground
+                color: rowRoot.active ? Styling.srItem("overprimary") : Colors.overBackground
                 horizontalAlignment: Text.AlignRight
                 elide: Text.ElideRight
             }
@@ -884,170 +928,165 @@ Item {
         }
     }
 
-    component LinkPanel: Item {
-        Column {
-            anchors.fill: parent
-            spacing: 8
+    component LinkPanel: Column {
+        width: parent ? parent.width : 0
+        spacing: 8
 
-            Row {
-                width: parent.width
-                height: 42
-                spacing: 10
-
-                PanelRow {
-                    width: parent.width - 46
-                    icon: NetworkService.wifiEnabled ? NetworkService.wifiIconForStrength(NetworkService.networkStrength) : Icons.wifiOff
-                    title: "Network"
-                    subtitle: NetworkService.networkName || NetworkService.wifiStatus
-                    value: NetworkService.networkStrength > 0 ? String(NetworkService.networkStrength) + "%" : ""
-                    active: NetworkService.wifi
-                    onTriggered: root.togglePanel(2)
-                }
-
-                MiniSwitch {
-                    anchors.verticalCenter: parent.verticalCenter
-                    checked: NetworkService.wifiEnabled
-                    onToggled: NetworkService.toggleWifi()
-                }
-            }
-
-            Row {
-                width: parent.width
-                height: 42
-                spacing: 10
-
-                PanelRow {
-                    width: parent.width - 46
-                    icon: BluetoothService.enabled ? (BluetoothService.connected ? Icons.bluetoothConnected : Icons.bluetooth) : Icons.bluetoothOff
-                    title: "Bluetooth"
-                    subtitle: BluetoothService.connected ? String(BluetoothService.connectedDevices) + " connected" : "Not connected"
-                    active: BluetoothService.enabled
-                    onTriggered: {
-                        root.activePanelIndex = 7;
-                        if (BluetoothService.enabled)
-                            BluetoothService.startDiscovery();
-                        else
-                            BluetoothService.setEnabled(true);
-                    }
-                }
-
-                MiniSwitch {
-                    anchors.verticalCenter: parent.verticalCenter
-                    checked: BluetoothService.enabled
-                    onToggled: BluetoothService.toggle()
-                }
-            }
+        Row {
+            width: parent.width
+            height: 42
+            spacing: 10
 
             PanelRow {
-                icon: Icons.bell
-                title: "Inbox"
-                subtitle: Notifications.list.length > 0 ? Notifications.list[0].appName + " · " + (Notifications.list[0].summary || Notifications.list[0].body) : "Silence"
-                value: Notifications.list.length > 0 ? String(Notifications.list.length) : ""
-                showChevron: true
-                onTriggered: root.showNotificationHistory()
+                width: parent.width - 46
+                icon: NetworkService.wifiEnabled ? NetworkService.wifiIconForStrength(NetworkService.networkStrength) : Icons.wifiOff
+                title: "Network"
+                subtitle: NetworkService.networkName || NetworkService.wifiStatus
+                value: NetworkService.networkStrength > 0 ? String(NetworkService.networkStrength) + "%" : ""
+                active: NetworkService.wifi
+                onTriggered: root.togglePanel(2)
+            }
+
+            MiniSwitch {
+                anchors.verticalCenter: parent.verticalCenter
+                checked: NetworkService.wifiEnabled
+                onToggled: NetworkService.toggleWifi()
+            }
+        }
+
+        Row {
+            width: parent.width
+            height: 42
+            spacing: 10
+
+            PanelRow {
+                width: parent.width - 46
+                icon: BluetoothService.enabled ? (BluetoothService.connected ? Icons.bluetoothConnected : Icons.bluetooth) : Icons.bluetoothOff
+                title: "Bluetooth"
+                subtitle: BluetoothService.connected ? String(BluetoothService.connectedDevices) + " connected" : "Not connected"
+                active: BluetoothService.enabled
+                onTriggered: {
+                    root.activePanelIndex = 7;
+                    if (BluetoothService.enabled)
+                        BluetoothService.startDiscovery();
+                    else
+                        BluetoothService.setEnabled(true);
+                }
+            }
+
+            MiniSwitch {
+                anchors.verticalCenter: parent.verticalCenter
+                checked: BluetoothService.enabled
+                onToggled: BluetoothService.toggle()
+            }
+        }
+
+        PanelRow {
+            icon: Icons.bell
+            title: "Inbox"
+            subtitle: Notifications.list.length > 0 ? Notifications.list[0].appName + " · " + (Notifications.list[0].summary || Notifications.list[0].body) : "Silence"
+            value: Notifications.list.length > 0 ? String(Notifications.list.length) : ""
+            showChevron: true
+            onTriggered: root.showNotificationHistory()
+        }
+    }
+
+    component WifiPanel: Column {
+        width: parent ? parent.width : 0
+        spacing: 5
+
+        Row {
+            width: parent.width
+            height: 24
+            spacing: 8
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 20
+                text: NetworkService.wifiScanning ? Icons.sync : Icons.arrowCounterClockwise
+                font.family: Icons.font
+                font.pixelSize: 14
+                color: Colors.overBackground
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: NetworkService.rescanWifi()
+                }
+            }
+
+            Item {
+                width: parent.width - 64
+                height: 1
+            }
+
+            MiniSwitch {
+                anchors.verticalCenter: parent.verticalCenter
+                checked: NetworkService.wifiEnabled
+                onToggled: NetworkService.toggleWifi()
+            }
+        }
+
+        Repeater {
+            model: Math.min(5, NetworkService.friendlyWifiNetworks.length)
+
+            delegate: PanelRow {
+                required property int index
+                readonly property var network: NetworkService.friendlyWifiNetworks[index]
+                icon: NetworkService.wifiIconForStrength(network.strength)
+                title: network.ssid
+                subtitle: network.active ? "Connected" : (network.security ? "Secure network" : "Open network")
+                value: String(network.strength) + "%"
+                active: network.active
+                onTriggered: network.active ? NetworkService.disconnectWifiNetwork() : NetworkService.connectToWifiNetwork(network)
             }
         }
     }
 
-    component WifiPanel: Item {
-        Column {
-            anchors.fill: parent
-            spacing: 5
+    component BluetoothPanel: Column {
+        width: parent ? parent.width : 0
+        spacing: 5
 
-            Row {
-                width: parent.width
-                height: 24
-                spacing: 8
+        Row {
+            width: parent.width
+            height: 24
+            spacing: 8
 
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 20
-                    text: NetworkService.wifiScanning ? Icons.sync : Icons.arrowCounterClockwise
-                    font.family: Icons.font
-                    font.pixelSize: 14
-                    color: Colors.overBackground
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 20
+                text: BluetoothService.discovering ? Icons.sync : Icons.arrowCounterClockwise
+                font.family: Icons.font
+                font.pixelSize: 14
+                color: Colors.overBackground
 
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: NetworkService.rescanWifi()
-                    }
-                }
-
-                Item {
-                    width: parent.width - 64
-                    height: 1
-                }
-
-                MiniSwitch {
-                    anchors.verticalCenter: parent.verticalCenter
-                    checked: NetworkService.wifiEnabled
-                    onToggled: NetworkService.toggleWifi()
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: BluetoothService.enabled ? BluetoothService.startDiscovery() : BluetoothService.setEnabled(true)
                 }
             }
 
-            Repeater {
-                model: Math.min(5, NetworkService.friendlyWifiNetworks.length)
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - 64
+                text: BluetoothService.enabled ? (BluetoothService.discovering ? "Scanning" : "Devices") : "Bluetooth disabled"
+                font.family: Config.theme.font
+                font.pixelSize: Styling.fontSize(-2)
+                font.weight: Font.Bold
+                color: Colors.overBackground
+                elide: Text.ElideRight
+            }
 
-                delegate: PanelRow {
-                    required property int index
-                    readonly property var network: NetworkService.friendlyWifiNetworks[index]
-                    icon: NetworkService.wifiIconForStrength(network.strength)
-                    title: network.ssid
-                    subtitle: network.active ? "Connected" : (network.security ? "Secure network" : "Open network")
-                    value: String(network.strength) + "%"
-                    active: network.active
-                    onTriggered: network.active ? NetworkService.disconnectWifiNetwork() : NetworkService.connectToWifiNetwork(network)
-                }
+            MiniSwitch {
+                anchors.verticalCenter: parent.verticalCenter
+                checked: BluetoothService.enabled
+                onToggled: BluetoothService.toggle()
             }
         }
-    }
 
-    component BluetoothPanel: Item {
-        Column {
-            anchors.fill: parent
-            spacing: 5
-
-            Row {
-                width: parent.width
-                height: 24
-                spacing: 8
-
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 20
-                    text: BluetoothService.discovering ? Icons.sync : Icons.arrowCounterClockwise
-                    font.family: Icons.font
-                    font.pixelSize: 14
-                    color: Colors.overBackground
-
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: BluetoothService.enabled ? BluetoothService.startDiscovery() : BluetoothService.setEnabled(true)
-                    }
-                }
-
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width - 64
-                    text: BluetoothService.enabled ? (BluetoothService.discovering ? "Scanning" : "Devices") : "Bluetooth disabled"
-                    font.family: Config.theme.font
-                    font.pixelSize: Styling.fontSize(-2)
-                    font.weight: Font.Bold
-                    color: Colors.overBackground
-                    elide: Text.ElideRight
-                }
-
-                MiniSwitch {
-                    anchors.verticalCenter: parent.verticalCenter
-                    checked: BluetoothService.enabled
-                    onToggled: BluetoothService.toggle()
-                }
-            }
-
-            Repeater {
-                model: Math.min(5, BluetoothService.friendlyDeviceList.length)
+        Repeater {
+            model: Math.min(5, BluetoothService.friendlyDeviceList.length)
 
 	                delegate: PanelRow {
 	                    required property int index
@@ -1076,7 +1115,6 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 topPadding: 28
             }
-        }
     }
 
     component MetricLine: Item {
@@ -1087,7 +1125,7 @@ Item {
         property string valueText: ""
         property string subText: ""
         property real value: 0
-        property color accent: Styling.srItem("primary")
+        property color accent: Styling.srItem("overprimary")
 
         width: parent ? parent.width : 320
         height: 36
@@ -1177,56 +1215,54 @@ Item {
         }
     }
 
-    component SystemPreviewPanel: Item {
-        Column {
-            anchors.fill: parent
-            spacing: 10
+    component SystemPreviewPanel: Column {
+        width: parent ? parent.width : 0
+        spacing: 10
 
-            MetricLine {
-                icon: Icons.cpu
-                title: root.compactCpuName(SystemResources.cpuModel)
-                valueText: `${Math.round(SystemResources.cpuUsage || 0)}%`
-                subText: SystemResources.cpuTemp >= 0 ? `${SystemResources.cpuTemp}°C` : "temp pending"
-                value: (SystemResources.cpuUsage || 0) / 100
-                accent: Colors.red
-            }
+        MetricLine {
+            icon: Icons.cpu
+            title: root.compactCpuName(SystemResources.cpuModel)
+            valueText: `${Math.round(SystemResources.cpuUsage || 0)}%`
+            subText: SystemResources.cpuTemp >= 0 ? `${SystemResources.cpuTemp}°C` : "temp pending"
+            value: (SystemResources.cpuUsage || 0) / 100
+            accent: Colors.red
+        }
 
-            MetricLine {
-                icon: Icons.ram
-                title: "Memory"
-                valueText: `${Math.round(SystemResources.ramUsage || 0)}%`
-                subText: `${(SystemResources.ramUsed / 1024 / 1024).toFixed(1)} / ${(SystemResources.ramTotal / 1024 / 1024).toFixed(1)} GiB`
-                value: (SystemResources.ramUsage || 0) / 100
-                accent: Colors.cyan
-            }
+        MetricLine {
+            icon: Icons.ram
+            title: "Memory"
+            valueText: `${Math.round(SystemResources.ramUsage || 0)}%`
+            subText: `${(SystemResources.ramUsed / 1024 / 1024).toFixed(1)} / ${(SystemResources.ramTotal / 1024 / 1024).toFixed(1)} GiB`
+            value: (SystemResources.ramUsage || 0) / 100
+            accent: Colors.cyan
+        }
 
-            MetricLine {
-                icon: Icons.gpu
-                title: root.compactGpuName(SystemResources.gpuNames[0] || "GPU")
-                valueText: `${Math.round(SystemResources.gpuUsages[0] || 0)}%`
-                subText: (SystemResources.gpuTemps[0] ?? -1) >= 0 ? `${SystemResources.gpuTemps[0]}°C` : "temp pending"
-                value: (SystemResources.gpuUsages[0] || 0) / 100
-                accent: Colors.green
-            }
+        MetricLine {
+            icon: Icons.gpu
+            title: root.compactGpuName(SystemResources.gpuNames[0] || "GPU")
+            valueText: `${Math.round(SystemResources.gpuUsages[0] || 0)}%`
+            subText: (SystemResources.gpuTemps[0] ?? -1) >= 0 ? `${SystemResources.gpuTemps[0]}°C` : "temp pending"
+            value: (SystemResources.gpuUsages[0] || 0) / 100
+            accent: Colors.green
+        }
 
-            MetricLine {
-                icon: Icons.disk
-                title: "Disk /"
-                valueText: `${Math.round(SystemResources.diskUsage["/"] || 0)}%`
-                subText: `${((SystemResources.diskUsed["/"] || 0) / 1024 / 1024 / 1024).toFixed(1)} / ${((SystemResources.diskTotal["/"] || 0) / 1024 / 1024 / 1024).toFixed(1)} GB`
-                value: (SystemResources.diskUsage["/"] || 0) / 100
-                accent: Colors.yellow
-            }
+        MetricLine {
+            icon: Icons.disk
+            title: "Disk /"
+            valueText: `${Math.round(SystemResources.diskUsage["/"] || 0)}%`
+            subText: `${((SystemResources.diskUsed["/"] || 0) / 1024 / 1024 / 1024).toFixed(1)} / ${((SystemResources.diskTotal["/"] || 0) / 1024 / 1024 / 1024).toFixed(1)} GB`
+            value: (SystemResources.diskUsage["/"] || 0) / 100
+            accent: Colors.yellow
+        }
 
-            MiniButton {
-                width: parent.width
-                label: "OPEN FULL MONITOR"
-                onTriggered: GlobalStates.monitorVisible = true
-            }
+        MiniButton {
+            width: parent.width
+            label: "OPEN FULL MONITOR"
+            onTriggered: GlobalStates.monitorVisible = true
         }
     }
 
-    component CalendarPanel: Item {
+    component CalendarPanel: Column {
         id: cal
 
         readonly property date calDate: root.nowDate
@@ -1236,131 +1272,136 @@ Item {
         readonly property int offset: root.monthOffset(year, month)
         readonly property int dayCount: root.daysInMonth(year, month)
 
-        Column {
-            anchors.fill: parent
-            spacing: 9
+        width: parent ? parent.width : 0
+        spacing: 9
 
-            Row {
-                width: parent.width
-                height: 18
-                spacing: 0
+        Row {
+            width: parent.width
+            height: 18
+            spacing: 0
 
-                Repeater {
-                    model: ["M", "T", "W", "T", "F", "S", "S"]
-                    delegate: Text {
-                        required property string modelData
-                        width: parent.width / 7
-                        text: modelData
-                        font.family: Config.theme.font
-                        font.pixelSize: Styling.fontSize(-3)
-                        font.weight: Font.Bold
-                        color: Colors.overSurface
-                        horizontalAlignment: Text.AlignHCenter
-                    }
+            Repeater {
+                model: ["M", "T", "W", "T", "F", "S", "S"]
+                delegate: Text {
+                    required property string modelData
+                    width: parent.width / 7
+                    text: modelData
+                    font.family: Config.theme.font
+                    font.pixelSize: Styling.fontSize(-3)
+                    font.weight: Font.Bold
+                    color: Colors.overSurface
+                    horizontalAlignment: Text.AlignHCenter
                 }
             }
+        }
 
-            Grid {
-                width: parent.width
-                columns: 7
-                rowSpacing: 4
-                columnSpacing: 0
+        Grid {
+            width: parent.width
+            columns: 7
+            rowSpacing: 4
+            columnSpacing: 0
 
-                Repeater {
-                    model: 35
-                    delegate: Item {
-                        required property int index
-                        width: parent.width / 7
+            Repeater {
+                model: 35
+                delegate: Item {
+                    required property int index
+                    width: parent.width / 7
+                    height: 24
+                    readonly property int dayNum: index - cal.offset + 1
+                    readonly property bool inMonth: dayNum > 0 && dayNum <= cal.dayCount
+                    readonly property bool isToday: inMonth && dayNum === cal.today
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 24
                         height: 24
-                        readonly property int dayNum: index - cal.offset + 1
-                        readonly property bool inMonth: dayNum > 0 && dayNum <= cal.dayCount
-                        readonly property bool isToday: inMonth && dayNum === cal.today
+                        radius: 12
+                        color: "transparent"
+                        border.width: isToday ? 2 : 0
+                        border.color: Styling.srItem("overprimary")
+                    }
 
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width: 24
-                            height: 24
-                            radius: 12
-                            color: "transparent"
-                            border.width: isToday ? 2 : 0
-                            border.color: Styling.srItem("primary")
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: inMonth ? String(dayNum) : ""
-                            font.family: Config.theme.font
-                            font.pixelSize: Styling.fontSize(-2)
-                            font.weight: isToday ? Font.Bold : Font.Normal
-                            color: isToday ? Styling.srItem("primary") : Colors.overBackground
-                        }
+                    Text {
+                        anchors.centerIn: parent
+                        text: inMonth ? String(dayNum) : ""
+                        font.family: Config.theme.font
+                        font.pixelSize: Styling.fontSize(-2)
+                        font.weight: isToday ? Font.Bold : Font.Normal
+                        color: isToday ? Styling.srItem("overprimary") : Colors.overBackground
                     }
                 }
             }
         }
     }
 
-    component PomodoroPanel: Item {
-        Column {
-            anchors.fill: parent
-            spacing: 10
+    component PomodoroPanel: Column {
+        width: parent ? parent.width : 0
+        spacing: 10
 
-            PanelRow {
-                icon: Icons.timer
-                title: PomodoroService.formatTime(PomodoroService.remainingSeconds)
-                subtitle: PomodoroService.modeLabel
-                value: PomodoroService.running ? "ON" : "PAUSE"
-                active: PomodoroService.running
-                showChevron: false
-                onTriggered: PomodoroService.toggleRunning()
-            }
-
-            Row {
-                width: parent.width
-                height: 30
-                spacing: 8
-
-                MiniButton {
-                    label: "FOCUS"
-                    active: PomodoroService.mode === "focus"
-                    onTriggered: PomodoroService.setMode("focus")
-                }
-
-                MiniButton {
-                    label: "SHORT"
-                    active: PomodoroService.mode === "short"
-                    onTriggered: PomodoroService.setMode("short")
-                }
-
-                MiniButton {
-                    label: "RESET"
-                    onTriggered: PomodoroService.reset()
-                }
-            }
+        PanelRow {
+            icon: Icons.timer
+            title: PomodoroService.formatTime(PomodoroService.remainingSeconds)
+            subtitle: PomodoroService.modeLabel
+            value: PomodoroService.running ? Icons.pause : Icons.play
+            valueIsIcon: true
+            active: PomodoroService.running
+            showChevron: false
+            onTriggered: PomodoroService.toggleRunning()
         }
-    }
 
-    component AwakePanel: Item {
-        Column {
-            anchors.fill: parent
-            spacing: 10
+        Row {
+            width: parent.width
+            height: 30
+            spacing: 8
 
-            PanelRow {
-                icon: Icons.caffeine
-                title: CaffeineService.inhibit ? "Awake mode on" : "Sleep mode allowed"
-                subtitle: CaffeineService.inhibit ? "Shell switching keeps inhibit active" : "Screen lock and suspend are normal"
-                value: CaffeineService.inhibit ? "ON" : "OFF"
-                active: CaffeineService.inhibit
-                showChevron: false
-                onTriggered: root.toggleCaffeine()
+            MiniButton {
+                width: (parent.width - 24) / 4
+                label: "FOCUS"
+                active: PomodoroService.mode === "focus"
+                onTriggered: PomodoroService.setMode("focus")
             }
 
             MiniButton {
-                width: parent.width
-                label: CaffeineService.inhibit ? "DISABLE CAFFEINE" : "ENABLE CAFFEINE"
-                active: CaffeineService.inhibit
-                onTriggered: root.toggleCaffeine()
+                width: (parent.width - 24) / 4
+                label: "SHORT"
+                active: PomodoroService.mode === "short"
+                onTriggered: PomodoroService.setMode("short")
             }
+
+            MiniButton {
+                width: (parent.width - 24) / 4
+                label: PomodoroService.running ? "PAUSE" : "START"
+                active: PomodoroService.running
+                onTriggered: PomodoroService.toggleRunning()
+            }
+
+            MiniButton {
+                width: (parent.width - 24) / 4
+                label: "RESET"
+                onTriggered: PomodoroService.reset()
+            }
+        }
+    }
+
+    component AwakePanel: Column {
+        width: parent ? parent.width : 0
+        spacing: 10
+
+        PanelRow {
+            icon: Icons.caffeine
+            title: CaffeineService.inhibit ? "Awake mode on" : "Sleep mode allowed"
+            subtitle: CaffeineService.inhibit ? "Shell switching keeps inhibit active" : "Screen lock and suspend are normal"
+            value: CaffeineService.inhibit ? "ON" : "OFF"
+            active: CaffeineService.inhibit
+            showChevron: false
+            onTriggered: root.toggleCaffeine()
+        }
+
+        MiniButton {
+            width: parent.width
+            label: CaffeineService.inhibit ? "DISABLE CAFFEINE" : "ENABLE CAFFEINE"
+            active: CaffeineService.inhibit
+            onTriggered: root.toggleCaffeine()
         }
     }
 

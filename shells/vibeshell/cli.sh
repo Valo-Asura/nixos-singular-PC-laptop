@@ -219,9 +219,9 @@ reload)
 	fi
 	log_file="$(prepare_launch_log)"
 	if command -v setsid >/dev/null 2>&1; then
-		setsid -f "$launcher" >>"$log_file" 2>&1
+		setsid -f "$launcher" 9>&- >>"$log_file" 2>&1
 	else
-		nohup "$launcher" >>"$log_file" 2>&1 &
+		nohup "$launcher" 9>&- >>"$log_file" 2>&1 &
 	fi
 	;;
 quit)

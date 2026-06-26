@@ -131,6 +131,14 @@ Item {
                 radius: Styling.radius(0)
                 color: Colors.overBackground
                 z: 2
+                scale: root.isDragging ? 1.25 : 1.0
+                Behavior on scale {
+                    SpringAnimation {
+                        spring: 3
+                        damping: 0.4
+                        mass: 1.0
+                    }
+                }
                 Behavior on width {
                     enabled: root.smoothDrag
                     NumberAnimation {
@@ -229,6 +237,14 @@ Item {
                 radius: Styling.radius(0)
                 color: iconColor
                 z: 2
+                scale: root.isDragging ? 1.25 : 1.0
+                Behavior on scale {
+                    SpringAnimation {
+                        spring: 3
+                        damping: 0.4
+                        mass: 1.0
+                    }
+                }
                 Behavior on width {
                     enabled: root.smoothDrag
                     NumberAnimation {

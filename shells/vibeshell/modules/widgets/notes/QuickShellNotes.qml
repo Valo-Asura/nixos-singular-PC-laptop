@@ -247,7 +247,7 @@ FloatingWindow {
                 spacing: 10
 
                 StyledRect {
-                    Layout.preferredWidth: 76
+                    Layout.preferredWidth: 96
                     Layout.fillHeight: true
                     variant: "surface"
                     radius: Styling.radius(1)
@@ -291,7 +291,7 @@ FloatingWindow {
                                 required property int index
                                 required property var modelData
 
-                                Layout.preferredWidth: 56
+                                Layout.preferredWidth: 80
                                 Layout.preferredHeight: 50
 
                                 background: StyledRect {
@@ -376,27 +376,6 @@ FloatingWindow {
                     font.weight: Font.Bold
                     color: Colors.overSurface
                 }
-
-                Button {
-                    Layout.preferredWidth: 112
-                    Layout.preferredHeight: 34
-
-                    background: StyledRect {
-                        variant: parent.hovered ? "primary" : "surface"
-                        radius: Styling.radius(-4)
-                    }
-
-                    contentItem: Text {
-                        text: "+ Add note"
-                        font.family: Config.theme.font
-                        font.pixelSize: Styling.fontSize(-1)
-                        color: parent.hovered ? Colors.overPrimary : Colors.overSurface
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-
-                    onClicked: root.createNoteFromHeader()
-                }
             }
 
             NotesTab {
@@ -430,27 +409,6 @@ FloatingWindow {
                     font.pixelSize: Styling.fontSize(5)
                     font.weight: Font.Bold
                     color: Colors.overSurface
-                }
-
-                Button {
-                    Layout.preferredWidth: 128
-                    Layout.preferredHeight: 34
-
-                    background: StyledRect {
-                        variant: parent.hovered ? "primary" : "surface"
-                        radius: Styling.radius(-4)
-                    }
-
-                    contentItem: Text {
-                        text: "+ Add reminder"
-                        font.family: Config.theme.font
-                        font.pixelSize: Styling.fontSize(-1)
-                        color: parent.hovered ? Colors.overPrimary : Colors.overSurface
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-
-                    onClicked: root.createReminderFromHeader()
                 }
             }
 

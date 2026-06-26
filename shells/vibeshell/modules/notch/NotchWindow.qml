@@ -242,6 +242,10 @@ PanelWindow {
         item: notchPanel.reveal ? notchRegionContainer : notchHoverRegion
     }
 
+    HyprlandWindow.visibleMask: Region {
+        item: notchPanel.reveal ? notchRegionContainer : null
+    }
+
     Component.onCompleted: {
         Visibilities.registerNotchPanel(screen.name, notchPanel);
         Visibilities.registerNotch(screen.name, notchContainer);
