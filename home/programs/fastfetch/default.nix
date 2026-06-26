@@ -18,74 +18,80 @@ let
       };
     };
     display = {
-      separator = " :: ";
-      brightColor = true;
+      separator = "";
     };
     modules = [
-      "break"
       {
         type = "custom";
-        format = "▪ ──── {#31}Hardware Information{#} ──── ▪";
+        format = "┌─────────────┐";
       }
       {
-        type = "host";
-        key = "󰌢 ";
-        keyColor = "red";
+        type = "title";
+        key = "│ {#90} user      │ ";
+        format = "{1}";
       }
       {
-        type = "cpu";
-        key = "󰻠 ";
-        keyColor = "red";
-      }
-      {
-        type = "gpu";
-        key = "󰢮 ";
-        keyColor = "red";
-      }
-      {
-        type = "memory";
-        key = "󰑭 ";
-        keyColor = "red";
+        type = "uptime";
+        key = "│ {#90} uptime    │ ";
       }
       {
         type = "display";
-        key = "󰍹 ";
-        keyColor = "red";
-      }
-      "break"
-      {
-        type = "custom";
-        format = "▪ ──── {#31}Software Information{#} ──── ▪";
+        key = "│ {#90} display   │ ";
       }
       {
         type = "os";
-        key = " ";
-        keyColor = "red";
+        key = "│ {#90} distro    │ ";
       }
       {
         type = "kernel";
-        key = " ";
-        keyColor = "red";
+        key = "│ {#90} kernel    │ ";
       }
       {
         type = "wm";
-        key = " ";
-        keyColor = "red";
-      }
-      {
-        type = "shell";
-        key = " ";
-        keyColor = "red";
+        key = "│ {#90} wm        │ ";
       }
       {
         type = "terminal";
-        key = " ";
-        keyColor = "red";
+        key = "│ {#90} term      │ ";
       }
-      "break"
+      {
+        type = "shell";
+        key = "│ {#90} shell     │ ";
+      }
+      {
+        type = "packages";
+        key = "│ {#90} apps      │ ";
+      }
+      {
+        type = "disk";
+        key = "│ {#90} disk      │ ";
+      }
+      {
+        type = "memory";
+        key = "│ {#90} memory    │ ";
+      }
+      {
+        type = "font";
+        key = "│ {#90} font      │ ";
+      }
+      {
+        type = "command";
+        key = "│ {#90} OS Age    │ ";
+        shell = "/bin/sh";
+        text = "birth=$(stat -c %Y /); current=$(date +%s); age=$(( (current - birth) / 86400 )); echo \"$age days\"";
+      }
+      {
+        type = "custom";
+        format = "├─────────────┤";
+      }
       {
         type = "colors";
+        key = "│ {#90} colors    │ ";
         symbol = "circle";
+      }
+      {
+        type = "custom";
+        format = "└─────────────┘";
       }
     ];
   };
