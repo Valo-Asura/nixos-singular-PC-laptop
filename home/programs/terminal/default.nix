@@ -365,7 +365,7 @@ in
     [colors-dark]
     alpha=1.0
     foreground=${hex colors.base05}
-    background=${hex colors.base00}
+    background=000000
     regular0=${hex colors.base00}
     regular1=${hex colors.base08}
     regular2=${hex colors.base0B}
