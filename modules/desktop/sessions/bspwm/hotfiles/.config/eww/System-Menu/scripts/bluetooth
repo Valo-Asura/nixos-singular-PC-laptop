@@ -1,86 +1,78 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+powered="no"
+if bluetoothctl show 2>/dev/null | grep -q "Powered: yes"; then
+  powered="yes"
+fi
+
+connected_info="$(echo info | bluetoothctl 2>/dev/null || true)"
 
 toggle() {
-    STATUS="$(bluetoothctl show | grep Powered | awk '{print $2}')"
-    if [ $STATUS == "yes" ]; then
-        bluetoothctl power off
-        notify-send --icon=bluetooth-offline --urgency=normal "Bluetooth" "Bluetooth has been turned off."
-    else
-        bluetoothctl power on
-        notify-send --icon=volume-level-high --urgency=normal "Bluetooth" "Bluetooth has been turned on."
-    fi
+  if [ "$powered" = "yes" ]; then
+    bluetoothctl power off
+    notify-send --icon=bluetooth-offline --urgency=normal "Bluetooth" "Bluetooth has been turned off."
+  else
+    bluetoothctl power on
+    notify-send --icon=bluetooth-active --urgency=normal "Bluetooth" "Bluetooth has been turned on."
+  fi
 }
 
 icon() {
-        # not connected
-        if [ $(bluetoothctl show | grep "Powered: yes" | wc -c) -eq 0 ]; then
-                echo "󰂲"
-        else
-                # on
-                if [ $(echo info | bluetoothctl | grep 'Device' | wc -c) -eq 0 ]; then
-                        echo "󰂯"
-                else
-                        echo "󰂱"
-                fi
-        fi
+  if [ "$powered" != "yes" ]; then
+    echo "󰂲"
+  elif printf '%s\n' "$connected_info" | grep -q '^Device'; then
+    echo "󰂱"
+  else
+    echo "󰂯"
+  fi
 }
 
 class() {
-    # off
-    if [ $(bluetoothctl show | grep "Powered: yes" | wc -c) -eq 0 ]
-    then
-        echo "󰂲"
-    else
-        # on
-        if [ $(echo info | bluetoothctl | grep 'Device' | wc -c) -eq 0 ]
-        then
-            echo "󰂯"
-            # connected
-        else
-            echo "󰂯"
-        fi
-    fi
+  if [ "$powered" = "yes" ]; then
+    echo "󰂯"
+  else
+    echo "󰂲"
+  fi
 }
 
 status() {
-        # not connected
-        if [ $(bluetoothctl show | grep "Powered: yes" | wc -c) -eq 0 ]; then
-                echo "Off"
-        else
-                # on
-                if [ $(echo info | bluetoothctl | grep 'Device' | wc -c) -eq 0 ]; then
-                        echo "On"
-                else
-                        # get device alias
-                        DEVICE=`echo info | bluetoothctl | grep 'Alias:' | awk -F:  '{ print $2 }'`
-                        echo "$DEVICE"
-                fi
-        fi
+  if [ "$powered" != "yes" ]; then
+    echo "Off"
+  elif printf '%s\n' "$connected_info" | grep -q '^Device'; then
+    printf '%s\n' "$connected_info" | awk -F': ' '/Alias:/ { print $2; exit }'
+  else
+    echo "On"
+  fi
 }
 
 battery() {
-        # not connected
-        if [ $(bluetoothctl show | grep "Powered: yes" | wc -c) -eq 0 ]; then
-                echo "Currently Off"
-        else
-                # on
-                if [ $(echo info | bluetoothctl | grep 'Device' | wc -c) -eq 0 ]; then
-                        echo "Not Connected"
-                else
-                        BATTERY=`upower -i /org/freedesktop/UPower/devices/headset_dev_33_33_55_33_90_D0 | grep percentage | cut -b 26-28`
-                        echo "Battery Level: $BATTERY"
-                fi
-        fi
+  if [ "$powered" != "yes" ]; then
+    echo "Currently Off"
+    return
+  fi
+
+  local device
+  device="$(upower -e 2>/dev/null | grep -E 'headset|headphones|keyboard|mouse' | head -n 1 || true)"
+
+  if [ -z "$device" ]; then
+    echo "Not Connected"
+    return
+  fi
+
+  local percent
+  percent="$(upower -i "$device" 2>/dev/null | awk '/percentage:/ { print $2; exit }')"
+  if [ -n "$percent" ]; then
+    echo "Battery Level: $percent"
+  else
+    echo "Connected"
+  fi
 }
 
-if [[ $1 == "--status" ]]; then
-        status
-elif [[ $1 == "--icon" ]]; then
-        icon
-elif [[ $1 == "--toggle" ]]; then
-        toggle
-elif [[ $1 == "--class" ]]; then
-    class
-elif [[ $1 == "--battery" ]]; then
-    battery
-fi
+case "${1:-}" in
+  --status) status ;;
+  --icon) icon ;;
+  --toggle) toggle ;;
+  --class) class ;;
+  --battery) battery ;;
+esac

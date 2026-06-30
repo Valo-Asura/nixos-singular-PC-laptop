@@ -5,12 +5,12 @@
 (defpoll album :interval "1s" "Player/scripts/player --album")
 (defpoll current-pos :interval "1s" "Player/scripts/player --current-pos")
 (defpoll length-info :interval "1s" "Player/scripts/player --length-info")
-(defpoll length :interval "0s" "dbus-send --dest=org.mpris.MediaPlayer2.spotify --print-reply /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:org.mpris.MediaPlayer2.Player string:Metadata | grep uint | awk '{print $3}'")
-(defpoll position :interval "1s" "dbus-send --dest=org.mpris.MediaPlayer2.spotify --print-reply /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:org.mpris.MediaPlayer2.Player string:Position | awk 'FNR==2 {print $3}'")
-(defpoll trackid :interval "1s" "playerctl -p spotify metadata mpris:trackid")
+(defpoll length :interval "1s" "Player/scripts/player --length")
+(defpoll position :interval "1s" "Player/scripts/player --position")
+(defpoll trackid :interval "1s" "playerctl -p spotify metadata mpris:trackid 2>/dev/null || echo /org/mpris/MediaPlayer2")
 (defpoll current-volume :interval "1s" "Player/scripts/player --current-volume")
 (defpoll pp-icon :interval "1s" "Player/scripts/music-title --icon")
-(defpoll shuffle :interval "1s" "playerctl -p spotify shuffle")
+(defpoll shuffle :interval "1s" "playerctl -p spotify shuffle 2>/dev/null || echo Off")
 (deflisten eq-status "tail -F Player/status/eq-status")
 (deflisten vz-status "tail -F Player/status/vz-status")
 (deflisten ly-status "tail -F Player/status/ly-status")
@@ -39,11 +39,11 @@
       :onhoverlost "eww update hover=false"
       :cursor "pointer"
       :space-evenly "false"
-      (scale :orientation "h" :class "player-music-slider" :min 0 :max length :value position :tooltip current-pos :onchange { hover ? "dbus-send --type=method_call --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.SetPosition objpath:${trackid} int64:{}" : "" }))
+      (scale :orientation "h" :class "player-music-slider" :min 0 :max {length == "" ? 1 : length} :value {position == "" ? 0 : position} :tooltip current-pos :onchange { hover ? "dbus-send --type=method_call --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.SetPosition objpath:${trackid} int64:{}" : "" }))
     (box :class "main-player-control-box" :hexpand "false" :vexpand "false" :space-evenly "false" :orientation "h" :height 70
       (box :class "player-volume-box" :space-evenly "false" :hexpand "false" :vexpand "false" :spacing 10
         (label :class "player-volume-icon" :text "󰕾")
-        (scale :class "player-volume-slider" :width 150 :min 0 :max 100 :orientation "h" :value current-volume :halign "start" :onchange "Player/scripts/player --volume {}")
+        (scale :class "player-volume-slider" :width 150 :min 0 :max 100 :orientation "h" :value {current-volume == "" ? 0 : current-volume} :halign "start" :onchange "Player/scripts/player --volume {}")
         (button :class "lyrics-btn ${ly-status == "On" ? "lyrics-btn-on" : "lyrics-btn-off"}" :onclick "Player/scripts/toggle-lyrics" "󰭷"))
       (box :class "player-buttons" :space-evenly "false" :hexpand "false" :vexpand "false" :spacing 10
         (button :class "shuffle-btn ${shuffle == "On" ? "shuffle-btn-on" : "shuffle-btn-off"}" :onclick "Player/scripts/player --shuffle" "󰒟")

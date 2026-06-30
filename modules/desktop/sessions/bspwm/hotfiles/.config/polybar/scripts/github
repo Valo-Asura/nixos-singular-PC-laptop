@@ -1,11 +1,21 @@
-#!/bin/sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-USER="Your_Username"
-TOKEN="Your_PAT"
+if [ -z "${GITHUB_TOKEN:-}" ]; then
+    echo "0"
+    exit 0
+fi
 
-notifications=$(echo "user = \"$USER:$TOKEN\"" | curl -sf -K- https://api.github.com/notifications | jq ".[].unread" | grep -c true)
+notifications="$(
+    curl -fsS \
+        -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+        -H "Accept: application/vnd.github+json" \
+        https://api.github.com/notifications 2>/dev/null \
+        | jq '[.[] | select(.unread == true)] | length' 2>/dev/null \
+        || printf 0
+)"
 
-if [ "$notifications" -gt 0 ]; then
+if [ "${notifications:-0}" -gt 0 ]; then
     echo "$notifications"
 else
     echo "0"

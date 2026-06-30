@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 TIPS_STATUS=$(cat $HOME/.config/eww/System-Menu/scripts/tips/tips-lock)
 

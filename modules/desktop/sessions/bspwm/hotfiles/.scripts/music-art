@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 tmp_dir="$HOME/.cache"
 spotify_title="$(playerctl --player=spotify metadata --format '{{ title }}')"

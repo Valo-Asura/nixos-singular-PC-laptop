@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # ----------------------------------------------------------------------------------
 # name    : Sapaan bahasa inggris
 # version : 0.1

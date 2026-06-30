@@ -1,11 +1,12 @@
-#!/bin/sh
-if [ $(bluetoothctl show | grep "Powered: yes" | wc -c) -eq 0 ]
-then
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! bluetoothctl show 2>/dev/null | grep -q "Powered: yes"; then
   echo ""
 else
-  if [ $(echo info | bluetoothctl | grep 'Device' | wc -c) -eq 0 ]
-  then 
+  if ! echo info | bluetoothctl 2>/dev/null | grep -q 'Device'; then
     echo "󰂯"
+  else
+    echo "󰂱"
   fi
-  echo "󰂱"
 fi

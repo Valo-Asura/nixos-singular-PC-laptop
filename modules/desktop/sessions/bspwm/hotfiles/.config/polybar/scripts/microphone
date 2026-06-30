@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 PID=$(lsof /dev/snd/pcm*c | wc -c)
 

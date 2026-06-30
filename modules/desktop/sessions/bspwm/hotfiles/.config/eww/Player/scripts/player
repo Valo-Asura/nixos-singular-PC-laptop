@@ -1,57 +1,63 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-if [[ $1 == "--length" ]]; then
-    playerctl -p spotify metadata mpris:length              
+if [[ ${1:-} == "--length" ]]; then
+    playerctl -p spotify metadata mpris:length 2>/dev/null || echo 1
 fi
 
-if [[ $1 == "--open" ]]; then
-    URL=$(playerctl -p spotify metadata xesam:url)
+if [[ ${1:-} == "--position" ]]; then
+    POS=$(playerctl -p spotify position 2>/dev/null || echo 0)
+    python -c "print(int(float('$POS') * 1000000))" 2>/dev/null || echo 0
+fi
+
+if [[ ${1:-} == "--open" ]]; then
+    URL=$(playerctl -p spotify metadata xesam:url 2>/dev/null || echo "")
     echo "$URL?go=1&utm_medium=desktop"
 fi
 
-if [[ $1 == "--artist" ]]; then
+if [[ ${1:-} == "--artist" ]]; then
    "$HOME/.config/eww/Player/scripts/music-artist"
 fi
 
-if [[ $1 == "--length-time" ]]; then
+if [[ ${1:-} == "--length-time" ]]; then
    "$HOME/.config/eww/Player/scripts/music-length"
 fi
 
-if [[ $1 == "--length-info" ]]; then
+if [[ ${1:-} == "--length-info" ]]; then
    "$HOME/.config/eww/Player/scripts/music-length-info"
 fi
 
-if [[ $1 == "--cover" ]]; then
+if [[ ${1:-} == "--cover" ]]; then
    "$HOME/.config/eww/Player/scripts/music-art"
 fi
 
-if [[ $1 == "--album" ]]; then
+if [[ ${1:-} == "--album" ]]; then
    "$HOME/.config/eww/Player/scripts/music-album"
 fi
 
-if [[ $1 == "--current-volume" ]]; then
-   VOLUME=$(playerctl -p spotify volume)
-   echo $(python -c "print(float("$VOLUME")*100)")
+if [[ ${1:-} == "--current-volume" ]]; then
+   VOLUME=$(playerctl -p spotify volume 2>/dev/null || echo 0)
+   python -c "print(int(float('$VOLUME') * 100))" 2>/dev/null || echo 0
 fi
 
-if [[ $1 == "--volume" ]]; then
-   CURRENT_VOLUME=$2
+if [[ ${1:-} == "--volume" ]]; then
+   CURRENT_VOLUME=${2:-0}
    NOW_VOLUME=$(python -c "print(float($CURRENT_VOLUME)/100)")
-   playerctl -p spotify volume "$NOW_VOLUME"
+   playerctl -p spotify volume "$NOW_VOLUME" 2>/dev/null || true
 fi
 
-if [[ $1 == "--shuffle" ]]; then
-   if [[ $(playerctl -p spotify shuffle) == "On" ]]; then
-      playerctl -p spotify shuffle off
+if [[ ${1:-} == "--shuffle" ]]; then
+   if [[ $(playerctl -p spotify shuffle 2>/dev/null || echo Off) == "On" ]]; then
+      playerctl -p spotify shuffle off 2>/dev/null || true
    else
-      playerctl -p spotify shuffle On
+      playerctl -p spotify shuffle On 2>/dev/null || true
    fi
 fi
 
-if [[ $1 == "--current-pos" ]]; then
-   playerctl -p spotify position --format '{{ duration(position) }}'
+if [[ ${1:-} == "--current-pos" ]]; then
+   playerctl -p spotify position --format '{{ duration(position) }}' 2>/dev/null || echo "--:--"
 fi
 
-if [[ $1 == "--launch-lyrics" ]]; then
+if [[ ${1:-} == "--launch-lyrics" ]]; then
    eww open --toggle lyrics
 fi

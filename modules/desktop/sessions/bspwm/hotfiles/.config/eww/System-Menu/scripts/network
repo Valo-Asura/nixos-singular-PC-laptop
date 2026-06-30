@@ -1,57 +1,65 @@
 #!/usr/bin/env bash
-STATUS=$(nmcli | grep wlan0 | awk 'FNR == 1 {print $2}')
-SSID=$(iwgetid | awk -F '"' '{ print $2 }')
-STRENGTH=$(awk 'NR==3 {printf("%.0f",$3*10/7)}' /proc/net/wireless)
+set -euo pipefail
+
+wifi_enabled="$(nmcli -t -f WIFI general 2>/dev/null || printf disabled)"
+active_wifi="$(
+  nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi 2>/dev/null \
+    | awk -F: '$1 == "yes" { print; exit }'
+)"
+ssid="$(printf '%s\n' "$active_wifi" | awk -F: '{ print $2 }')"
+strength="$(printf '%s\n' "$active_wifi" | awk -F: '{ print $3 }')"
+
+if ! [[ "${strength:-}" =~ ^[0-9]+$ ]]; then
+  strength=0
+fi
 
 toggle() {
-    if [[ $STATUS == "connected" ]]; then
-        nmcli radio wifi off
-        notify-send --icon=window-close --urgency=normal "Wi-Fi" "Wi-Fi has been turned off!"
-    else
-        nmcli radio wifi on
-        notify-send --icon=checkmark --urgency=normal "Wi-Fi" "Wi-Fi has been turned on, you are back online!"
-    fi
+  if [ "$wifi_enabled" = "enabled" ]; then
+    nmcli radio wifi off
+    notify-send --icon=network-wireless-offline --urgency=normal "Wi-Fi" "Wi-Fi has been turned off."
+  else
+    nmcli radio wifi on
+    notify-send --icon=network-wireless --urgency=normal "Wi-Fi" "Wi-Fi has been turned on."
+  fi
 }
 
 icon() {
-    if [[ "$STRENGTH" -ge "80" ]]; then
-        echo "󰤨"
-    elif [[ "$STRENGTH" -ge "60" ]]; then
-        echo "󰤥"
-    elif [[ "$STRENGTH" -ge "40" ]]; then
-        echo "󰤢"
-    elif [[ "$STRENGTH" -ge "20" ]]; then
-        echo "󰤟"
-    elif [[ "$STRENGTH" -ge "0" ]]; then
-        echo "󰤯"
-    else
-        echo "󰤭"
-    fi
+  if [ "$wifi_enabled" != "enabled" ]; then
+    echo "󰤭"
+  elif [ "$strength" -ge 80 ]; then
+    echo "󰤨"
+  elif [ "$strength" -ge 60 ]; then
+    echo "󰤥"
+  elif [ "$strength" -ge 40 ]; then
+    echo "󰤢"
+  elif [ "$strength" -ge 20 ]; then
+    echo "󰤟"
+  else
+    echo "󰤯"
+  fi
 }
 
 status() {
-    if [[ $STATUS == "connected" ]]; then
-        echo $SSID
-    else
-        echo Disconnected
-    fi
+  if [ "$wifi_enabled" != "enabled" ]; then
+    echo "Off"
+  elif [ -n "$ssid" ]; then
+    echo "$ssid"
+  else
+    echo "Disconnected"
+  fi
 }
 
-class(){
-    if [[ $STATUS == "connected" ]]; then
-        echo "󰤨"
-    else
-        echo "󰤭"
-    fi
+class() {
+  if [ "$wifi_enabled" = "enabled" ] && [ -n "$ssid" ]; then
+    echo "connected"
+  else
+    echo "disconnected"
+  fi
 }
 
-if [[ $1 == "--toggle" ]]; then
-    toggle
-elif [[ $1 == "--icon" ]]; then
-    icon
-elif [[ $1 == "--status" ]]; then
-    status
-elif [[ $1 == "--class" ]]; then
-    class
-fi
-
+case "${1:-}" in
+  --toggle) toggle ;;
+  --icon) icon ;;
+  --status) status ;;
+  --class) class ;;
+esac

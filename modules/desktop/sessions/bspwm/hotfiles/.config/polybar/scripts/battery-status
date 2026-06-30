@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+battery=""
+for candidate in /sys/class/power_supply/BAT*; do
+  if [ -d "$candidate" ]; then
+    battery="$candidate"
+    break
+  fi
+done
+
+if [ -z "$battery" ]; then
+  exit 0
+fi
+
+capacity="$(cat "$battery/capacity" 2>/dev/null || printf 0)"
+status="$(cat "$battery/status" 2>/dev/null || printf Unknown)"
+
+if [ "$capacity" -ge 90 ]; then
+  icon=""
+elif [ "$capacity" -ge 65 ]; then
+  icon=""
+elif [ "$capacity" -ge 40 ]; then
+  icon=""
+elif [ "$capacity" -ge 20 ]; then
+  icon=""
+else
+  icon=""
+fi
+
+case "$status" in
+  Charging|Full) printf " %s %s%%\n" "$icon" "$capacity" ;;
+  *) printf "%s %s%%\n" "$icon" "$capacity" ;;
+esac

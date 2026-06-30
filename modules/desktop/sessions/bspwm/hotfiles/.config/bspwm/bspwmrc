@@ -5,7 +5,7 @@ polybar &
 pgrep -x sxhkd > /dev/null || sxhkd &
 eww daemon &
 $HOME/.config/conky/Auva/start.sh &
-/usr/lib/mate-polkit/polkit-mate-authentication-agent-1 &
+# asura-start-bspwm starts the NixOS polkit agent from the store path.
 xfce4-power-manager &
 bash $HOME/.config/bspwm/scripts/fix-plank
 xsetroot -cursor_name left_ptr &
@@ -19,7 +19,8 @@ bspc monitor -d 1 2 3 4 5
 
 bspc config border_width         0
 bspc config window_gap          20
-bspc config border_radius	15
+# Rounded corners are handled by picom on NixOS; upstream bspwm has no
+# border_radius setting.
 
 bspc config normal_border_color \#c0caf5
 bspc config active_border_color \#c0caf5
@@ -37,4 +38,4 @@ bspc rule -a Kupfer.py focus=on
 bspc rule -a Screenkey manage=off
 bspc rule -a Plank manage=off border=off locked=on focus=off follow=off layer=above
 bspc rule -a Rofi state=floating
-bspc rule -a GLava state=floating layer=below sticky=true locked=true border=off focus=off center=true follow=off rectangle=1920x1080+0+0
+bspc rule -a GLava state=floating layer=below sticky=true locked=true border=off focus=off center=true follow=off

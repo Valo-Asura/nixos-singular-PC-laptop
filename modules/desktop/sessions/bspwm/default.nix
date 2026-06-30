@@ -107,9 +107,24 @@ let
     exit 1
   '';
 
+  ewwDashboard = pkgs.writeShellScriptBin "asura-eww-hotfiles-dashboard" ''
+    exec ${pkgs.eww}/bin/eww open-many --toggle background-closer main "$@"
+  '';
+
+  ewwSettings = pkgs.writeShellScriptBin "asura-eww-hotfiles-settings" ''
+    exec ${pkgs.eww}/bin/eww open-many --toggle background-closer system-menu "$@"
+  '';
+
+  ewwPlayer = pkgs.writeShellScriptBin "asura-eww-hotfiles-player" ''
+    exec ${pkgs.eww}/bin/eww open-many --toggle background-closer player "$@"
+  '';
+
   hotfilesPackages = [
     asuraX11Terminal
     blueberryCompat
+    ewwDashboard
+    ewwPlayer
+    ewwSettings
     paruCompat
     parcelliteCompat
     picomCompat
@@ -291,12 +306,19 @@ let
     install_managed_dir "$hotfiles_src/.wallpapers" "$HOME/.wallpapers"
     install_managed_dir "$hotfiles_src/.fonts" "$HOME/.fonts"
     install_managed_dir "$hotfiles_src/.cache/dunst" "$HOME/.cache/dunst"
+    install_managed_dir "$hotfiles_src/.fonts" "$HOME/.local/share/fonts/asura-hotfiles"
     install_managed_dir "$hotfiles_src/.local/share/plank" "$HOME/.local/share/plank"
+    install_managed_dir "$hotfiles_src/.local/share/rofi" "$HOME/.local/share/rofi"
     install_managed_file "$hotfiles_src/.Xresources" "$HOME/.Xresources"
     install_managed_file "$hotfiles_src/.gtkrc-2.0" "$HOME/.gtkrc-2.0"
 
     find "$HOME/.scripts" "$HOME/.config/eww" "$HOME/.config/bspwm/scripts" "$HOME/.config/polybar/scripts" \
       -type f -exec chmod u+x {} + 2>/dev/null || true
+
+    # The upstream jgmenu file hardcodes its author's home path for icons.
+    if [ -f "$HOME/.config/jgmenu/prepend.csv" ]; then
+      ${pkgs.gnused}/bin/sed -i "s|/home/syndrizzle|$HOME|g" "$HOME/.config/jgmenu/prepend.csv"
+    fi
 
     sxhkdrc="$HOME/.config/sxhkd/sxhkdrc"
     if [ -f "$sxhkdrc" ]; then
@@ -325,7 +347,7 @@ SXHKD_ASURA_SHARED_BINDINGS
       printf '{"items":[]}\n' > "$HOME/.cache/dunst.log.json"
     fi
 
-    fc-cache -r "$HOME/.fonts" >/dev/null 2>&1 &
+    fc-cache -r "$HOME/.fonts" "$HOME/.local/share/fonts" >/dev/null 2>&1 || true
     xrdb -merge "$HOME/.Xresources" >/dev/null 2>&1 || true
     xsetroot -cursor_name left_ptr >/dev/null 2>&1 || true
 
@@ -380,8 +402,8 @@ in
 
   desktopEntry = ''
     [Desktop Entry]
-    Name=BSPWM Hotfiles Full (X11)
-    Comment=Full Tokyo Night hotfiles BSPWM with EWW, Conky, Plank, GLava, Polybar, Rofi, Dunst
+    Name=BSPWM + EWW Hotfiles (X11)
+    Comment=Full Tokyo Night hotfiles BSPWM session with EWW widgets, Conky, Plank, GLava, Polybar, Rofi, Dunst
     Exec=${start}/bin/asura-start-bspwm
     Type=Application
   '';

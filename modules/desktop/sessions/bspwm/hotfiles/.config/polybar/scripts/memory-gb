@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+awk '
+  /MemTotal:/ { total = $2 }
+  /MemAvailable:/ { available = $2 }
+  END {
+    if (total <= 0) {
+      print "RAM --/--G"
+      exit
+    }
+
+    used = (total - available) / 1048576
+    total_gib = total / 1048576
+    printf "RAM %.1f/%.1fG\n", used, total_gib
+  }
+' /proc/meminfo
