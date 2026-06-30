@@ -1,612 +1,176 @@
-# Shared session factory: BSPWM hotfiles-lite X11 fallback.
+# Shared session factory: full BSPWM hotfiles X11 fallback.
 #
-# This ports the Tokyo Night/hotfiles look without the original heavy Arch
-# autostart stack. Intentionally omitted for RAM: EWW, Conky, Plank, GLava,
-# parcellite, xfce4-power-manager, ukui-window-switch, and system76-power.
+# This keeps the original Arch hotfiles widgets/session payload in this BSPWM
+# module only. Hyprland, Noctalia, VibeShell, and the shared laptop config do
+# not import or depend on these EWW/Conky/Plank/GLava assets.
 {
   asuraX11Terminal,
-  config,
   lib,
   pkgs,
   ...
 }:
 
 let
-  wallpaper = ./assets/tokyo.png;
+  hotfilesSource = ./hotfiles;
 
-  batteryScript = pkgs.writeShellScriptBin "asura-polybar-battery" ''
-    set -u
+  pythonForHotfiles = pkgs.python3.withPackages (
+    pythonPackages: with pythonPackages; [
+      pytz
+      requests
+    ]
+  );
 
-    battery=""
-    for candidate in /sys/class/power_supply/BAT*; do
-      if [ -r "$candidate/capacity" ]; then
-        battery="$candidate"
-        break
-      fi
-    done
-
-    if [ -z "$battery" ]; then
-      printf '\n'
-      exit 0
+  # The old dotfiles expect a plain `polybar` command with no bar argument.
+  polybarCompat = pkgs.writeShellScriptBin "polybar" ''
+    if [ "$#" -eq 0 ]; then
+      exec ${pkgs.polybar}/bin/polybar --reload bar
     fi
 
-    capacity="$(cat "$battery/capacity" 2>/dev/null || printf '?')"
-    status="$(cat "$battery/status" 2>/dev/null || printf Unknown)"
-    suffix=""
-    case "$status" in
-      Charging) suffix="+" ;;
-      Full) suffix="*" ;;
-      Discharging) suffix="-" ;;
+    exec ${pkgs.polybar}/bin/polybar "$@"
+  '';
+
+  # Keep the Pijulius animation fork behind the legacy command name.
+  picomCompat = pkgs.writeShellScriptBin "picom" ''
+    exec ${pkgs.picom-pijulius}/bin/picom "$@"
+  '';
+
+  # xqp is not packaged in nixpkgs. The original binding uses it only as a
+  # guard before jgmenu_run, so a success shim preserves the right-click menu.
+  xqpCompat = pkgs.writeShellScriptBin "xqp" ''
+    exit 0
+  '';
+
+  # ukui-window-switch is an Arch-only optional switcher in the hotfiles stack.
+  ukuiWindowSwitchCompat = pkgs.writeShellScriptBin "ukui-window-switch" ''
+    exit 0
+  '';
+
+  # parcellite was removed from nixpkgs. The original bspwmrc starts it as an
+  # optional clipboard tray daemon; xclip-backed hotfiles actions still work.
+  parcelliteCompat = pkgs.writeShellScriptBin "parcellite" ''
+    echo "parcellite is not packaged in current nixpkgs; skipping optional tray clipboard daemon." >&2
+    exit 0
+  '';
+
+  # Polybar update modules call paru. NixOS has no AUR, so return empty counts
+  # for query modes and keep interactive clicks readable.
+  paruCompat = pkgs.writeShellScriptBin "paru" ''
+    case " $* " in
+      *" -Qu "*|*" -Qum "*)
+        exit 0
+        ;;
     esac
-    printf 'BAT %s%%%s\n' "$capacity" "$suffix"
+
+    echo "paru is not available in this NixOS BSPWM hotfiles session." >&2
+    exit 127
   '';
 
-  networkScript = pkgs.writeShellScriptBin "asura-polybar-network" ''
-    set -u
+  # The EWW power-profile script asks system76-power for a simple state toggle.
+  # This compatibility command keeps the widget functional without enabling the
+  # System76 daemon on non-System76 hardware.
+  system76PowerCompat = pkgs.writeShellScriptBin "system76-power" ''
+    set -eu
 
-    if ! command -v nmcli >/dev/null 2>&1; then
-      printf '\n'
+    state_dir="''${XDG_RUNTIME_DIR:-/tmp}"
+    state_file="$state_dir/asura-bspwm-system76-power-profile"
+    current="$(cat "$state_file" 2>/dev/null || printf balanced)"
+
+    if [ "''${1:-}" = "profile" ] && [ -z "''${2:-}" ]; then
+      printf 'Power Profile: %s\n' "$current"
       exit 0
     fi
 
-    ssid="$(nmcli -t -f ACTIVE,SSID dev wifi 2>/dev/null | ${pkgs.gawk}/bin/awk -F: '$1 == "yes" { print $2; exit }')"
-    if [ -n "$ssid" ]; then
-      printf 'WIFI %s\n' "$ssid"
-      exit 0
+    if [ "''${1:-}" = "profile" ]; then
+      case "''${2:-}" in
+        performance|balanced|battery)
+          printf '%s\n' "$2" > "$state_file"
+          command -v notify-send >/dev/null 2>&1 \
+            && notify-send "Power profile" "BSPWM hotfiles profile set to $2" \
+            || true
+          exit 0
+          ;;
+      esac
     fi
 
-    wired="$(nmcli -t -f TYPE,STATE dev status 2>/dev/null | ${pkgs.gawk}/bin/awk -F: '$1 == "ethernet" && $2 == "connected" { print "NET wired"; exit }')"
-    if [ -n "$wired" ]; then
-      printf '%s\n' "$wired"
-      exit 0
-    fi
-
-    printf 'NET down\n'
+    echo "system76-power compatibility shim supports: system76-power profile [performance|balanced|battery]" >&2
+    exit 1
   '';
 
-  bspwmConfig = pkgs.writeShellScript "asura-bspwmrc-hotfiles-lite" ''
-    # Hotfiles-lite BSPWM config: shared X11 fallback for laptop and PC.
-    ${pkgs.bspwm}/bin/bspc monitor -d 1 2 3 4 5 6 7 8 9 10
-    ${pkgs.bspwm}/bin/bspc config border_width 2
-    ${pkgs.bspwm}/bin/bspc config window_gap 18
-    ${pkgs.bspwm}/bin/bspc config split_ratio 0.52
-    ${pkgs.bspwm}/bin/bspc config borderless_monocle true
-    ${pkgs.bspwm}/bin/bspc config gapless_monocle true
-    ${pkgs.bspwm}/bin/bspc config focus_follows_pointer true
-    ${pkgs.bspwm}/bin/bspc config pointer_modifier mod4
-    ${pkgs.bspwm}/bin/bspc config pointer_action1 move
-    ${pkgs.bspwm}/bin/bspc config pointer_action3 resize_corner
-    ${pkgs.bspwm}/bin/bspc config normal_border_color "#1a1b26"
-    ${pkgs.bspwm}/bin/bspc config active_border_color "#7aa2f7"
-    ${pkgs.bspwm}/bin/bspc config focused_border_color "#ff8080"
-    ${pkgs.bspwm}/bin/bspc config presel_feedback_color "#bb9af7"
-
-    ${pkgs.bspwm}/bin/bspc rule -a Gimp desktop='^8' state=floating follow=on
-    ${pkgs.bspwm}/bin/bspc rule -a Pavucontrol state=floating
-    ${pkgs.bspwm}/bin/bspc rule -a Blueman-manager state=floating
-    ${pkgs.bspwm}/bin/bspc rule -a Rofi state=floating
-    ${pkgs.bspwm}/bin/bspc rule -a org.gnome.Nautilus state=floating
-    ${pkgs.bspwm}/bin/bspc rule -a Xarchiver state=floating
-  '';
-
-  picomConfig = pkgs.writeText "asura-bspwm-picom.conf" ''
-    # Hotfiles-lite Picom: rounded/shadowed Tokyo Night look without the
-    # Pijulius animation fork or GLava/EWW exclusions that cost RAM.
-    backend = "glx";
-    vsync = true;
-    use-damage = true;
-
-    shadow = true;
-    shadow-radius = 22;
-    shadow-opacity = 0.45;
-    shadow-offset-x = -18;
-    shadow-offset-y = -18;
-    shadow-exclude = [
-      "window_type = 'dock'",
-      "window_type = 'desktop'",
-      "window_type = 'menu'",
-      "class_g = 'Polybar'",
-      "_GTK_FRAME_EXTENTS@:c"
-    ];
-
-    fading = true;
-    fade-in-step = 0.035;
-    fade-out-step = 0.035;
-    fade-delta = 5;
-
-    corner-radius = 15;
-    rounded-corners-exclude = [
-      "window_type = 'desktop'",
-      "window_type = 'dock'",
-      "window_type = 'tooltip'",
-      "class_g = 'Polybar'",
-      "_GTK_FRAME_EXTENTS@:c"
-    ];
-
-    inactive-opacity = 1.0;
-    active-opacity = 1.0;
-    frame-opacity = 1.0;
-    inactive-opacity-override = false;
-    detect-rounded-corners = true;
-    detect-client-opacity = true;
-    detect-transient = true;
-    mark-wmwin-focused = true;
-    mark-ovredir-focused = true;
-    log-level = "warn";
-  '';
-
-  rofiTheme = pkgs.writeText "asura-bspwm-rofi.rasi" ''
-    /* Shared BSPWM hotfiles-lite launcher theme. */
-    configuration {
-      modi: "run,drun,window";
-      lines: 5;
-      font: "JetBrainsMono Nerd Font 13";
-      show-icons: true;
-      icon-theme: "Papirus";
-      terminal: "kitty";
-      drun-display-format: "{name}";
-      disable-history: false;
-      hide-scrollbar: true;
-      display-drun: "Apps";
-      display-run: "Run";
-      display-window: "Window";
-      sidebar-mode: true;
-    }
-
-    * {
-      bg: #1a1b26;
-      bg-alt: #24283b;
-      fg: #c0caf5;
-      muted: #565f89;
-      accent: #ff8080;
-      accent-alt: #7aa2f7;
-      selected: #bb9af7;
-    }
-
-    window {
-      width: 58%;
-      height: 500px;
-      border: 2px;
-      border-color: @accent;
-      background-color: @bg;
-      border-radius: 15px;
-    }
-
-    mainbox {
-      background-color: @bg;
-      children: [ mode-switcher, inputbar, listview ];
-      padding: 16px;
-    }
-
-    inputbar {
-      children: [ prompt, entry ];
-      background-color: @bg-alt;
-      border-radius: 10px;
-      padding: 8px;
-      margin: 0 0 12px 0;
-    }
-
-    prompt {
-      background-color: @accent;
-      text-color: @bg;
-      border-radius: 8px;
-      padding: 8px 12px;
-      margin: 0 10px 0 0;
-    }
-
-    entry {
-      text-color: @fg;
-      background-color: transparent;
-      padding: 8px;
-    }
-
-    listview {
-      columns: 4;
-      spacing: 12px;
-      background-color: @bg;
-      padding: 8px;
-    }
-
-    element {
-      orientation: vertical;
-      spacing: 8px;
-      padding: 10px;
-      border-radius: 10px;
-      background-color: @bg;
-      text-color: @fg;
-    }
-
-    element selected {
-      background-color: @accent;
-      text-color: @bg;
-    }
-
-    element-icon {
-      size: 48px;
-      horizontal-align: 0.5;
-    }
-
-    element-text {
-      horizontal-align: 0.5;
-      vertical-align: 0.5;
-      text-color: inherit;
-      font: "JetBrainsMono Nerd Font Bold 11";
-    }
-
-    mode-switcher {
-      spacing: 8px;
-      margin: 0 0 8px 0;
-    }
-
-    button {
-      padding: 8px 14px;
-      border-radius: 10px;
-      background-color: @bg-alt;
-      text-color: @fg;
-    }
-
-    button selected {
-      background-color: @selected;
-      text-color: @bg;
-    }
-  '';
-
-  dunstConfig = pkgs.writeText "asura-bspwm-dunstrc" ''
-    # Shared BSPWM notification theme. Kept small and standalone for fallback use.
-    [global]
-      monitor = 0
-      follow = keyboard
-      width = 380
-      height = 180
-      origin = bottom-right
-      offset = 32x32
-      notification_limit = 5
-      progress_bar = true
-      progress_bar_height = 8
-      progress_bar_frame_width = 1
-      progress_bar_min_width = 140
-      progress_bar_max_width = 280
-      separator_height = 2
-      padding = 10
-      horizontal_padding = 12
-      frame_width = 2
-      frame_color = "#ff8080"
-      separator_color = frame
-      sort = yes
-      font = JetBrainsMono Nerd Font 11
-      markup = full
-      format = "<b>%s</b>\n%b"
-      alignment = left
-      vertical_alignment = center
-      ellipsize = middle
-      icon_position = left
-      min_icon_size = 48
-      max_icon_size = 96
-      icon_theme = "Papirus, Adwaita"
-      enable_recursive_icon_lookup = true
-      sticky_history = yes
-      history_length = 20
-      corner_radius = 15
-      title = Dunst
-      class = Dunst
-      background = "#1a1b26"
-      foreground = "#c0caf5"
-      timeout = 6
-
-    [urgency_low]
-      background = "#1a1b26"
-      foreground = "#c0caf5"
-      frame_color = "#7aa2f7"
-      timeout = 4
-
-    [urgency_normal]
-      background = "#1a1b26"
-      foreground = "#c0caf5"
-      frame_color = "#ff8080"
-      timeout = 6
-
-    [urgency_critical]
-      background = "#1a1b26"
-      foreground = "#f7768e"
-      frame_color = "#f7768e"
-      timeout = 0
-  '';
-
-  polybarConfig = pkgs.writeText "asura-bspwm-polybar.ini" ''
-    ; Shared BSPWM hotfiles-lite Polybar. Avoids EWW custom script modules.
-    [colors]
-    background = #1a1b26
-    background-alt = #24283b
-    foreground = #c0caf5
-    muted = #565f89
-    accent = #ff8080
-    accent-alt = #7aa2f7
-    purple = #bb9af7
-    green = #9ece6a
-    yellow = #e0af68
-
-    [bar/asura]
-    monitor = ''${env:MONITOR:}
-    width = 98%
-    height = 32
-    offset-x = 1%
-    offset-y = 8
-    radius = 8
-    fixed-center = true
-    bottom = false
-    background = ''${colors.background}
-    foreground = ''${colors.foreground}
-    line-size = 2
-    border-size = 0
-    padding-left = 1
-    padding-right = 1
-    module-margin = 1
-    font-0 = JetBrainsMono Nerd Font:size=10;2
-    font-1 = JetBrainsMono Nerd Font:size=14;3
-    modules-left = launcher bspwm
-    modules-center = xwindow
-    modules-right = network pulseaudio battery date powermenu
-    cursor-click = pointer
-    cursor-scroll = ns-resize
-    enable-ipc = true
-    wm-restack = bspwm
-
-    [module/launcher]
-    type = custom/text
-    content = ASURA
-    content-padding = 2
-    content-background = ''${colors.accent-alt}
-    content-foreground = ''${colors.background}
-    click-left = ${pkgs.rofi}/bin/rofi -show drun -theme ${rofiTheme}
-
-    [module/bspwm]
-    type = internal/bspwm
-    pin-workspaces = true
-    label-focused = %name%
-    label-focused-foreground = ''${colors.background}
-    label-focused-background = ''${colors.accent}
-    label-focused-padding = 2
-    label-occupied = %name%
-    label-occupied-foreground = ''${colors.foreground}
-    label-occupied-background = ''${colors.background-alt}
-    label-occupied-padding = 2
-    label-urgent = %name%
-    label-urgent-foreground = ''${colors.background}
-    label-urgent-background = ''${colors.yellow}
-    label-urgent-padding = 2
-    label-empty = %name%
-    label-empty-foreground = ''${colors.muted}
-    label-empty-padding = 2
-
-    [module/xwindow]
-    type = internal/xwindow
-    label = %title:0:82:...%
-    label-empty = BSPWM Hotfiles Lite
-    label-empty-foreground = ''${colors.muted}
-
-    [module/network]
-    type = custom/script
-    exec = ${networkScript}/bin/asura-polybar-network
-    interval = 5
-    label = %output%
-    label-foreground = ''${colors.green}
-
-    [module/pulseaudio]
-    type = internal/pulseaudio
-    format-volume = VOL <label-volume>
-    label-volume = %percentage%%
-    label-muted = MUTED
-    label-muted-foreground = ''${colors.muted}
-
-    [module/battery]
-    type = custom/script
-    exec = ${batteryScript}/bin/asura-polybar-battery
-    interval = 10
-    label = %output%
-    label-foreground = ''${colors.purple}
-
-    [module/date]
-    type = internal/date
-    interval = 1
-    date = %a %d %b
-    time = %I:%M %p
-    label = %date%  %time%
-    label-foreground = ''${colors.accent}
-
-    [module/powermenu]
-    type = custom/text
-    content = POWER
-    content-padding = 2
-    content-foreground = ''${colors.accent}
-    click-left = asura-vibeshell run powermenu
-
-    [settings]
-    screenchange-reload = true
-    pseudo-transparency = false
-  '';
-
-  sxhkdConfig = pkgs.writeText "asura-bspwm-sxhkdrc" ''
-    # Shared BSPWM bindings mirrored from current Hyprland bindings.
-    super + q
-      ${pkgs.bspwm}/bin/bspc node -c
-
-    super + h
-      ${pkgs.bspwm}/bin/bspc quit
-
-    super + f
-      asura-file-manager "$HOME"
-
-    super + g
-      ${pkgs.bspwm}/bin/bspc node -t '~floating'
-
-    super + j
-      ${pkgs.bspwm}/bin/bspc node @parent -R 90
-
-    super + b
-      ${pkgs.brave}/bin/brave
-
-    super + {t,Return}
-      asura-x11-terminal
-
-    super + c
-      code --ozone-platform=x11
-
-    super + a
-      asura-vibeshell run tools
-
-    super + @space
-      ${pkgs.rofi}/bin/rofi -show drun -theme ${rofiTheme}
-
-    super + e
-      ${pkgs.telegram-desktop}/bin/telegram-desktop
-
-    super + w
-      skwd-wall
-
-    super + p
-      asura-display-manager
-
-    super + shift + p
-      asura-monitor-guard --restore
-
-    {ctrl,super} + l
-      /run/current-system/sw/bin/vibeshell-safe-lock
-
-    super + v
-      asura-vibeshell run dashboard-clipboard
-
-    super + shift + v
-      ${pkgs.bspwm}/bin/bspc node -t '~floating'
-
-    super + shift + c
-      clipboard
-
-    super + shift + e
-      asura-shell-launcher /emo
-
-    super + shift + s
-      asura-screenshot region
-
-    super + shift + w
-      skwd-wall
-
-    super + shift + r
-      /run/current-system/sw/bin/asura-screen-record-toggle
-
-    super + shift + x
-      asura-screenshot region-edit
-
-    super + F2
-      night-shift
-
-    super + n
-      asura-vibeshell run dashboard-notes
-
-    super + d
-      asura-vibeshell run dashboard-controls
-
-    super + s
-      asura-vibeshell run config
-
-    ctrl + alt + Delete
-      asura-vibeshell run powermenu
-
-    super + BackSpace
-      asura-vibeshell run powermenu
-
-    super + period
-      asura-vibeshell run dashboard-emoji
-
-    ctrl + super + r
-      asura-vibeshell reload
-
-    Print
-      asura-screenshot full
-
-    shift + Print
-      asura-screenshot region
-
-    super + Print
-      asura-screenshot output
-
-    super + shift + Print
-      asura-screenshot region-edit
-
-    super + {Left,Down,Up,Right}
-      ${pkgs.bspwm}/bin/bspc node -f {west,south,north,east}
-
-    alt + Tab
-      ${pkgs.bspwm}/bin/bspc node -f next.local.!hidden.window
-
-    alt + shift + Tab
-      ${pkgs.bspwm}/bin/bspc node -f prev.local.!hidden.window
-
-    super + Tab
-      ${pkgs.bspwm}/bin/bspc node -f next.local.!hidden.window
-
-    super + shift + Tab ; {Left,Right,Up,Down,Escape}
-      {${pkgs.bspwm}/bin/bspc node -z left -30 0,${pkgs.bspwm}/bin/bspc node -z right 30 0,${pkgs.bspwm}/bin/bspc node -z top 0 -30,${pkgs.bspwm}/bin/bspc node -z bottom 0 30,true}
-
-    super + {1-9}
-      ${pkgs.bspwm}/bin/bspc desktop -f '^{1-9}'
-
-    super + shift + {1-9}
-      ${pkgs.bspwm}/bin/bspc node -d '^{1-9}' --follow
-
-    super + 0
-      ${pkgs.bspwm}/bin/bspc desktop -f '^10'
-
-    super + shift + 0
-      ${pkgs.bspwm}/bin/bspc node -d '^10' --follow
-
-    XF86AudioMute
-      sound-toggle
-
-    XF86AudioPlay
-      ${pkgs.playerctl}/bin/playerctl play-pause
-
-    XF86AudioNext
-      ${pkgs.playerctl}/bin/playerctl next
-
-    XF86AudioPrev
-      ${pkgs.playerctl}/bin/playerctl previous
-
-    F3
-      sound-toggle
-
-    F5
-      sound-down
-
-    F6
-      sound-up
-
-    F8
-      brightness-down
-
-    F9
-      brightness-up
-
-    F10
-      asura-camera-app
-
-    F11
-      asura-airplane-toggle
-
-    F12
-      night-shift
-
-    XF86AudioRaiseVolume
-      sound-up
-
-    XF86AudioLowerVolume
-      sound-down
-
-    XF86MonBrightnessUp
-      brightness-up
-
-    XF86MonBrightnessDown
-      brightness-down
-  '';
+  hotfilesPackages = [
+    asuraX11Terminal
+    paruCompat
+    parcelliteCompat
+    picomCompat
+    polybarCompat
+    pythonForHotfiles
+    system76PowerCompat
+    ukuiWindowSwitchCompat
+    xqpCompat
+
+    pkgs.acpi
+    pkgs.alsa-utils
+    pkgs.bash
+    pkgs.bluez
+    pkgs.bluez-tools
+    pkgs.blueman
+    pkgs.brave
+    pkgs.brightnessctl
+    pkgs.bsp-layout
+    pkgs.bspwm
+    pkgs.conky
+    pkgs.coreutils
+    pkgs.curl
+    pkgs.dbus
+    pkgs.dunst
+    pkgs.eww
+    pkgs.feh
+    pkgs.file-roller
+    pkgs.gamemode
+    pkgs.gawk
+    pkgs.glava
+    pkgs.gnugrep
+    pkgs.gnused
+    pkgs.gpick
+    pkgs.i3lock-color
+    pkgs.imagemagick
+    pkgs.jgmenu
+    pkgs.jq
+    pkgs.kitty
+    pkgs.libnotify
+    pkgs.lsof
+    pkgs.maim
+    pkgs.mate-polkit
+    pkgs.moreutils
+    pkgs.mpv
+    pkgs.networkmanager
+    pkgs.networkmanager_dmenu
+    pkgs.papirus-icon-theme
+    pkgs.pavucontrol
+    pkgs.plank
+    pkgs.playerctl
+    pkgs.procps
+    pkgs.recode
+    pkgs.redshift
+    pkgs.rofi
+    pkgs.sxhkd
+    pkgs.tint2
+    pkgs.upower
+    pkgs.wirelesstools
+    pkgs.wmctrl
+    pkgs.xclip
+    pkgs.xdg-user-dirs
+    pkgs.xdo
+    pkgs.xdotool
+    pkgs.xfce4-power-manager
+    pkgs.xfce4-settings
+    pkgs.xrandr
+    pkgs.xrdb
+    pkgs.xsetroot
+    pkgs.xterm
+    pkgs.yaru-theme
+    pkgs.zscroll
+    pkgs.zsh
+  ];
 
   start = pkgs.writeShellScriptBin "asura-start-bspwm" ''
     set -uo pipefail
@@ -621,38 +185,9 @@ let
     mkdir -p "$state_dir" 2>/dev/null || state_dir="/tmp"
     exec >>"$state_dir/session.log" 2>&1
 
-    echo "---- bspwm hotfiles-lite fallback session: $(date -Is) ----"
+    echo "---- bspwm full hotfiles fallback session: $(date -Is) ----"
 
-    export PATH="/run/current-system/sw/bin:/etc/profiles/per-user/asura/bin:$PATH"
-    export PATH="${
-      lib.makeBinPath [
-        batteryScript
-        networkScript
-        pkgs.bspwm
-        pkgs.brave
-        pkgs.brightnessctl
-        pkgs.coreutils
-        pkgs.dunst
-        pkgs.feh
-        pkgs.gawk
-        pkgs.i3lock-color
-        pkgs.kitty
-        pkgs.libnotify
-        pkgs.networkmanager
-        pkgs.pamixer
-        pkgs.picom
-        pkgs.playerctl
-        pkgs.polybar
-        pkgs.procps
-        pkgs.rofi
-        pkgs.sxhkd
-        pkgs.telegram-desktop
-        pkgs.xrandr
-        pkgs.xsetroot
-        pkgs.xterm
-        asuraX11Terminal
-      ]
-    }:$PATH"
+    export PATH="${lib.makeBinPath hotfilesPackages}:/run/current-system/sw/bin:/etc/profiles/per-user/''${USER:-asura}/bin:$PATH"
     export XDG_SESSION_TYPE=x11
     export XDG_CURRENT_DESKTOP=bspwm
     export XDG_SESSION_DESKTOP=bspwm
@@ -667,85 +202,157 @@ let
       DISPLAY XAUTHORITY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP \
       GDK_BACKEND QT_QPA_PLATFORM NIXOS_OZONE_WL >/dev/null 2>&1 || true
 
-    ${pkgs.xsetroot}/bin/xsetroot -cursor_name left_ptr -solid "#1a1b26" || true
-    ${pkgs.feh}/bin/feh --bg-fill ${wallpaper} >>"$state_dir/feh.log" 2>&1 || true
+    hotfiles_src="${hotfilesSource}"
+    backup_root="$HOME/.local/state/asura-bspwm-hotfiles-backups/$(date +%Y%m%d-%H%M%S)"
 
-    ${pkgs.picom}/bin/picom --config ${picomConfig} >>"$state_dir/picom.log" 2>&1 &
-    picom_pid="$!"
+    backup_target() {
+      target="$1"
+      mkdir -p "$backup_root"
+      backup_name="$(basename "$target")"
+      if [ -e "$backup_root/$backup_name" ] || [ -L "$backup_root/$backup_name" ]; then
+        backup_name="$backup_name-$(date +%s%N)"
+      fi
+      mv "$target" "$backup_root/$backup_name"
+      echo "Backed up $target to $backup_root/$backup_name"
+    }
 
-    ${pkgs.sxhkd}/bin/sxhkd -c ${sxhkdConfig} >>"$state_dir/sxhkd.log" 2>&1 &
-    sxhkd_pid="$!"
+    install_managed_dir() {
+      source_path="$1"
+      target_path="$2"
+      marker="$target_path/.asura-bspwm-hotfiles-managed"
 
-    ${pkgs.dunst}/bin/dunst -conf ${dunstConfig} >>"$state_dir/dunst.log" 2>&1 &
-    dunst_pid="$!"
+      [ -d "$source_path" ] || return 0
+      mkdir -p "$(dirname "$target_path")"
 
-    polybar_pids=()
-    while IFS= read -r monitor; do
-      [ -n "$monitor" ] || continue
-      MONITOR="$monitor" ${pkgs.polybar}/bin/polybar --reload -c ${polybarConfig} asura >>"$state_dir/polybar-$monitor.log" 2>&1 &
-      polybar_pids+=("$!")
-    done < <(${pkgs.xrandr}/bin/xrandr --query | ${pkgs.gawk}/bin/awk '/ connected/{print $1}')
+      if [ -e "$target_path" ] || [ -L "$target_path" ]; then
+        if [ ! -f "$marker" ]; then
+          backup_target "$target_path"
+        else
+          rm -rf "$target_path"
+        fi
+      fi
 
-    if [ "''${#polybar_pids[@]}" -eq 0 ]; then
-      ${pkgs.polybar}/bin/polybar --reload -c ${polybarConfig} asura >>"$state_dir/polybar.log" 2>&1 &
-      polybar_pids+=("$!")
+      cp -a "$source_path" "$target_path"
+      chmod -R u+rwX "$target_path" 2>/dev/null || true
+      touch "$marker" 2>/dev/null || true
+    }
+
+    install_managed_file() {
+      source_path="$1"
+      target_path="$2"
+      marker="$target_path.asura-bspwm-hotfiles-managed"
+
+      [ -f "$source_path" ] || return 0
+      mkdir -p "$(dirname "$target_path")"
+
+      if [ -e "$target_path" ] || [ -L "$target_path" ]; then
+        if [ ! -f "$marker" ]; then
+          backup_target "$target_path"
+        else
+          rm -f "$target_path"
+        fi
+      fi
+
+      cp -a "$source_path" "$target_path"
+      chmod u+rw "$target_path" 2>/dev/null || true
+      touch "$marker" 2>/dev/null || true
+    }
+
+    # Install only the BSPWM hotfiles desktop pieces. Do not overwrite shared
+    # fish, pipewire, btop, neofetch, or spicetify config from the main system.
+    install_managed_dir "$hotfiles_src/.config/bspwm" "$HOME/.config/bspwm"
+    install_managed_dir "$hotfiles_src/.config/conky" "$HOME/.config/conky"
+    install_managed_dir "$hotfiles_src/.config/dunst" "$HOME/.config/dunst"
+    install_managed_dir "$hotfiles_src/.config/eww" "$HOME/.config/eww"
+    install_managed_dir "$hotfiles_src/.config/glava" "$HOME/.config/glava"
+    install_managed_dir "$hotfiles_src/.config/gtk-3.0" "$HOME/.config/gtk-3.0"
+    install_managed_dir "$hotfiles_src/.config/gtk-4.0" "$HOME/.config/gtk-4.0"
+    install_managed_dir "$hotfiles_src/.config/jgmenu" "$HOME/.config/jgmenu"
+    install_managed_dir "$hotfiles_src/.config/networkmanager-dmenu" "$HOME/.config/networkmanager-dmenu"
+    install_managed_dir "$hotfiles_src/.config/polybar" "$HOME/.config/polybar"
+    install_managed_dir "$hotfiles_src/.config/redshift" "$HOME/.config/redshift"
+    install_managed_dir "$hotfiles_src/.config/rofi" "$HOME/.config/rofi"
+    install_managed_dir "$hotfiles_src/.config/sxhkd" "$HOME/.config/sxhkd"
+    install_managed_dir "$hotfiles_src/.config/tint2" "$HOME/.config/tint2"
+    install_managed_dir "$hotfiles_src/.scripts" "$HOME/.scripts"
+    install_managed_dir "$hotfiles_src/.wallpapers" "$HOME/.wallpapers"
+    install_managed_dir "$hotfiles_src/.fonts" "$HOME/.fonts"
+    install_managed_dir "$hotfiles_src/.cache/dunst" "$HOME/.cache/dunst"
+    install_managed_dir "$hotfiles_src/.local/share/plank" "$HOME/.local/share/plank"
+    install_managed_file "$hotfiles_src/.Xresources" "$HOME/.Xresources"
+    install_managed_file "$hotfiles_src/.gtkrc-2.0" "$HOME/.gtkrc-2.0"
+
+    find "$HOME/.scripts" "$HOME/.config/eww" "$HOME/.config/bspwm/scripts" "$HOME/.config/polybar/scripts" \
+      -type f -exec chmod u+x {} + 2>/dev/null || true
+
+    mkdir -p "$HOME/.cache" "$HOME/Pictures/Screenshots"
+    if [ ! -s "$HOME/.cache/dunst.log.json" ]; then
+      printf '{"items":[]}\n' > "$HOME/.cache/dunst.log.json"
     fi
 
-    cleanup() {
-      kill "$sxhkd_pid" "$dunst_pid" "$picom_pid" "''${polybar_pids[@]}" >/dev/null 2>&1 || true
-    }
-    trap cleanup EXIT
+    fc-cache -r "$HOME/.fonts" >/dev/null 2>&1 &
+    xrdb -merge "$HOME/.Xresources" >/dev/null 2>&1 || true
+    xsetroot -cursor_name left_ptr >/dev/null 2>&1 || true
 
-    ${pkgs.bspwm}/bin/bspwm -c ${bspwmConfig}
+    pkill -u "''${USER:-asura}" -x sxhkd >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x polybar >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x eww >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x conky >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x plank >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x parcellite >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x picom >/dev/null 2>&1 || true
+
+    ${pkgs.playerctl}/bin/playerctld daemon >/dev/null 2>&1 &
+    ${pkgs.mate-polkit}/libexec/polkit-mate-authentication-agent-1 >/dev/null 2>&1 &
+
+    ${pkgs.bspwm}/bin/bspwm -c "$HOME/.config/bspwm/bspwmrc"
+    session_rc="$?"
+
+    pkill -u "''${USER:-asura}" -x sxhkd >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x polybar >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x eww >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x conky >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x plank >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x parcellite >/dev/null 2>&1 || true
+    pkill -u "''${USER:-asura}" -x picom >/dev/null 2>&1 || true
+
+    exit "$session_rc"
   '';
 
   sessionRss = pkgs.writeShellScriptBin "asura-bspwm-session-rss" ''
     set -eu
 
-    pattern='(^|/)(Xorg|xinit|bspwm|sxhkd|polybar|dunst|picom|asura-start-bspwm)( |$)'
+    pattern='(^|/)(Xorg|xinit|bspwm|sxhkd|polybar|dunst|picom|eww|conky|plank|parcellite|xfce4-power-manager|glava|playerctld|asura-start-bspwm)( |$)'
     total_kb="$(
       ${pkgs.procps}/bin/ps -eo rss=,args= \
         | ${pkgs.gawk}/bin/awk -v pattern="$pattern" '$0 ~ pattern { total += $1 } END { print total + 0 }'
     )"
     total_mb="$(( (total_kb + 1023) / 1024 ))"
 
-    printf 'BSPWM fallback baseline RSS: %s MiB\n' "$total_mb"
+    printf 'BSPWM full hotfiles session RSS: %s MiB\n' "$total_mb"
     ${pkgs.procps}/bin/ps -eo pid=,rss=,comm=,args= --sort=-rss \
       | ${pkgs.gawk}/bin/awk -v pattern="$pattern" '$0 ~ pattern { printf "%7s %7.1f MiB  %s\n", $1, $2 / 1024, substr($0, index($0,$4)) }'
 
     if [ "$total_mb" -lt 1024 ]; then
       printf 'OK: under 1 GiB target.\n'
     else
-      printf 'WARN: over 1 GiB target. Check for extra autostarted UI daemons.\n'
-      exit 1
+      printf 'WARN: full hotfiles visuals are over 1 GiB; use the report above to trim optional widgets.\n'
     fi
   '';
 in
 {
   inherit start sessionRss;
+
   desktopEntry = ''
     [Desktop Entry]
-    Name=BSPWM Hotfiles Lite (X11)
-    Comment=Low-RAM Tokyo Night BSPWM fallback; hotfiles style without EWW/Conky/Plank/GLava
+    Name=BSPWM Hotfiles Full (X11)
+    Comment=Full Tokyo Night hotfiles BSPWM with EWW, Conky, Plank, GLava, Polybar, Rofi, Dunst
     Exec=${start}/bin/asura-start-bspwm
     Type=Application
   '';
-  packages = [
-    batteryScript
-    networkScript
+
+  packages = hotfilesPackages ++ [
     sessionRss
     start
-    pkgs.bspwm
-    pkgs.dunst
-    pkgs.feh
-    pkgs.kitty
-    pkgs.networkmanager
-    pkgs.picom
-    pkgs.polybar
-    pkgs.rofi
-    pkgs.sxhkd
-    pkgs.xrandr
-    pkgs.xsetroot
-    pkgs.xterm
   ];
 }
