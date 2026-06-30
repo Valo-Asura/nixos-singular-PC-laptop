@@ -52,6 +52,17 @@ let
     exit 0
   '';
 
+  # Hotfiles EWW/Polybar call the old Blueberry command. NixOS uses Blueman.
+  blueberryCompat = pkgs.writeShellScriptBin "blueberry" ''
+    exec ${pkgs.blueman}/bin/blueman-manager "$@"
+  '';
+
+  # Hotfiles EWW calls redshiftgui from Arch-era setups. Redshift GTK is the
+  # packaged equivalent in nixpkgs and keeps the menu button useful.
+  redshiftGuiCompat = pkgs.writeShellScriptBin "redshiftgui" ''
+    exec ${pkgs.redshift}/bin/redshift-gtk "$@"
+  '';
+
   # Polybar update modules call paru. NixOS has no AUR, so return empty counts
   # for query modes and keep interactive clicks readable.
   paruCompat = pkgs.writeShellScriptBin "paru" ''
@@ -98,11 +109,13 @@ let
 
   hotfilesPackages = [
     asuraX11Terminal
+    blueberryCompat
     paruCompat
     parcelliteCompat
     picomCompat
     polybarCompat
     pythonForHotfiles
+    redshiftGuiCompat
     system76PowerCompat
     ukuiWindowSwitchCompat
     xqpCompat
@@ -284,6 +297,28 @@ let
 
     find "$HOME/.scripts" "$HOME/.config/eww" "$HOME/.config/bspwm/scripts" "$HOME/.config/polybar/scripts" \
       -type f -exec chmod u+x {} + 2>/dev/null || true
+
+    sxhkdrc="$HOME/.config/sxhkd/sxhkdrc"
+    if [ -f "$sxhkdrc" ]; then
+      # Keep the upstream hotfiles widgets exact, but reserve the user's shared
+      # shell bindings: SUPER+T terminal, SUPER+D dashboard, SUPER+S settings.
+      ${pkgs.gnused}/bin/sed -i \
+        -e 's/^super + Return$/super + {Return,t}/' \
+        -e 's/^super + {t,shift + t,s,f}$/super + ctrl + {t,shift + t,s,f}/' \
+        "$sxhkdrc"
+
+      if ! ${pkgs.gnugrep}/bin/grep -q 'asura shared shell bindings' "$sxhkdrc"; then
+        cat >>"$sxhkdrc" <<'SXHKD_ASURA_SHARED_BINDINGS'
+
+# asura shared shell bindings
+super + d
+	eww open-many --toggle background-closer main
+
+super + s
+	eww open-many --toggle background-closer system-menu
+SXHKD_ASURA_SHARED_BINDINGS
+      fi
+    fi
 
     mkdir -p "$HOME/.cache" "$HOME/Pictures/Screenshots"
     if [ ! -s "$HOME/.cache/dunst.log.json" ]; then
