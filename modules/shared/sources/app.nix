@@ -36,6 +36,7 @@ in
     # IDEs, Editors & AI tools
     (pkgs.callPackage ./cursor.nix { }) # Cursor AI Editor; agentic development IDE
     pkgs.zed-editor           # High performance code editor; fast editing sessions
+    pkgs.vscode               # Visual Studio Code editor; fallback coding environment
 
     # Database Administration Tools
     pkgs.mysql-workbench      # MySQL admin panel; edits local developer databases
