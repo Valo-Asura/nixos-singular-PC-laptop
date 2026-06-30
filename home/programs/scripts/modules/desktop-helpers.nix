@@ -8,15 +8,15 @@ let
 
     target="''${1:-$HOME}"
 
-    if command -v nautilus >/dev/null 2>&1; then
-      exec nautilus --new-window "$target"
-    fi
-
     if command -v pcmanfm-qt >/dev/null 2>&1; then
       exec pcmanfm-qt "$target"
     fi
 
-    ${notify} "File manager unavailable" "Install Nautilus or PCManFM-Qt."
+    if command -v nautilus >/dev/null 2>&1; then
+      exec nautilus --new-window "$target"
+    fi
+
+    ${notify} "File manager unavailable" "Install PCManFM-Qt or Nautilus."
   '';
 
   asuraApplyCursorTheme = pkgs.writeShellScriptBin "asura-apply-cursor-theme" ''

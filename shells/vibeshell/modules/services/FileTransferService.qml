@@ -37,7 +37,7 @@ Singleton {
         if (directory.length > 0)
             Quickshell.execDetached(["xdg-open", directory]);
         else
-            Quickshell.execDetached(["nautilus"]);
+            Quickshell.execDetached(["pcmanfm-qt"]);
     }
 
     function applyScan(output) {

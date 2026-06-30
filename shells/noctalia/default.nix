@@ -86,7 +86,7 @@ in
       xdg.mimeApps = {
         enable = true;
         defaultApplications = lib.mkForce {
-          "inode/directory" = "org.gnome.Nautilus.desktop";
+          "inode/directory" = "pcmanfm-qt.desktop";
           "x-scheme-handler/antigravity" = "antigravity-url-handler.desktop";
           "x-scheme-handler/antigravity-ide" = "antigravity-url-handler.desktop";
           "text/plain" = "cursor.desktop";
@@ -151,7 +151,7 @@ in
           "application/x-xz-compressed-tar" = "xarchiver.desktop";
           "x-scheme-handler/mailto" = "helium.desktop";
           "text/xml" = "firefox.desktop";
-          "application/x-gnome-saved-search" = "org.gnome.Nautilus.desktop";
+          "application/x-gnome-saved-search" = "pcmanfm-qt.desktop";
           "x-scheme-handler/postman" = "Postman.desktop";
           "application/xdm-app" = "xdm-app.desktop";
           "x-scheme-handler/xdm-app" = "xdm-app.desktop";

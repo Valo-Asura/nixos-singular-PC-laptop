@@ -1,5 +1,5 @@
 [Default Applications]
-inode/directory=org.gnome.Nautilus.desktop
+inode/directory=pcmanfm-qt.desktop
 x-scheme-handler/antigravity=antigravity-url-handler.desktop
 x-scheme-handler/antigravity-ide=antigravity-url-handler.desktop
 text/plain=cursor.desktop
@@ -64,5 +64,5 @@ application/x-bzip-compressed-tar=xarchiver.desktop
 application/x-xz-compressed-tar=xarchiver.desktop
 x-scheme-handler/mailto=helium.desktop
 text/xml=brave-origin-beta.desktop
-application/x-gnome-saved-search=org.gnome.Nautilus.desktop
+application/x-gnome-saved-search=pcmanfm-qt.desktop
 x-scheme-handler/postman=Postman.desktop

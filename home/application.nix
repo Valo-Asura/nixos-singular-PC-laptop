@@ -3,7 +3,7 @@
 
 let
   xarchiver = "xarchiver.desktop";
-  nautilus = "org.gnome.Nautilus.desktop";
+  filemanager = "pcmanfm-qt.desktop";
   loupe = "org.gnome.Loupe.desktop";
   okular = "org.kde.okular.desktop";
   pcmanfmQtSettings = ''
@@ -139,7 +139,7 @@ let
     archiveDefaults
     // viewerDefaults
     // {
-      "inode/directory" = nautilus;
+      "inode/directory" = filemanager;
       "x-scheme-handler/steam" = "steam.desktop";
       "x-scheme-handler/steamlink" = "steam.desktop";
     };
@@ -186,16 +186,15 @@ in
       [Desktop Entry]
       Name=Files
       Comment=Access and organize files
-      Exec=nautilus --new-window %U
-      TryExec=nautilus
+      Exec=pcmanfm-qt %U
+      TryExec=pcmanfm-qt
       DBusActivatable=false
       Terminal=false
       Type=Application
       StartupNotify=true
-      Categories=GNOME;GTK;Utility;Core;FileManager;
+      Categories=Utility;Core;FileManager;
       MimeType=inode/directory;application/x-gnome-saved-search;
-      StartupWMClass=org.gnome.Nautilus
-      X-GNOME-UsesNotifications=true
+      StartupWMClass=pcmanfm-qt
     '';
   };
 
@@ -204,15 +203,15 @@ in
     text = ''
       [Desktop Entry]
       Name=Files (Admin)
-      Comment=Open a root-owned file view through GVFS admin
-      Exec=nautilus admin:///
-      TryExec=nautilus
+      Comment=Open PCManFM-Qt as root
+      Exec=/home/asura/.local/bin/pcmanfm-qt-admin %U
+      TryExec=/home/asura/.local/bin/pcmanfm-qt-admin
       DBusActivatable=false
       Terminal=false
       Type=Application
       StartupNotify=true
-      Categories=GNOME;GTK;Utility;Core;FileManager;
-      StartupWMClass=org.gnome.Nautilus
+      Categories=Utility;Core;FileManager;
+      StartupWMClass=pcmanfm-qt
     '';
   };
 
