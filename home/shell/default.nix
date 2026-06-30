@@ -130,6 +130,8 @@
 
       # ── NixOS ──────────────────────────────────────────────────────────────
       rebuild = "/run/wrappers/bin/sudo nixos-rebuild switch --flake /etc/nixos#asura-xs15";
+      lrb = "/run/wrappers/bin/sudo nixos-rebuild switch --flake /etc/nixos#asura-xs15";
+      prb = "/run/wrappers/bin/sudo nixos-rebuild switch --flake /etc/nixos#asura-pc";
       update = "nix flake update --flake /etc/nixos";
       clean = "/run/wrappers/bin/sudo nix-collect-garbage -d";
       clean-store = "nix-storage-clean";

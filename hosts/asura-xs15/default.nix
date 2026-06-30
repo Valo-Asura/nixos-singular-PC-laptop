@@ -23,6 +23,7 @@ mkHost {
     ../../modules/shared/programs.nix
     ../../modules/shared/gaming.nix
     ../../modules/shared/packages.nix
+    ../../modules/shared/app.nix
     ../../modules/shared/environment.nix
     ../../modules/shared/maintenance.nix
 
