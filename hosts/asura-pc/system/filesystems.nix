@@ -1,7 +1,14 @@
-# PC-specific module: removable and Windows filesystem support.
+# PC-specific module: removable filesystem support and NVMe root mount tuning.
 { ... }:
 
 {
+  # PC root filesystem is ext4 on NVMe. noatime/lazytime reduce metadata writes
+  # and keep storage latency steadier under desktop workloads.
+  fileSystems."/".options = [
+    "noatime"
+    "lazytime"
+  ];
+
   boot.supportedFilesystems = [
     "ntfs"
     "exfat"

@@ -133,7 +133,7 @@ in
         enable = lib.mkForce true;
         editor = false;
         consoleMode = "max";
-        configurationLimit = 8;
+        configurationLimit = 7;
         rebootForBitlocker = true;
       };
 

@@ -1,7 +1,14 @@
-# Laptop-specific module: XS15 filesystem support and Windows drive helpers.
+# Laptop-specific module: XS15 filesystem support, root mount tuning, and Windows drive helpers.
 { pkgs, ... }:
 
 {
+  # Laptop root filesystem is ext4 on NVMe. noatime/lazytime reduce small
+  # metadata writes while preserving normal application behavior.
+  fileSystems."/".options = [
+    "noatime"
+    "lazytime"
+  ];
+
   # Enable NTFS support for Windows drives
   boot.supportedFilesystems = [
     "ntfs"

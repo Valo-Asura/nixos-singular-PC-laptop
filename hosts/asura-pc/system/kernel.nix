@@ -11,12 +11,9 @@
     inputs.nix-cachyos-kernel.overlays.pinned
   ];
 
-  nix.settings = {
-    extra-substituters = [ "https://attic.xuyh0120.win/lantian" ];
-    extra-trusted-public-keys = [
-      "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
-    ];
-  };
+  # Lantian's Attic cache is intentionally not enabled by default: it returned
+  # repeated HTTP 500/timeouts during rebuilds. Keep the CachyOS overlay active;
+  # re-enable that cache only when the remote is healthy again.
 
   boot.kernelPackages = lib.mkForce pkgs.cachyosKernels.linuxPackages-cachyos-latest-x86_64-v3;
 }
