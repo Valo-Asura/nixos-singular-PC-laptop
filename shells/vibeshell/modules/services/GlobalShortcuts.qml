@@ -109,6 +109,15 @@ Item {
             GlobalStates.notesRequestedSection = 1;
             NotesService.createQuickReminder();
             break;
+        case "productivity":
+            ProductivityService.openApp();
+            break;
+        case "productivity-github":
+            ProductivityService.openGithubSetup();
+            break;
+        case "productivity-export-notes":
+            ProductivityService.exportNotes();
+            break;
 
         // System
         case "overview":
@@ -379,6 +388,14 @@ Item {
         description: "Open Vibeshell settings"
 
         onPressed: GlobalStates.settingsVisible = !GlobalStates.settingsVisible
+    }
+
+    GlobalShortcut {
+        appid: root.appId
+        name: "productivity"
+        description: "Open Super Productivity"
+
+        onPressed: ProductivityService.openApp()
     }
 
     // Media player shortcuts

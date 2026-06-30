@@ -109,21 +109,7 @@ Item {
     }
 
     function hoverHeightForPanel(index) {
-        if (index === 1)
-            return 236;
-        if (index === 2)
-            return 392;
-        if (index === 3)
-            return 284;
-        if (index === 4)
-            return 184;
-        if (index === 5)
-            return 198;
-        if (index === 6)
-            return 362;
-        if (index === 7)
-            return 392;
-        return 0;
+        return index > 0 ? fixedHoverPanelHeight : 0;
     }
 
     function formatUptime(seconds) {
@@ -172,6 +158,12 @@ Item {
     readonly property int notificationPaddingTop: 8
     readonly property bool hasActiveNotifications: Notifications.popupList.length > 0
     readonly property color batteryStatusColor: Battery.lowWarningActive ? Colors.criticalRed : Colors.cyan
+    readonly property bool showRecordingPill: ScreenRecorder.isRecording
+    readonly property bool showFileTransferPill: FileTransferService.active
+    readonly property bool showPomodoroPill: PomodoroService.running
+    readonly property int activityPillCount: (showRecordingPill ? 1 : 0) + (showFileTransferPill ? 1 : 0) + (showPomodoroPill ? 1 : 0)
+    readonly property real activityPillWidth: (showRecordingPill ? 82 : 0) + (showFileTransferPill ? 88 : 0) + (showPomodoroPill ? 92 : 0) + (Math.max(0, activityPillCount - 1) * 4)
+    readonly property real activityPillGap: activityPillWidth > 0 ? 4 : 0
 
     property bool notchHovered: false
     property bool railHovered: false
@@ -255,11 +247,12 @@ Item {
         }
     }
 
-    readonly property real mainRowContentWidth: 224 + beadSlotWidth + separator2.width + notifIndicator.width + (mainRow.spacing * 3) + mainRowMargin
+    readonly property real mainRowContentWidth: 224 + beadSlotWidth + activityPillWidth + activityPillGap + separator2.width + notifIndicator.width + (mainRow.spacing * 3) + mainRowMargin
     readonly property real mainRowHeight: Config.showBackground ? (Config.notchTheme === "island" ? 36 : 44) : (Config.notchTheme === "island" ? 36 : 40)
     readonly property real actionRailHeight: expandedState && !hasActiveNotifications ? 40 : 0
     readonly property real hoverRailWidth: 302
     readonly property real hoverPanelWidth: 386
+    readonly property real fixedHoverPanelHeight: 392
     readonly property real targetHoverPanelHeight: expandedState && !hasActiveNotifications && activePanelIndex > 0 ? hoverHeightForPanel(activePanelIndex) : 0
     property real hoverPanelHeight: targetHoverPanelHeight
     readonly property real notificationMinWidth: expandedState ? 420 : 320
@@ -310,7 +303,7 @@ Item {
 
             Item {
                 id: identityWrap
-                width: parent.width - beadSlot.width - separator2.width - notifIndicator.width - (parent.spacing * 3)
+                width: parent.width - beadSlot.width - activityPills.width - root.activityPillGap - separator2.width - notifIndicator.width - (parent.spacing * 3)
                 height: 32
                 anchors.verticalCenter: parent.verticalCenter
 
@@ -426,6 +419,45 @@ Item {
                             }
                         }
                     }
+                }
+            }
+
+            Row {
+                id: activityPills
+                visible: width > 0
+                width: root.activityPillWidth
+                height: 28
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 4
+
+                ActivityPill {
+                    visible: root.showRecordingPill
+                    width: visible ? 82 : 0
+                    icon: Icons.recordScreen
+                    text: ScreenRecorder.duration && ScreenRecorder.duration.length > 0 ? ScreenRecorder.duration.replace(/^\s+|\s+$/g, "") : "REC"
+                    accent: Colors.red
+                    active: ScreenRecorder.isRecording
+                    onTriggered: ScreenRecorder.toggleRecording()
+                }
+
+                ActivityPill {
+                    visible: root.showFileTransferPill
+                    width: visible ? 88 : 0
+                    icon: Icons.copy
+                    text: FileTransferService.displayText
+                    accent: Colors.cyan
+                    active: FileTransferService.active
+                    onTriggered: FileTransferService.openLocation()
+                }
+
+                ActivityPill {
+                    visible: root.showPomodoroPill
+                    width: visible ? 92 : 0
+                    icon: Icons.timer
+                    text: PomodoroService.formatTime(PomodoroService.remainingSeconds)
+                    accent: Colors.magenta
+                    active: PomodoroService.running
+                    onTriggered: root.togglePanel(4)
                 }
             }
 
@@ -928,6 +960,69 @@ Item {
         }
     }
 
+    component ActivityPill: StyledRect {
+        id: pill
+
+        property string icon: ""
+        property string text: ""
+        property color accent: Colors.primary
+        property bool active: false
+        signal triggered
+
+        height: 24
+        radius: 12
+        variant: "transparent"
+        enableBorder: true
+
+        Rectangle {
+            anchors.fill: parent
+            radius: pill.radius
+            color: Qt.rgba(pill.accent.r, pill.accent.g, pill.accent.b, pill.active ? 0.18 : 0.08)
+            border.width: 1
+            border.color: Qt.rgba(pill.accent.r, pill.accent.g, pill.accent.b, pill.active ? 0.95 : 0.45)
+
+            SequentialAnimation on opacity {
+                running: pill.active
+                loops: Animation.Infinite
+                NumberAnimation { to: 1; duration: 620; easing.type: Easing.InOutSine }
+                NumberAnimation { to: 0.58; duration: 760; easing.type: Easing.InOutSine }
+            }
+        }
+
+        Row {
+            anchors.centerIn: parent
+            width: Math.min(parent.width - 10, implicitWidth)
+            spacing: 4
+
+            Text {
+                id: pillIcon
+                anchors.verticalCenter: parent.verticalCenter
+                text: pill.icon
+                font.family: Icons.font
+                font.pixelSize: 12
+                color: pill.accent
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                width: Math.max(0, parent.width - pillIcon.width - parent.spacing)
+                text: pill.text
+                font.family: Config.theme.font
+                font.pixelSize: Styling.fontSize(-5)
+                font.weight: Font.Bold
+                color: Colors.overBackground
+                elide: Text.ElideRight
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: pill.triggered()
+        }
+    }
+
     component LinkPanel: Column {
         width: parent ? parent.width : 0
         spacing: 8
@@ -1016,7 +1111,7 @@ Item {
             }
 
             Item {
-                width: parent.width - 64
+                width: parent.width - 72
                 height: 1
             }
 
@@ -1069,7 +1164,7 @@ Item {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                width: parent.width - 64
+                width: parent.width - 72
                 text: BluetoothService.enabled ? (BluetoothService.discovering ? "Scanning" : "Devices") : "Bluetooth disabled"
                 font.family: Config.theme.font
                 font.pixelSize: Styling.fontSize(-2)

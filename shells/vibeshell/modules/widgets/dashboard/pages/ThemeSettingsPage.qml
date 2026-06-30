@@ -11,12 +11,6 @@ Item {
 
     property string gtkStatus: "Graphite-Dark"
     property string qtStatus: "Fluent-Dark"
-    readonly property var wallpaperCards: [
-        { a: "#3d1029", b: "#ff637d", active: true },
-        { a: "#22123d", b: "#ae6cff", active: false },
-        { a: "#190b13", b: "#e23d4d", active: false },
-        { a: "#0d2335", b: "#5ea8d8", active: false }
-    ]
 
     Component.onCompleted: gtkThemeQuery.running = true
 
@@ -132,29 +126,25 @@ Item {
 
                         Row {
                             width: parent.width
-                            spacing: 6
+                            spacing: 8
 
-                            Repeater {
-                                model: root.wallpaperCards
-
-                                WallpaperTile {
-                                    required property var modelData
-                                    startColor: modelData.a
-                                    endColor: modelData.b
-                                    active: Config.theme.useWallpaperColors && modelData.active
-                                    onClicked: AppearanceService.setWallpaperColorsEnabled(true)
-                                }
+                            ActionButton {
+                                width: (parent.width - parent.spacing) / 2
+                                label: "Choose Wallpaper"
+                                onClicked: AppearanceService.openWallpaperSelector()
                             }
 
-                            IconTile {
-                                icon: Icons.plus
-                                onClicked: AppearanceService.openWallpaperSelector()
+                            ActionButton {
+                                width: (parent.width - parent.spacing) / 2
+                                primary: Config.theme.useWallpaperColors
+                                label: "Apply Matugen"
+                                onClicked: AppearanceService.setWallpaperColorsEnabled(true)
                             }
                         }
 
                         ToggleLine {
-                            title: "Wallpaper Colors"
-                            subtitle: Config.theme.useWallpaperColors ? "Active" : "Preset colors"
+                            title: "Matugen Auto Colors"
+                            subtitle: Config.theme.useWallpaperColors ? "Auto from current wallpaper" : "Use preset theme colors"
                             checked: Config.theme.useWallpaperColors
                             onToggled: value => AppearanceService.setWallpaperColorsEnabled(value)
                         }
@@ -457,54 +447,6 @@ Item {
             cursorShape: Qt.PointingHandCursor
             onClicked: AppearanceService.applyAccent(dot.accentId)
         }
-    }
-
-    component WallpaperTile: Rectangle {
-        id: tile
-        property color startColor: "#222"
-        property color endColor: "#555"
-        property bool active: false
-        signal clicked
-        width: 76
-        height: 38
-        radius: Styling.radius(6)
-        border.color: active ? Colors.primary : Colors.surfaceBright
-        border.width: active ? 2 : 1
-        gradient: Gradient {
-            GradientStop { position: 0; color: tile.startColor }
-            GradientStop { position: 1; color: tile.endColor }
-        }
-
-        Text {
-            anchors.right: parent.right
-            anchors.rightMargin: 7
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 5
-            visible: tile.active
-            text: Icons.accept
-            font.family: Icons.font
-            font.pixelSize: 13
-            color: Colors.primary
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: tile.clicked()
-        }
-    }
-
-    component IconTile: StyledRect {
-        id: tile
-        property string icon: ""
-        signal clicked
-        width: 72
-        height: 38
-        variant: tileMouse.containsMouse ? "focus" : "common"
-        radius: Styling.radius(6)
-        Text { anchors.centerIn: parent; text: tile.icon; font.family: Icons.font; font.pixelSize: 15; color: Colors.primary }
-        MouseArea { id: tileMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: tile.clicked() }
     }
 
     component PillButton: StyledRect {

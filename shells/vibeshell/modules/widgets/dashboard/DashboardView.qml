@@ -10,19 +10,17 @@ import "pages"
 Item {
     id: root
 
-    readonly property int dashboardPanelWidth: 604
-    readonly property int settingsPanelWidth: 900
-    readonly property int dashboardPanelHeight: 568
-    readonly property int settingsPanelHeight: 668
+    readonly property int panelWidth: 900
+    readonly property int panelHeight: 668
 
-    implicitWidth: pageController.currentPage === 0 ? dashboardPanelWidth : settingsPanelWidth
-    implicitHeight: panel.implicitHeight
+    implicitWidth: panelWidth
+    implicitHeight: panelHeight
     focus: true
 
     property real morphCloseness: 1
-    property string ameForm: "ring"
+    property string ameForm: "off"
     property point amePoint: Qt.point(width / 2, 34)
-    property real ameHeat: 0.12
+    property real ameHeat: 0
     property real wheelAccumX: 0
     property real wheelAccumY: 0
     readonly property int pageCount: 3
@@ -113,7 +111,7 @@ Item {
         id: panel
         variant: "bg"
         width: parent.width
-        implicitHeight: pageController.currentPage === 0 ? dashboardPanelHeight : settingsPanelHeight
+        implicitHeight: root.panelHeight
         radius: Styling.radius(16)
         enableBorder: true
 

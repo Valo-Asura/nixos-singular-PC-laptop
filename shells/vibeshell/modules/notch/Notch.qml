@@ -93,7 +93,7 @@ Item {
     readonly property string fallbackAmeForm: morphMode === "rest" ? "rest"
         : (morphMode === "hover" ? "soul"
         : (morphMode === "launcher" ? "caret"
-        : (morphMode === "dashboard" ? "ring"
+        : (morphMode === "dashboard" ? "off"
         : (morphMode === "powermenu" || morphMode === "tools" ? "dock"
         : (morphMode === "notification" ? "rowseam" : "off")))))
     readonly property string activeAmeForm: activeSurfaceItem && activeSurfaceItem.hasOwnProperty("ameForm") ? activeSurfaceItem.ameForm : fallbackAmeForm

@@ -102,6 +102,8 @@ Singleton {
         if (enabled && GlobalStates.wallpaperManager) {
             GlobalStates.wallpaperManager.setColorPreset("");
             GlobalStates.wallpaperManager.runMatugenForCurrentWallpaper();
+        } else if (enabled) {
+            Quickshell.execDetached(["notify-send", "-a", "Vibeshell", "Matugen unavailable", "Open the wallpaper selector once so Vibeshell can bind the wallpaper manager."]);
         }
     }
 
