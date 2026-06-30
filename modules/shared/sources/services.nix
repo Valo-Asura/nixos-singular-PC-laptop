@@ -100,6 +100,9 @@
     config.bspwm.default = [
       "gtk"
     ];
+    config.labwc.default = [
+      "gtk"
+    ];
   };
 
   security.wrappers."gpu-screen-recorder" = {
