@@ -41,7 +41,7 @@ let
 
     ensure_notes_index() {
       mkdir -p "$notes_dir/notes" "$export_dir"
-      if [ ! -s "$notes_index" ]; then
+      if [ ! -s "$notes_index" ] || ! jq empty "$notes_index" 2>/dev/null; then
         printf '{"order":[],"notes":{}}\n' > "$notes_index"
       fi
     }
@@ -55,7 +55,10 @@ let
         -e 's/&nbsp;/ /g' \
         -e 's/&amp;/\&/g' \
         -e 's/&lt;/</g' \
-        -e 's/&gt;/>/g'
+        -e 's/&gt;/>/g' \
+        -e 's/&quot;/"/g' \
+        -e "s/&apos;/'/g" \
+        -e "s/&#39;/'/g"
     }
 
     export_notes() {
@@ -83,11 +86,11 @@ let
       {
         printf '# VibeShell Notes export\n\n'
         printf 'Exported: %s\n\n' "$exported_at"
-        jq -r '(.order // [])[] as $id | [$id, (.notes[$id].title // "Untitled"), (.notes[$id].updatedAt // "")] | @tsv' "$notes_index" |
-          while IFS=$'\t' read -r id title updated; do
+        jq -r '(.order // [])[] as $id | [$id, (.notes[$id].title // "Untitled"), (.notes[$id].modified // "")] | @tsv' "$notes_index" |
+          while IFS=$'\t' read -r id title modified; do
             html_path="$notes_dir/notes/$id.html"
             printf '## %s\n\n' "$title"
-            [ -n "$updated" ] && printf 'Updated: %s\n\n' "$updated"
+            [ -n "$modified" ] && printf 'Modified: %s\n\n' "$modified"
             printf 'Source: `%s`\n\n' "$html_path"
             if [ -f "$html_path" ]; then
               html_to_text < "$html_path" | head -c 3000
@@ -107,7 +110,7 @@ let
       github_connected=false
       last_export_path=""
 
-      if pgrep -u "$(id -u)" -x super-productivity >/dev/null 2>&1 || pgrep -u "$(id -u)" -f '/bin/super-productivity( |$)' >/dev/null 2>&1; then
+      if pgrep -u "$(id -u)" -x 'super-productiv' >/dev/null 2>&1 || pgrep -u "$(id -u)" -f '/super-productivity( |$)' | grep -v 'bridge' >/dev/null 2>&1; then
         running=true
       fi
       if gh auth status -h github.com >/dev/null 2>&1; then
