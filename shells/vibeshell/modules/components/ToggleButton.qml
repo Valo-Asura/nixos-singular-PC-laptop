@@ -29,7 +29,7 @@ Button {
     rightPadding: 0
 
     // Check if buttonIcon is a single character (icon font) or a file path
-    readonly property bool isIconPath: buttonIcon.length > 1
+    readonly property bool isIconPath: root.buttonIcon && root.buttonIcon.length > 1 && !root.buttonIcon.startsWith("<")
 
     background: StyledRect {
         variant: "bg"
@@ -53,12 +53,12 @@ Button {
         implicitWidth: root.implicitWidth
         implicitHeight: root.implicitHeight
         clip: false
-        // Text icon (single character)
+        // Text icon (single character or rich text HTML tag)
         Text {
             visible: !root.isIconPath
             anchors.fill: parent
             text: root.buttonIcon
-            textFormat: Text.PlainText
+            textFormat: (root.buttonIcon && root.buttonIcon.startsWith("<")) ? Text.RichText : Text.PlainText
             font.family: Icons.font
             font.pixelSize: root.iconSize
             color: root.pressed ? Colors.background : (Styling.srItem("overprimary") || Colors.foreground)
@@ -74,7 +74,7 @@ Button {
             anchors.centerIn: parent
             width: root.iconSize
             height: root.iconSize
-            source: root.isIconPath ? root.buttonIcon : ""
+            source: root.isIconPath ? (root.buttonIcon.startsWith("/") ? "file://" + root.buttonIcon : root.buttonIcon) : ""
             sourceSize: Qt.size(width * 2, height * 2)
             fillMode: Image.PreserveAspectFit
             smooth: true
