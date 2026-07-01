@@ -111,9 +111,32 @@ in
 
   environment.etc."xdg/quickshell/vibeshell".source = vibeshellRoot;
 
-  home-manager.users.asura.home.packages = [
-    asuraVibeshell
-    vibeshellCli
-    vibeshellSafeLock
-  ];
+  home-manager.users.asura = {
+    imports = [
+      (
+        { lib, pkgs, ... }:
+        {
+          home.activation.patchVibeshellToolsKeybind = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            binds_config="$HOME/.config/Vibeshell/binds.json"
+            if [ -f "$binds_config" ]; then
+              tmp="$(mktemp)"
+              ${pkgs.jq}/bin/jq '
+                .vibeshell.system.tools.modifiers = []
+                | .vibeshell.system.tools.key = ""
+                | .vibeshell.system.tools.argument = ""
+              ' "$binds_config" > "$tmp" \
+                && install -m 0644 "$tmp" "$binds_config"
+              rm -f "$tmp"
+            fi
+          '';
+        }
+      )
+    ];
+
+    home.packages = [
+      asuraVibeshell
+      vibeshellCli
+      vibeshellSafeLock
+    ];
+  };
 }

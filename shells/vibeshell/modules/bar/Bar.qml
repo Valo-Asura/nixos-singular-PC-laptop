@@ -91,7 +91,7 @@ PanelWindow {
 
     // Check if notch is open (dashboard, powermenu, etc.)
     readonly property var screenVisibilities: Visibilities.getForScreen(screen.name)
-    readonly property bool notchOpen: screenVisibilities ? (screenVisibilities.dashboard || screenVisibilities.powermenu || screenVisibilities.tools) : false
+    readonly property bool notchOpen: screenVisibilities ? (screenVisibilities.dashboard || screenVisibilities.clipboard || screenVisibilities.powermenu || screenVisibilities.tools) : false
 
     // Reveal logic
     readonly property bool reveal: {
@@ -473,7 +473,7 @@ PanelWindow {
                             textFormat: Text.PlainText
                             font.family: Icons.font
                             font.pixelSize: 18
-                            color: panel.pinned ? pinButtonBg.item : (pinButton.pressed ? Colors.background : (Styling.srItem("overprimary") || Colors.foreground))
+                            color: panel.pinned ? pinButtonBg.item : (pinButton.pressed ? (Styling.srItem("primary") || Colors.background) : (Styling.srItem("overprimary") || Colors.foreground))
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                             renderType: Text.NativeRendering
@@ -561,7 +561,7 @@ PanelWindow {
 
                 Bar.MonitorButton {
                     id: monitorButton
-                    visible: Config.bar?.showUptimeModule ?? true
+                    visible: Config.bar?.showMonitorModule ?? true
                     Layout.alignment: Qt.AlignVCenter
                 }
 
@@ -641,7 +641,7 @@ PanelWindow {
 
                 Bar.MonitorButton {
                     id: monitorButtonVert
-                    visible: Config.bar?.showUptimeModule ?? true
+                    visible: Config.bar?.showMonitorModule ?? true
                     Layout.preferredHeight: 36
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -737,7 +737,7 @@ PanelWindow {
                                     textFormat: Text.PlainText
                                     font.family: Icons.font
                                     font.pixelSize: 18
-                                    color: panel.pinned ? pinButtonVBg.item : (pinButtonV.pressed ? Colors.background : (Styling.srItem("overprimary") || Colors.foreground))
+                                    color: panel.pinned ? pinButtonVBg.item : (pinButtonV.pressed ? (Styling.srItem("primary") || Colors.background) : (Styling.srItem("overprimary") || Colors.foreground))
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                     renderType: Text.NativeRendering

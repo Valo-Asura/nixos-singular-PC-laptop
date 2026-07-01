@@ -61,7 +61,7 @@ Button {
             textFormat: (root.buttonIcon && root.buttonIcon.startsWith("<")) ? Text.RichText : Text.PlainText
             font.family: Icons.font
             font.pixelSize: root.iconSize
-            color: root.pressed ? Colors.background : (Styling.srItem("overprimary") || Colors.foreground)
+            color: root.pressed ? (Styling.srItem("primary") || Colors.background) : (Styling.srItem("overprimary") || Colors.foreground)
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             renderType: Text.NativeRendering

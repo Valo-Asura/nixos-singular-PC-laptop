@@ -54,9 +54,9 @@
             | .vibeshell.dashboard.widgets.modifiers = []
             | .vibeshell.dashboard.widgets.key = "SUPER_L"
             | .vibeshell.dashboard.widgets.argument = "vibeshell run notch-launcher"
-            | .vibeshell.system.tools.modifiers = ["SUPER"]
-            | .vibeshell.system.tools.key = "A"
-            | .vibeshell.system.tools.argument = "vibeshell run tools"
+            | .vibeshell.system.tools.modifiers = []
+            | .vibeshell.system.tools.key = ""
+            | .vibeshell.system.tools.argument = ""
             | .vibeshell.system.config.modifiers = ["SUPER"]
             | .vibeshell.system.config.key = "S"
             | .vibeshell.system.config.argument = "vibeshell run config"
@@ -119,6 +119,17 @@
             | .spacing = 4
             | .radius = 18
             | .backgroundOpacity = 1
+            | .showWorkspaceModule = true
+            | .showUptimeModule = true
+            | .showMonitorModule = true
+            | .showBatteryModule = true
+            | .showNotificationsModule = true
+            | .showNetworkModule = true
+            | .showTrayModule = true
+            | .showBluetoothModule = true
+            | .showVolumeModule = true
+            | .showBrightnessModule = true
+            | .showPowerModule = true
           ' "$bar_config" > "$tmp" \
             && install -m 0644 "$tmp" "$bar_config"
           rm -f "$tmp"
@@ -146,7 +157,19 @@
         "hoverToReveal": true,
         "hoverRegionHeight": 8,
         "showPinButton": true,
-        "availableOnFullscreen": false
+        "availableOnFullscreen": false,
+        "clockFormat": "12h",
+        "showWorkspaceModule": true,
+        "showUptimeModule": true,
+        "showMonitorModule": true,
+        "showBatteryModule": true,
+        "showNotificationsModule": true,
+        "showNetworkModule": true,
+        "showTrayModule": true,
+        "showBluetoothModule": true,
+        "showVolumeModule": true,
+        "showBrightnessModule": true,
+        "showPowerModule": true
     }
     EOF
         fi

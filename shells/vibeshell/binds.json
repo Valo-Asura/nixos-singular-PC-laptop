@@ -92,12 +92,10 @@
         "flags": ""
       },
       "tools": {
-        "modifiers": [
-          "SUPER"
-        ],
-        "key": "A",
+        "modifiers": [],
+        "key": "",
         "dispatcher": "exec",
-        "argument": "asura-shell-launcher /tools",
+        "argument": "",
         "flags": ""
       },
       "screenshot": {

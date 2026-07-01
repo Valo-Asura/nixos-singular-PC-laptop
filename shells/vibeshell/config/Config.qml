@@ -609,6 +609,7 @@ Singleton {
             property string clockFormat: "12h"
             property bool showWorkspaceModule: true
             property bool showUptimeModule: true
+            property bool showMonitorModule: true
             property bool showBatteryModule: true
             property bool showNotificationsModule: true
             property bool showNetworkModule: true
@@ -1465,10 +1466,10 @@ Singleton {
                         property string flags: ""
                     }
                     property JsonObject tools: JsonObject {
-                        property list<string> modifiers: ["SUPER"]
-                        property string key: "A"
+                        property list<string> modifiers: []
+                        property string key: ""
                         property string dispatcher: "exec"
-                        property string argument: "asura-shell-launcher /tools"
+                        property string argument: ""
                         property string flags: ""
                     }
                     property JsonObject screenshot: JsonObject {
@@ -1523,7 +1524,7 @@ Singleton {
                     "lockscreen": { "modifiers": ["SUPER"], "key": "L", "dispatcher": "exec", "argument": "vibeshell-safe-lock", "flags": "" },
                     "overview": { "modifiers": ["SUPER"], "key": "TAB", "dispatcher": "exec", "argument": "vibeshell run overview", "flags": "" },
                     "powermenu": { "modifiers": ["SUPER"], "key": "ESCAPE", "dispatcher": "exec", "argument": "vibeshell run powermenu", "flags": "" },
-                    "tools": { "modifiers": ["SUPER"], "key": "A", "dispatcher": "exec", "argument": "asura-shell-launcher /tools", "flags": "" },
+                    "tools": { "modifiers": [], "key": "", "dispatcher": "exec", "argument": "", "flags": "" },
                     "screenshot": { "modifiers": [], "key": "Print", "dispatcher": "exec", "argument": "asura-screenshot full", "flags": "" },
                     "screenrecord": { "modifiers": ["SUPER", "SHIFT"], "key": "R", "dispatcher": "exec", "argument": "asura-screen-record-toggle", "flags": "" },
                     "lens": { "modifiers": ["SUPER", "SHIFT"], "key": "A", "dispatcher": "exec", "argument": "vibeshell run lens", "flags": "" },

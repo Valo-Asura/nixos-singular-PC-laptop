@@ -230,7 +230,8 @@ let
       case "$active" in
         vibeshell)
           case "''${1:-}" in
-            /tools) exec /run/current-system/sw/bin/asura-vibeshell run dashboard ;;
+            /dashboard) exec /run/current-system/sw/bin/asura-vibeshell run dashboard ;;
+            /tools) exec /run/current-system/sw/bin/asura-vibeshell run tools ;;
             /clipboard) exec /run/current-system/sw/bin/asura-vibeshell run dashboard-clipboard ;;
             /emo) exec /run/current-system/sw/bin/asura-vibeshell run dashboard-emoji ;;
             /notes) exec /run/current-system/sw/bin/asura-vibeshell run dashboard-notes ;;
@@ -242,6 +243,7 @@ let
           ;;
         noctalia)
           case "''${1:-}" in
+            /dashboard) exec /run/current-system/sw/bin/noctalia msg panel-toggle control-center ;;
             /tools) exec /run/current-system/sw/bin/noctalia msg panel-toggle control-center ;;
             /clipboard) exec /run/current-system/sw/bin/noctalia msg panel-toggle clipboard ;;
             /emo) exec /run/current-system/sw/bin/noctalia msg panel-toggle emoji ;;
