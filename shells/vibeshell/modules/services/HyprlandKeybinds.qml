@@ -137,6 +137,10 @@ QtObject {
             return mods ? `${mods} + ${keybind.key}` : keybind.key;
         }
 
+        function hasKeybindKey(keybind) {
+            return keybind && keybind.key && keybind.key.length > 0;
+        }
+
         function directionName(direction) {
             const directions = {
                 l: "left",
@@ -211,6 +215,8 @@ QtObject {
 
         // Helper function para crear un bind command for Hyprland's Lua parser
         function createBindCommand(keybind, flags) {
+            if (!hasKeybindKey(keybind))
+                return "";
             const dispatcher = keybind.dispatcher;
             const argument = keybind.argument || "";
             return `eval hl.bind(${luaString(luaKeyString(keybind))}, ${luaDispatcher(dispatcher, argument, flags)}${luaBindOptions(flags)})`;
@@ -218,16 +224,22 @@ QtObject {
 
         // Helper function para crear un unbind command
         function createUnbindCommand(keybind) {
+            if (!hasKeybindKey(keybind))
+                return "";
             return `eval hl.unbind(${luaString(luaKeyString(keybind))})`;
         }
 
         // Helper function para crear unbind command desde key object (new format)
         function createUnbindFromKey(keyObj) {
+            if (!hasKeybindKey(keyObj))
+                return "";
             return `eval hl.unbind(${luaString(luaKeyString(keyObj))})`;
         }
 
         // Helper function para crear bind command desde key + action (new format)
         function createBindFromKeyAction(keyObj, action) {
+            if (!hasKeybindKey(keyObj))
+                return "";
             const dispatcher = action.dispatcher;
             const argument = action.argument || "";
             const flags = action.flags || "";
@@ -359,7 +371,11 @@ QtObject {
         storePreviousBinds();
 
         // Combine unbind and bind in one batch
-        const fullBatchCommand = unbindCommands.join("; ") + "; " + batchCommands.join("; ");
+        const filteredUnbindCommands = unbindCommands.filter(cmd => cmd && cmd.length > 0);
+        const filteredBatchCommands = batchCommands.filter(cmd => cmd && cmd.length > 0);
+        const fullBatchCommand = filteredUnbindCommands.concat(filteredBatchCommands).join("; ");
+        if (!fullBatchCommand)
+            return;
 
         console.log("HyprlandKeybinds: Ejecutando batch command");
         hyprctlProcess.command = ["hyprctl", "--batch", fullBatchCommand];

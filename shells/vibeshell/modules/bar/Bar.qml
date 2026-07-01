@@ -473,7 +473,7 @@ PanelWindow {
                             textFormat: Text.PlainText
                             font.family: Icons.font
                             font.pixelSize: 18
-                            color: panel.pinned ? pinButtonBg.item : (pinButton.pressed ? (Styling.srItem("primary") || Colors.background) : (Styling.srItem("bg") || Colors.foreground))
+                            color: panel.pinned ? pinButtonBg.item : (pinButton.pressed ? (Styling.srItem("primary") || Colors.background) : (Styling.srItem("overprimary") || Colors.foreground))
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                             renderType: Text.NativeRendering
@@ -737,7 +737,7 @@ PanelWindow {
                                     textFormat: Text.PlainText
                                     font.family: Icons.font
                                     font.pixelSize: 18
-                                    color: panel.pinned ? pinButtonVBg.item : (pinButtonV.pressed ? (Styling.srItem("primary") || Colors.background) : (Styling.srItem("bg") || Colors.foreground))
+                                    color: panel.pinned ? pinButtonVBg.item : (pinButtonV.pressed ? (Styling.srItem("primary") || Colors.background) : (Styling.srItem("overprimary") || Colors.foreground))
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                     renderType: Text.NativeRendering

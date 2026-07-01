@@ -54,9 +54,9 @@
             | .vibeshell.dashboard.widgets.modifiers = []
             | .vibeshell.dashboard.widgets.key = "SUPER_L"
             | .vibeshell.dashboard.widgets.argument = "vibeshell run notch-launcher"
-            | .vibeshell.system.tools.modifiers = ["SUPER"]
-            | .vibeshell.system.tools.key = "A"
-            | .vibeshell.system.tools.argument = "vibeshell run tools"
+            | .vibeshell.system.tools.modifiers = []
+            | .vibeshell.system.tools.key = ""
+            | .vibeshell.system.tools.argument = ""
             | .vibeshell.system.config.modifiers = ["SUPER"]
             | .vibeshell.system.config.key = "S"
             | .vibeshell.system.config.argument = "vibeshell run config"

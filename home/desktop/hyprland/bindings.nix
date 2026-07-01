@@ -18,7 +18,6 @@ in
         "SUPER, B, exec, ${browser}"
         "SUPER, T, exec, ${terminal}"
         "SUPER, C, exec, ${editor}"
-        "SUPER, A, exec, asura-shell-launcher /tools"
         "SUPER, E, exec, ${pkgs.telegram-desktop}/bin/telegram-desktop"
         "SUPER, W, exec, skwd-wall"
         "SUPER, P, exec, asura-display-manager"
