@@ -274,24 +274,30 @@ Item {
     component TopRail: Item {
         id: rail
         property string selected: "theme"
-        height: 58
+        height: 64
 
         Rectangle {
-            width: 48
-            height: 48
-            radius: 24
+            width: 56
+            height: 56
+            radius: 28
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             color: "transparent"
             border.color: Colors.primary
             border.width: 2
 
-            Image {
+            ClippingRectangle {
                 anchors.fill: parent
-                anchors.margins: 5
-                source: "file://" + Quickshell.env("HOME") + "/.face.icon"
-                fillMode: Image.PreserveAspectCrop
-                smooth: true
+                anchors.margins: 4
+                radius: width / 2
+                clip: true
+
+                Image {
+                    anchors.fill: parent
+                    source: "file://" + Quickshell.env("HOME") + "/.face.icon"
+                    fillMode: Image.PreserveAspectCrop
+                    smooth: true
+                }
             }
         }
 

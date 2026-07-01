@@ -442,7 +442,7 @@ Item {
 
                 Item {
                     width: parent.width
-                    height: parent.height - 122
+                    height: parent.height - 138
 
                     ListView {
                         id: notificationList
@@ -510,7 +510,7 @@ Item {
 
                 Item {
                     width: parent.width
-                    height: parent.height - 70
+                    height: parent.height - 84
 
                     ListView {
                         id: wifiList
@@ -578,7 +578,7 @@ Item {
 
                 Item {
                     width: parent.width
-                    height: parent.height - 70
+                    height: parent.height - 84
 
                     ListView {
                         id: bluetoothList
