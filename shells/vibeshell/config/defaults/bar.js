@@ -26,6 +26,7 @@ var data = {
     "clockFormat": "12h",
     "showWorkspaceModule": true,
     "showUptimeModule": true,
+    "showMonitorModule": true,
     "showBatteryModule": true,
     "showNotificationsModule": true,
     "showNetworkModule": true,

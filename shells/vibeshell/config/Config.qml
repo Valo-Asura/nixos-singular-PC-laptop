@@ -609,6 +609,7 @@ Singleton {
             property string clockFormat: "12h"
             property bool showWorkspaceModule: true
             property bool showUptimeModule: true
+            property bool showMonitorModule: true
             property bool showBatteryModule: true
             property bool showNotificationsModule: true
             property bool showNetworkModule: true

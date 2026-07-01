@@ -297,6 +297,7 @@ Item {
 
                             ModuleToggle { icon: Icons.dotsNine; label: "Workspace"; checked: Config.bar.showWorkspaceModule; onToggled: v => { Config.bar.showWorkspaceModule = v; Config.saveBar(); } }
                             ModuleToggle { icon: Icons.clock; label: "Uptime"; checked: Config.bar.showUptimeModule; onToggled: v => { Config.bar.showUptimeModule = v; Config.saveBar(); } }
+                            ModuleToggle { icon: Icons.cpu; label: "Monitor"; checked: Config.bar.showMonitorModule; onToggled: v => { Config.bar.showMonitorModule = v; Config.saveBar(); } }
                             ModuleToggle { icon: Icons.batteryHigh; label: "Battery"; checked: Config.bar.showBatteryModule; onToggled: v => { Config.bar.showBatteryModule = v; Config.saveBar(); } }
                             ModuleToggle { icon: Icons.bell; label: "Notices"; checked: Config.bar.showNotificationsModule; onToggled: v => { Config.bar.showNotificationsModule = v; Config.saveBar(); } }
                             ModuleToggle { icon: Icons.wifiHigh; label: "Network"; checked: Config.bar.showNetworkModule; onToggled: v => { Config.bar.showNetworkModule = v; Config.saveBar(); } }

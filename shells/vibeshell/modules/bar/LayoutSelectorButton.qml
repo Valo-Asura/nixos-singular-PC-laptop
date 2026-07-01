@@ -81,7 +81,7 @@ Item {
             textFormat: Text.PlainText
             font.family: Icons.font
             font.pixelSize: 18
-            color: root.popupOpen ? buttonBg.item : Styling.srItem("overprimary")
+            color: root.popupOpen ? buttonBg.item : Styling.srItem("bg")
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             renderType: Text.NativeRendering

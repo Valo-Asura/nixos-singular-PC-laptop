@@ -35,7 +35,7 @@ in
         "SUPER SHIFT, X, exec, asura-screenshot region-edit"
         "SUPER, F2, exec, night-shift"
         "SUPER, N, exec, asura-shell-launcher /notes"
-        "SUPER, D, exec, asura-shell-launcher /tools"
+        "SUPER, D, exec, asura-shell-launcher /dashboard"
         "SUPER, S, exec, asura-shell-launcher /config"
         "CTRL ALT, Delete, exec, asura-shell-launcher /session"
         "SUPER, BackSpace, exec, asura-shell-launcher /session"

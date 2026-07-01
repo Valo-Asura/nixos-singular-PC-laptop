@@ -119,6 +119,17 @@
             | .spacing = 4
             | .radius = 18
             | .backgroundOpacity = 1
+            | .showWorkspaceModule = true
+            | .showUptimeModule = true
+            | .showMonitorModule = true
+            | .showBatteryModule = true
+            | .showNotificationsModule = true
+            | .showNetworkModule = true
+            | .showTrayModule = true
+            | .showBluetoothModule = true
+            | .showVolumeModule = true
+            | .showBrightnessModule = true
+            | .showPowerModule = true
           ' "$bar_config" > "$tmp" \
             && install -m 0644 "$tmp" "$bar_config"
           rm -f "$tmp"
@@ -146,7 +157,19 @@
         "hoverToReveal": true,
         "hoverRegionHeight": 8,
         "showPinButton": true,
-        "availableOnFullscreen": false
+        "availableOnFullscreen": false,
+        "clockFormat": "12h",
+        "showWorkspaceModule": true,
+        "showUptimeModule": true,
+        "showMonitorModule": true,
+        "showBatteryModule": true,
+        "showNotificationsModule": true,
+        "showNetworkModule": true,
+        "showTrayModule": true,
+        "showBluetoothModule": true,
+        "showVolumeModule": true,
+        "showBrightnessModule": true,
+        "showPowerModule": true
     }
     EOF
         fi

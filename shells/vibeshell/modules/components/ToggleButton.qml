@@ -61,7 +61,7 @@ Button {
             textFormat: (root.buttonIcon && root.buttonIcon.startsWith("<")) ? Text.RichText : Text.PlainText
             font.family: Icons.font
             font.pixelSize: root.iconSize
-            color: root.pressed ? Colors.background : (Styling.srItem("overprimary") || Colors.foreground)
+            color: root.pressed ? (Styling.srItem("primary") || Colors.background) : (Styling.srItem("bg") || Colors.foreground)
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             renderType: Text.NativeRendering
@@ -84,7 +84,7 @@ Button {
                 brightness: root.iconFullTint ? 1.0 : 0.1
                 contrast: root.iconFullTint ? 0.0 : -0.25
                 colorization: root.iconFullTint ? 1.0 : 0.25
-                colorizationColor: Styling.srItem("overprimary") || Colors.foreground
+                colorizationColor: Styling.srItem("bg") || Colors.foreground
             }
         }
     }
