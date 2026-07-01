@@ -205,7 +205,7 @@ let
   '';
 
   clipboard = pkgs.writeShellScriptBin "clipboard" ''
-    exec noctalia msg panel-toggle clipboard
+    exec /run/current-system/sw/bin/asura-shell-launcher /clipboard
   '';
 
   asuraDarkModeRefresh = pkgs.writeShellScriptBin "asura-dark-mode-refresh" ''

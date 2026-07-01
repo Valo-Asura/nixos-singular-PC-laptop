@@ -11,7 +11,7 @@ var data = {
     "enableFirefoxPlayer": false,
     "playerTitleIntroMs": 2800,
     "barColor": [["primary", 0.22]],
-    "height": 36,
+    "height": 40,
     "width": 0,
     "padding": 2,
     "margin": 0,

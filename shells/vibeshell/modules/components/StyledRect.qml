@@ -163,8 +163,8 @@ ClippingRectangle {
         fragmentShader: "halftone.frag.qsb"
     }
 
-    // Shadow effect
-    layer.enabled: enableShadow
+    // Shadow.qml currently renders no visual shadow, so avoid a no-op offscreen layer.
+    layer.enabled: false
     layer.effect: Shadow {}
 
     // Border overlay to avoid ClippingRectangle artifacts

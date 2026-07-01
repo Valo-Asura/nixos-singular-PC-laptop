@@ -2,6 +2,37 @@
 { pkgs, ... }:
 
 let
+  asuraSessionLock = pkgs.writeShellApplication {
+    name = "asura-session-lock";
+    runtimeInputs = with pkgs; [
+      coreutils
+      libnotify
+      procps
+      systemd
+    ];
+    text = ''
+      set -euo pipefail
+
+      if command -v noctalia >/dev/null 2>&1; then
+        if systemctl --user is-active --quiet noctalia.service 2>/dev/null \
+          || pgrep -u "$(id -u)" -x noctalia >/dev/null 2>&1; then
+          noctalia msg session lock "$@" && exit 0
+        fi
+      fi
+
+      if command -v vibeshell-safe-lock >/dev/null 2>&1; then
+        exec vibeshell-safe-lock "$@"
+      fi
+
+      if command -v hyprlock >/dev/null 2>&1; then
+        exec hyprlock "$@"
+      fi
+
+      notify-send -a asura-session-lock "Lock unavailable" "Noctalia, VibeShell, and hyprlock are unavailable." 2>/dev/null || true
+      exit 127
+    '';
+  };
+
   asuraShellSwitch = pkgs.writeShellApplication {
     name = "asura-shell-switch";
     runtimeInputs = with pkgs; [
@@ -124,12 +155,37 @@ let
         esac
       }
 
+      restart_shell() {
+        validate_shell "$1"
+        case "$1" in
+          waybar)
+            pkill -u "$(id -u)" -x waybar >/dev/null 2>&1 || true
+            start_shell waybar
+            ;;
+          noctalia)
+            systemctl --user restart noctalia.service || {
+              pkill -u "$(id -u)" -x noctalia >/dev/null 2>&1 || true
+              start_shell noctalia
+            }
+            ;;
+          vibeshell)
+            /run/current-system/sw/bin/asura-vibeshell reload
+            ;;
+        esac
+      }
+
       case "''${1:-autostart}" in
         autostart)
           start_shell "$(read_active)"
           ;;
         current)
           read_active
+          ;;
+        lock)
+          exec /run/current-system/sw/bin/asura-session-lock "''${@:2}"
+          ;;
+        reload|restart)
+          restart_shell "$(read_active)"
           ;;
         waybar|noctalia|vibeshell)
           start_shell "$1"
@@ -147,7 +203,7 @@ let
           printf 'caffeine=%s active=%s\n' "$(cat "$caffeine_file" 2>/dev/null || printf off)" "$(caffeine_active && printf yes || printf no)"
           ;;
         *)
-          printf 'usage: asura-shell-switch [autostart|current|waybar|noctalia|vibeshell|caffeine-on|caffeine-off|caffeine-toggle|caffeine-status]\n' >&2
+          printf 'usage: asura-shell-switch [autostart|current|lock|reload|restart|waybar|noctalia|vibeshell|caffeine-on|caffeine-off|caffeine-toggle|caffeine-status]\n' >&2
           exit 64
           ;;
       esac
@@ -173,12 +229,25 @@ let
 
       case "$active" in
         vibeshell)
-          exec /run/current-system/sw/bin/asura-vibeshell "$@"
+          case "''${1:-}" in
+            /tools) exec /run/current-system/sw/bin/asura-vibeshell run dashboard ;;
+            /clipboard) exec /run/current-system/sw/bin/asura-vibeshell run dashboard-clipboard ;;
+            /emo) exec /run/current-system/sw/bin/asura-vibeshell run dashboard-emoji ;;
+            /notes) exec /run/current-system/sw/bin/asura-vibeshell run dashboard-notes ;;
+            /wallpaper) exec /run/current-system/sw/bin/asura-vibeshell run dashboard-wallpapers ;;
+            /session|/power) exec /run/current-system/sw/bin/asura-vibeshell run powermenu ;;
+            /config) exec /run/current-system/sw/bin/asura-vibeshell run config ;;
+            *) exec /run/current-system/sw/bin/asura-vibeshell run notch-launcher ;;
+          esac
           ;;
         noctalia)
           case "''${1:-}" in
             /tools) exec /run/current-system/sw/bin/noctalia msg panel-toggle control-center ;;
+            /clipboard) exec /run/current-system/sw/bin/noctalia msg panel-toggle clipboard ;;
             /emo) exec /run/current-system/sw/bin/noctalia msg panel-toggle emoji ;;
+            /wallpaper) exec /run/current-system/sw/bin/noctalia msg panel-toggle wallpaper ;;
+            /session|/power) exec /run/current-system/sw/bin/noctalia msg panel-toggle session ;;
+            /config) exec /run/current-system/sw/bin/noctalia msg panel-toggle control-center ;;
             *) exec /run/current-system/sw/bin/noctalia msg panel-toggle launcher ;;
           esac
           ;;
@@ -195,11 +264,13 @@ let
 in
 {
   environment.systemPackages = [
+    asuraSessionLock
     asuraShellSwitch
     asuraShellLauncher
   ];
 
   home-manager.users.asura.home.packages = [
+    asuraSessionLock
     asuraShellSwitch
     asuraShellLauncher
   ];

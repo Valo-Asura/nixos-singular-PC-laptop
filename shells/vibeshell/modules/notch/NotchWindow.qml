@@ -8,6 +8,7 @@ import qs.modules.globals
 import qs.modules.theme
 import qs.modules.widgets.defaultview
 import qs.modules.widgets.dashboard
+import qs.modules.widgets.dashboard.clipboard
 import qs.modules.widgets.powermenu
 import qs.modules.widgets.tools
 import qs.modules.services
@@ -82,6 +83,8 @@ PanelWindow {
             return "launcher";
         if (screenVisibilities.dashboard)
             return "dashboard";
+        if (screenVisibilities.clipboard)
+            return "clipboard";
         if (screenVisibilities.powermenu)
             return "powermenu";
         if (screenVisibilities.tools)
@@ -177,6 +180,8 @@ PanelWindow {
             return launcherViewComponent;
         case "dashboard":
             return dashboardViewComponent;
+        case "clipboard":
+            return clipboardViewComponent;
         case "powermenu":
             return powermenuViewComponent;
         case "tools":
@@ -236,7 +241,7 @@ PanelWindow {
         windows: {
             let windowList = [notchPanel];
             // Agregar la barra de esta pantalla al focus grab cuando el notch este abierto
-            if (barPanelRef && (screenVisibilities.launcher || screenVisibilities.dashboard || screenVisibilities.powermenu || screenVisibilities.tools)) {
+            if (barPanelRef && (screenVisibilities.launcher || screenVisibilities.dashboard || screenVisibilities.clipboard || screenVisibilities.powermenu || screenVisibilities.tools)) {
                 windowList.push(barPanelRef);
             }
             return windowList;
@@ -316,6 +321,33 @@ PanelWindow {
     Component {
         id: dashboardViewComponent
         DashboardView {}
+    }
+
+    // Clipboard history view component
+    Component {
+        id: clipboardViewComponent
+        Item {
+            implicitWidth: 920
+            implicitHeight: 420
+            focus: true
+
+            property real morphCloseness: 1
+            property string ameForm: "off"
+            property point amePoint: Qt.point(width / 2, 34)
+            property real ameHeat: 0
+
+            ClipboardTab {
+                id: clipboardTab
+                anchors.fill: parent
+                leftPanelWidth: 280
+                prefixIcon: Icons.clipboard
+            }
+
+            function focusSearchInput() {
+                if (clipboardTab.focusSearchInput)
+                    clipboardTab.focusSearchInput();
+            }
+        }
     }
 
     // Power menu view component
@@ -421,6 +453,7 @@ PanelWindow {
 
                 defaultViewComponent: defaultViewComponent
                 dashboardViewComponent: dashboardViewComponent
+                clipboardViewComponent: clipboardViewComponent
                 powermenuViewComponent: powermenuViewComponent
                 toolsMenuViewComponent: toolsMenuViewComponent
                 notificationViewComponent: notificationViewComponent
@@ -482,8 +515,8 @@ PanelWindow {
                     return false;
 
                 // NO mostrar si estamos en el launcher (widgets tab con currentTab === 0)
-                if (screenVisibilities.launcher || screenVisibilities.dashboard) {
-                    if (screenVisibilities.launcher)
+                if (screenVisibilities.launcher || screenVisibilities.dashboard || screenVisibilities.clipboard) {
+                    if (screenVisibilities.launcher || screenVisibilities.clipboard)
                         return false;
 
                     // Solo ocultar si estamos en el widgets tab (dashboard tab 0) Y mostrando el launcher (widgetsTab index 0)

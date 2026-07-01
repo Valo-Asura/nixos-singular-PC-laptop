@@ -44,19 +44,23 @@ Item {
             radius: parent.radius ?? 0
 
             Behavior on opacity {
-                enabled: Config.animDuration > 0
+                enabled: (Config.animDuration ?? 0) > 0
                 NumberAnimation {
-                    duration: Config.animDuration / 2
+                    duration: Math.min(Config.animDuration ?? 0, 110)
                 }
             }
         }
 
         Text {
-            anchors.centerIn: parent
+            anchors.fill: parent
             text: Icons.faders
+            textFormat: Text.PlainText
             font.family: Icons.font
             font.pixelSize: 18
             color: root.popupOpen ? buttonBg.item : Styling.srItem("overprimary")
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            renderType: Text.NativeRendering
         }
 
         MouseArea {

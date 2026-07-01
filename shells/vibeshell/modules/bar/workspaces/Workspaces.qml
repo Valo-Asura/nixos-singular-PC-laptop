@@ -33,6 +33,11 @@ Item {
     property real workspaceIconMarginShrinked: -4
     property int workspaceIndexInGroup: Config.workspaces.dynamic ? dynamicWorkspaceIds.indexOf(monitor?.activeWorkspace?.id || 1) : (monitor?.activeWorkspace?.id - 1 || 0) % Config.workspaces.shown
     property var occupiedRanges: []
+    readonly property bool motionEnabled: (Config.animDuration ?? 0) > 0
+    readonly property int motionDuration: motionEnabled ? Math.max(120, Math.min(Config.animDuration, 220)) : 0
+    readonly property int fastMotionDuration: motionEnabled ? Math.max(70, Math.round(motionDuration / 3)) : 0
+    readonly property int midMotionDuration: motionEnabled ? Math.max(80, Math.round(motionDuration / 2)) : 0
+    readonly property int rangeMotionDuration: motionEnabled ? Math.max(90, Math.min(Math.max(0, Config.animDuration - 100), 180)) : 0
 
     function updateWorkspaceOccupied() {
         if (Config.workspaces.dynamic) {
@@ -107,6 +112,26 @@ Item {
             return dynamicWorkspaceIds[index] || 1;
         }
         return workspaceGroup * Config.workspaces.shown + index + 1;
+    }
+
+    function focusedWindowForWorkspace(workspaceId) {
+        const windows = HyprlandData.windowList;
+        let focused = null;
+        let bestFocus = Infinity;
+
+        for (let i = 0; i < windows.length; i++) {
+            const win = windows[i];
+            if ((win?.workspace?.id ?? -1) !== workspaceId)
+                continue;
+
+            const focus = win?.focusHistoryID ?? Infinity;
+            if (focus < bestFocus) {
+                bestFocus = focus;
+                focused = win;
+            }
+        }
+
+        return focused;
     }
 
     Timer {
@@ -208,23 +233,23 @@ Item {
                 y: 0
 
                 Behavior on opacity {
-                    enabled: Config.animDuration > 0
+                    enabled: workspacesWidget.motionEnabled
                     NumberAnimation {
-                        duration: Math.max(0, Config.animDuration - 100)
+                        duration: workspacesWidget.rangeMotionDuration
                         easing.type: Easing.OutQuad
                     }
                 }
                 Behavior on x {
-                    enabled: Config.animDuration > 0
+                    enabled: workspacesWidget.motionEnabled
                     NumberAnimation {
-                        duration: Math.max(0, Config.animDuration - 100)
+                        duration: workspacesWidget.rangeMotionDuration
                         easing.type: Easing.OutQuad
                     }
                 }
                 Behavior on width {
-                    enabled: Config.animDuration > 0
+                    enabled: workspacesWidget.motionEnabled
                     NumberAnimation {
-                        duration: Math.max(0, Config.animDuration - 100)
+                        duration: workspacesWidget.rangeMotionDuration
                         easing.type: Easing.OutQuad
                     }
                 }
@@ -259,23 +284,23 @@ Item {
                 y: modelData.start * workspaceButtonWidth
 
                 Behavior on opacity {
-                    enabled: Config.animDuration > 0
+                    enabled: workspacesWidget.motionEnabled
                     NumberAnimation {
-                        duration: Math.max(0, Config.animDuration - 100)
+                        duration: workspacesWidget.rangeMotionDuration
                         easing.type: Easing.OutQuad
                     }
                 }
                 Behavior on y {
-                    enabled: Config.animDuration > 0
+                    enabled: workspacesWidget.motionEnabled
                     NumberAnimation {
-                        duration: Math.max(0, Config.animDuration - 100)
+                        duration: workspacesWidget.rangeMotionDuration
                         easing.type: Easing.OutQuad
                     }
                 }
                 Behavior on height {
-                    enabled: Config.animDuration > 0
+                    enabled: workspacesWidget.motionEnabled
                     NumberAnimation {
-                        duration: Math.max(0, Config.animDuration - 100)
+                        duration: workspacesWidget.rangeMotionDuration
                         easing.type: Easing.OutQuad
                     }
                 }
@@ -311,28 +336,28 @@ Item {
 
         Behavior on activeWorkspaceMargin {
 
-            enabled: Config.animDuration > 0
+            enabled: workspacesWidget.motionEnabled
 
             NumberAnimation {
-                duration: Config.animDuration / 2
+                duration: workspacesWidget.midMotionDuration
                 easing.type: Easing.OutQuad
             }
         }
         Behavior on idx1 {
 
-            enabled: Config.animDuration > 0
+            enabled: workspacesWidget.motionEnabled
 
             NumberAnimation {
-                duration: Config.animDuration / 3
+                duration: workspacesWidget.fastMotionDuration
                 easing.type: Easing.OutSine
             }
         }
         Behavior on idx2 {
 
-            enabled: Config.animDuration > 0
+            enabled: workspacesWidget.motionEnabled
 
             NumberAnimation {
-                duration: Config.animDuration
+                duration: workspacesWidget.motionDuration
                 easing.type: Easing.OutSine
             }
         }
@@ -366,28 +391,28 @@ Item {
 
         Behavior on activeWorkspaceMargin {
 
-            enabled: Config.animDuration > 0
+            enabled: workspacesWidget.motionEnabled
 
             NumberAnimation {
-                duration: Config.animDuration / 2
+                duration: workspacesWidget.midMotionDuration
                 easing.type: Easing.OutQuad
             }
         }
         Behavior on idx1 {
 
-            enabled: Config.animDuration > 0
+            enabled: workspacesWidget.motionEnabled
 
             NumberAnimation {
-                duration: Config.animDuration / 3
+                duration: workspacesWidget.fastMotionDuration
                 easing.type: Easing.OutSine
             }
         }
         Behavior on idx2 {
 
-            enabled: Config.animDuration > 0
+            enabled: workspacesWidget.motionEnabled
 
             NumberAnimation {
-                duration: Config.animDuration
+                duration: workspacesWidget.motionDuration
                 easing.type: Easing.OutSine
             }
         }
@@ -417,30 +442,21 @@ Item {
                     id: workspaceButtonBackground
                     implicitWidth: workspaceButtonWidth
                     implicitHeight: workspaceButtonWidth
-                    property var focusedWindow: {
-                        const windowsInThisWorkspace = HyprlandData.windowList.filter(w => w.workspace.id == button.workspaceValue);
-                        if (windowsInThisWorkspace.length === 0)
-                            return null;
-                        // Get the window with the lowest focusHistoryID (most recently focused)
-                        return windowsInThisWorkspace.reduce((best, win) => {
-                            const bestFocus = best?.focusHistoryID ?? Infinity;
-                            const winFocus = win?.focusHistoryID ?? Infinity;
-                            return winFocus < bestFocus ? win : best;
-                        }, null);
-                    }
+                    property var focusedWindow: workspacesWidget.focusedWindowForWorkspace(button.workspaceValue)
                     property var mainAppIconSource: Quickshell.iconPath(AppSearch.getCachedIcon(focusedWindow?.class), "image-missing")
 
                     Text {
                         opacity: Config.workspaces.alwaysShowNumbers || ((Config.workspaces.showNumbers && (!Config.workspaces.showAppIcons || !workspaceButtonBackground.focusedWindow || Config.workspaces.alwaysShowNumbers)) || (Config.workspaces.alwaysShowNumbers && !Config.workspaces.showAppIcons)) ? 1 : 0
                         z: 3
 
-                        anchors.centerIn: parent
+                        anchors.fill: parent
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         font.family: Config.theme.font
                         font.pixelSize: workspaceLabelFontSize(text)
                         text: `${button.workspaceValue}`
                         elide: Text.ElideRight
+                        renderType: Text.NativeRendering
                         color: (monitor?.activeWorkspace?.id == button.workspaceValue) ? Styling.srItem("primary") : (workspaceOccupied[index] ? Colors.overBackground : Colors.overSecondaryFixedVariant)
 
                         Behavior on opacity {
@@ -549,30 +565,21 @@ Item {
                     id: workspaceButtonBackgroundVert
                     implicitWidth: workspaceButtonWidth
                     implicitHeight: workspaceButtonWidth
-                    property var focusedWindow: {
-                        const windowsInThisWorkspace = HyprlandData.windowList.filter(w => w.workspace.id == buttonVert.workspaceValue);
-                        if (windowsInThisWorkspace.length === 0)
-                            return null;
-                        // Get the window with the lowest focusHistoryID (most recently focused)
-                        return windowsInThisWorkspace.reduce((best, win) => {
-                            const bestFocus = best?.focusHistoryID ?? Infinity;
-                            const winFocus = win?.focusHistoryID ?? Infinity;
-                            return winFocus < bestFocus ? win : best;
-                        }, null);
-                    }
+                    property var focusedWindow: workspacesWidget.focusedWindowForWorkspace(buttonVert.workspaceValue)
                     property var mainAppIconSource: Quickshell.iconPath(AppSearch.getCachedIcon(focusedWindow?.class), "image-missing")
 
                     Text {
                         opacity: Config.workspaces.alwaysShowNumbers || ((Config.workspaces.showNumbers && (!Config.workspaces.showAppIcons || !workspaceButtonBackgroundVert.focusedWindow || Config.workspaces.alwaysShowNumbers)) || (Config.workspaces.alwaysShowNumbers && !Config.workspaces.showAppIcons)) ? 1 : 0
                         z: 3
 
-                        anchors.centerIn: parent
+                        anchors.fill: parent
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         font.family: Config.theme.font
                         font.pixelSize: workspaceLabelFontSize(text)
                         text: `${buttonVert.workspaceValue}`
                         elide: Text.ElideRight
+                        renderType: Text.NativeRendering
                         color: (monitor?.activeWorkspace?.id == buttonVert.workspaceValue) ? Styling.srItem("primary") : (workspaceOccupied[index] ? Colors.overBackground : Colors.overSecondaryFixedVariant)
 
                         Behavior on opacity {

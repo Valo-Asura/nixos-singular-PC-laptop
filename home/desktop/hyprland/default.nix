@@ -6,22 +6,20 @@
 }:
 let
   border-size = 1;
-  gaps-in = 2;
-  gaps-out = 6;
+  gaps-in = 4;
+  gaps-out = 8;
   active-opacity = 1.0;
   inactive-opacity = 1.0;
-  rounding = 6;
+  rounding = 10;
   blur = false;
   keyboardLayout = "us";
   border-color = "rgb(b4befe)";
 
   startupCommands = [
     "dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE XDG_SESSION_CLASS XDG_SESSION_ID XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS"
-    "kdeconnectd"
     "systemctl --user start skwd-daemon.service"
     "asura-apply-cursor-theme"
     "asura-monitor-guard --daemon"
-    "easyeffects --gapplication-service"
     "asura-shell-switch autostart"
   ];
 
@@ -114,7 +112,7 @@ in
         gaps_in = gaps-in;
         gaps_out = gaps-out;
         border_size = border-size;
-        layout = "master";
+        layout = "dwindle";
         "col.active_border" = border-color;
       };
 
@@ -135,6 +133,12 @@ in
         new_status = "master";
         allow_small_split = true;
         mfact = 0.5;
+      };
+
+      dwindle = {
+        preserve_split = true;
+        smart_split = true;
+        smart_resizing = true;
       };
 
       debug.vfr = true;
@@ -171,6 +175,7 @@ in
 
       gesture = [
         "3, horizontal, workspace"
+        "4, horizontal, workspace"
       ];
 
       windowrule = [
@@ -189,11 +194,11 @@ in
       ];
 
       layerrule = [
-        "match:namespace notifications, blur 1, ignore_alpha 0.69"
-        "match:namespace control-center, no_anim 1, blur 1, ignore_alpha 0.5"
-        "match:namespace launcher, no_anim 1, blur 1, ignore_alpha 0.5"
+        "match:namespace notifications, no_anim 1, ignore_alpha 0.69"
+        "match:namespace control-center, no_anim 1, ignore_alpha 0.5"
+        "match:namespace launcher, no_anim 1, ignore_alpha 0.5"
         "match:namespace overview, no_anim 1"
-        "match:namespace session, blur 1"
+        "match:namespace session, no_anim 1"
         "match:namespace ^ags-.*$, no_anim 1"
       ];
     };

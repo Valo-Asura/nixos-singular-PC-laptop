@@ -198,7 +198,7 @@ Singleton {
             property int monoFontSize: 14
             property bool tintIcons: false
             property bool enableCorners: true
-            property int animDuration: 300
+            property int animDuration: 220
             property real borderOpacity: 1.0
             property real shadowOpacity: 0.5
             property string shadowColor: "shadow"

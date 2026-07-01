@@ -72,7 +72,7 @@ Singleton {
     Process {
         id: ddcProc
 
-        command: ["ddcutil", "detect", "--brief"]
+        command: ["sh", "-c", "command -v ddcutil >/dev/null 2>&1 && exec ddcutil detect --brief || true"]
         stdout: SplitParser {
             splitMarker: "\n\n"
             onRead: data => {

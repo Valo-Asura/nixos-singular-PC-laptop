@@ -139,6 +139,12 @@ in
 
   boot.tmp.cleanOnBoot = true;
   services.fstrim.enable = true;
+  services.journald.extraConfig = ''
+    SystemMaxUse=256M
+    RuntimeMaxUse=128M
+    MaxRetentionSec=14day
+    Compress=yes
+  '';
 
   system.activationScripts.pruneNixGenerations.text = ''
     keep=${toString generationLimit}

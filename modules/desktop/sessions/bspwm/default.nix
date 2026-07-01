@@ -342,6 +342,23 @@ SXHKD_ASURA_SHARED_BINDINGS
       fi
     fi
 
+    # Keep the old visual stack installed and available, but do not burn idle
+    # RAM/CPU on ornamental daemons by default. Opt back into the full hotfiles
+    # look with ASURA_BSPWM_FULL_VISUALS=1 and Picom with
+    # ASURA_BSPWM_ENABLE_COMPOSITOR=1 before launching the session.
+    bspwmrc="$HOME/.config/bspwm/bspwmrc"
+    if [ -f "$bspwmrc" ]; then
+      ${pkgs.gnused}/bin/sed -i \
+        -e 's|^\$HOME/.config/conky/Auva/start.sh &$|[ "''${ASURA_BSPWM_FULL_VISUALS:-0}" = "1" ] \&\& $HOME/.config/conky/Auva/start.sh \&|' \
+        -e 's|^xfce4-power-manager &$|[ "''${ASURA_BSPWM_FULL_VISUALS:-0}" = "1" ] \&\& xfce4-power-manager \&|' \
+        -e 's|^bash \$HOME/.config/bspwm/scripts/fix-plank$|[ "''${ASURA_BSPWM_FULL_VISUALS:-0}" = "1" ] \&\& bash $HOME/.config/bspwm/scripts/fix-plank|' \
+        -e 's|^picom &$|[ "''${ASURA_BSPWM_ENABLE_COMPOSITOR:-0}" = "1" ] \&\& picom \&|' \
+        -e 's|^ukui-window-switch &$|true # ukui-window-switch disabled by lightweight NixOS BSPWM profile|' \
+        -e 's|^parcellite &$|true # parcellite disabled; hotfiles clipboard actions still use xclip|' \
+        -e 's|^plank &$|[ "''${ASURA_BSPWM_FULL_VISUALS:-0}" = "1" ] \&\& plank \&|' \
+        "$bspwmrc"
+    fi
+
     mkdir -p "$HOME/.cache" "$HOME/Pictures/Screenshots"
     if [ ! -s "$HOME/.cache/dunst.log.json" ]; then
       printf '{"items":[]}\n' > "$HOME/.cache/dunst.log.json"
@@ -386,14 +403,14 @@ SXHKD_ASURA_SHARED_BINDINGS
     )"
     total_mb="$(( (total_kb + 1023) / 1024 ))"
 
-    printf 'BSPWM full hotfiles session RSS: %s MiB\n' "$total_mb"
+    printf 'BSPWM lightweight hotfiles session RSS: %s MiB\n' "$total_mb"
     ${pkgs.procps}/bin/ps -eo pid=,rss=,comm=,args= --sort=-rss \
       | ${pkgs.gawk}/bin/awk -v pattern="$pattern" '$0 ~ pattern { printf "%7s %7.1f MiB  %s\n", $1, $2 / 1024, substr($0, index($0,$4)) }'
 
     if [ "$total_mb" -lt 1024 ]; then
       printf 'OK: under 1 GiB target.\n'
     else
-      printf 'WARN: full hotfiles visuals are over 1 GiB; use the report above to trim optional widgets.\n'
+      printf 'WARN: hotfiles session is over 1 GiB; use the report above to trim optional widgets.\n'
     fi
   '';
 in
@@ -402,8 +419,8 @@ in
 
   desktopEntry = ''
     [Desktop Entry]
-    Name=BSPWM + EWW Hotfiles (X11)
-    Comment=Full Tokyo Night hotfiles BSPWM session with EWW widgets, Conky, Plank, GLava, Polybar, Rofi, Dunst
+    Name=BSPWM + EWW Hotfiles Light (X11)
+    Comment=Tokyo Night hotfiles BSPWM session with EWW, Polybar, Rofi, Dunst, and optional full visuals
     Exec=${start}/bin/asura-start-bspwm
     Type=Application
   '';

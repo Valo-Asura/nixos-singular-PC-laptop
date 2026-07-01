@@ -23,6 +23,7 @@ Item {
     property string ameForm: "caret"
     property point amePoint: searchInput ? searchInput.cursorCenterIn(root) : Qt.point(width / 2, 32)
     property real ameHeat: 0
+    property int totalApps: 0
 
     function focusSearchInput() {
         Qt.callLater(() => searchInput.focusInput());
@@ -34,7 +35,9 @@ Item {
     }
 
     function refreshApps() {
-        const source = searchText.length > 0 ? AppSearch.fuzzyQuery(searchText) : AppSearch.getAllApps().slice(0, 12);
+        const allApps = AppSearch.getAllApps();
+        totalApps = allApps.length;
+        const source = searchText.length > 0 ? AppSearch.fuzzyQuery(searchText) : allApps.slice(0, 12);
         const nextById = {};
 
         appsModel.clear();
@@ -142,7 +145,7 @@ Item {
             }
 
             Text {
-                text: appsModel.count + " / " + AppSearch.getAllApps().length
+                text: appsModel.count + " / " + root.totalApps
                 color: Colors.outline
                 font.family: Config.theme.font
                 font.pixelSize: Styling.fontSize(-2)

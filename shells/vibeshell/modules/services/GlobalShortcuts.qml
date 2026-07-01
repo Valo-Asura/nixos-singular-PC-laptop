@@ -65,7 +65,7 @@ Item {
             toggleNotchLauncher();
             break;
         case "dashboard":
-            GlobalStates.settingsVisible = !GlobalStates.settingsVisible;
+            toggleSimpleModule("dashboard");
             break;
         case "dashboard-widgets":
             toggleNotchLauncher();
@@ -88,13 +88,13 @@ Item {
             toggleSimpleModule("dashboard");
             break;
         case "dashboard-clipboard":
-            toggleDashboardWithPrefix(Config.prefix.clipboard + " ");
+            toggleSimpleModule("clipboard");
             break;
         case "dashboard-emoji":
-            toggleDashboardWithPrefix(Config.prefix.emoji + " ");
+            toggleLauncherWithPrefix(Config.prefix.emoji + " ");
             break;
         case "dashboard-tmux":
-            toggleDashboardWithPrefix(Config.prefix.tmux + " ");
+            toggleLauncherWithPrefix(Config.prefix.tmux + " ");
             break;
         case "dashboard-notes":
             GlobalStates.notesVisible = !GlobalStates.notesVisible;
@@ -223,7 +223,7 @@ Item {
         }
     }
 
-    function toggleDashboardWithPrefix(prefix) {
+    function toggleLauncherWithPrefix(prefix) {
         const isActive = Visibilities.currentActiveModule === "launcher";
 
         if (isActive && GlobalStates.launcherSearchText === prefix) {
@@ -326,9 +326,9 @@ Item {
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-clipboard"
-        description: "Open launcher clipboard prefix"
+        description: "Open dashboard clipboard tab"
 
-        onPressed: toggleDashboardWithPrefix(Config.prefix.clipboard + " ")
+        onPressed: toggleSimpleModule("clipboard")
     }
 
     GlobalShortcut {
@@ -336,7 +336,7 @@ Item {
         name: "dashboard-emoji"
         description: "Open launcher emoji prefix"
 
-        onPressed: toggleDashboardWithPrefix(Config.prefix.emoji + " ")
+        onPressed: toggleLauncherWithPrefix(Config.prefix.emoji + " ")
     }
 
     GlobalShortcut {
@@ -344,7 +344,7 @@ Item {
         name: "dashboard-tmux"
         description: "Open launcher tmux prefix"
 
-        onPressed: toggleDashboardWithPrefix(Config.prefix.tmux + " ")
+        onPressed: toggleLauncherWithPrefix(Config.prefix.tmux + " ")
     }
 
     GlobalShortcut {

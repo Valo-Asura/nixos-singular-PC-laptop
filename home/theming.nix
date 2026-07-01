@@ -2,6 +2,14 @@
 # Stylix owns the base theme. We add a few desktop-specific keys on top.
 { config, lib, pkgs, ... }:
 
+let
+  qtMaterialDarkColors = ''
+    [ColorScheme]
+    active_colors=#ffe6e1e5, #ff1d1b20, #ff49454f, #ff36343b, #ff141218, #ff2b2930, #ffe6e1e5, #ffffffff, #ffe6e1e5, #ff141218, #ff1d1b20, #ff000000, #ffd0bcff, #ff381e72, #ffd0bcff, #ffefb8c8, #ff211f26, #ffe6e1e5, #ff141218, #ffcac4d0, #ff6750a4
+    disabled_colors=#ff938f99, #ff1d1b20, #ff36343b, #ff2b2930, #ff141218, #ff211f26, #ff938f99, #ffffffff, #ff938f99, #ff141218, #ff1d1b20, #ff000000, #ff49454f, #ff1d1b20, #ff938f99, #ff938f99, #ff211f26, #ff938f99, #ff141218, #ff938f99, #ff49454f
+    inactive_colors=#ffe6e1e5, #ff1d1b20, #ff49454f, #ff36343b, #ff141218, #ff2b2930, #ffe6e1e5, #ffffffff, #ffe6e1e5, #ff141218, #ff1d1b20, #ff000000, #ffcac4d0, #ff211f26, #ffd0bcff, #ffefb8c8, #ff211f26, #ffe6e1e5, #ff141218, #ffcac4d0, #ff6750a4
+  '';
+in
 {
   stylix.targets.gtk.enable = false;
 
@@ -72,6 +80,8 @@
 
   xdg.configFile."gtk-3.0/settings.ini".force = true;
   xdg.configFile."gtk-4.0/settings.ini".force = true;
+  xdg.configFile."qt5ct/colors/noctalia.colors".text = qtMaterialDarkColors;
+  xdg.configFile."qt6ct/colors/noctalia.colors".text = qtMaterialDarkColors;
 
   xdg.configFile."qt5ct/qt5ct.conf" = {
     force = true;

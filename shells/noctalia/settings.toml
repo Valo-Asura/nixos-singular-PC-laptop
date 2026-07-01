@@ -1,16 +1,16 @@
 [audio]
-enable_sounds = true
+enable_sounds = false
 
 [bar]
-order = [ "dynamic_island", "left_bar" ]
+order = [ "dynamic_island" ]
 
     [bar.customized]
     auto_hide = false
     background_opacity = 1.0
     capsule = false
-    center = [ "audio_visualizer" ]
+    center = []
     enabled = false
-    end = [ "battery", "volume", "keyboard_layout", "bluetooth", "network", "notifications", "clipboard", "session" ]
+    end = [ "battery", "volume", "network", "notifications", "clipboard", "session" ]
     layer = "overlay"
     margin_edge = 8
     margin_ends = 16
@@ -18,7 +18,7 @@ order = [ "dynamic_island", "left_bar" ]
     radius = 19
     scale = 1.0
     shadow = false
-    start = [ "launcher", "clock", "cpu", "temp", "ram", "disk", "bongocat", "active_window", "workspaces" ]
+    start = [ "launcher", "clock", "active_window", "workspaces" ]
     thickness = 38
     widget_spacing = 6
 
@@ -26,7 +26,7 @@ order = [ "dynamic_island", "left_bar" ]
         border = "outline"
         fill = "surface_variant"
         id = "start_group"
-        members = [ "launcher", "clock", "cpu", "temp", "ram", "disk", "bongocat", "active_window" ]
+        members = [ "launcher", "clock", "active_window" ]
         opacity = 1.0
         radius = 8.0
 
@@ -42,14 +42,14 @@ order = [ "dynamic_island", "left_bar" ]
         border = "outline"
         fill = "surface_variant"
         id = "end_group"
-        members = [ "battery", "volume", "keyboard_layout", "bluetooth", "network", "notifications", "clipboard", "session" ]
+        members = [ "battery", "volume", "network", "notifications", "clipboard", "session" ]
         opacity = 1.0
         radius = 8.0
 
     [bar.default]
-    center = [ "clock", "audio_visualizer" ]
+    center = [ "clock" ]
     enabled = false
-    end = [ "ram", "temp", "tray", "network", "bluetooth", "volume", "brightness", "battery", "session" ]
+    end = [ "tray", "network", "volume", "brightness", "battery", "session" ]
     margin_edge = 1
     start = [ "launcher", "control-center", "workspaces" ]
 
@@ -57,8 +57,8 @@ order = [ "dynamic_island", "left_bar" ]
     auto_hide = false
     background_opacity = 1.0
     capsule = false
-    center = [ "clock", "audio_visualizer" ]
-    end = [ "temp", "volume", "battery", "session" ]
+    center = [ "clock" ]
+    end = [ "volume", "battery", "session" ]
     margin_edge = 0
     margin_ends = 427
     padding = 10
@@ -69,8 +69,8 @@ order = [ "dynamic_island", "left_bar" ]
     radius_top_right = 0
     reserve_space = true
     scale = 1.0
-    shadow = true
-    start = [ "workspaces", "weather" ]
+    shadow = false
+    start = [ "workspaces" ]
     thickness = 38
     widget_spacing = 8
 
@@ -87,7 +87,7 @@ order = [ "dynamic_island", "left_bar" ]
     radius = 16
     reserve_space = false
     scale = 1.0
-    shadow = true
+    shadow = false
     start = []
     thickness = 48
     widget_spacing = 20
@@ -95,15 +95,28 @@ order = [ "dynamic_island", "left_bar" ]
 [calendar]
 enabled = true
 
+[desktop_widgets]
+enabled = false
+
 [dock]
 auto_hide = true
-enabled = true
+enabled = false
 icon_size = 35
-radius = 69
+active_scale = 1.0
+background_opacity = 0.82
+cross_axis_padding = 6
+inactive_scale = 1.0
+item_spacing = 3
+magnification = false
+main_axis_padding = 10
+radius = 10
+reserve_space = false
+shadow = false
 show_dots = true
 
 [location]
 address = "rishikesh, India"
+auto_locate = false
 
 [lockscreen]
 blur_intensity = 0.0
@@ -142,10 +155,15 @@ enabled = true
 
 [shell]
 avatar_path = "/home/asura/Downloads/kyahua.png"
+clipboard_enabled = false
+clipboard_history_max_entries = 20
 font_family = "JetBrainsMono Nerd Font"
 lang = "en"
-screen_time_enabled = true
+screen_time_enabled = false
 settings_show_advanced = true
+setup_wizard_enabled = false
+show_location = false
+telemetry_enabled = false
 time_format = "{:%I:%M %p}"
 ui_scale = 1.0500000081956387
 
@@ -158,10 +176,11 @@ ui_scale = 1.0500000081956387
     open_near_click_control_center = false
     open_near_click_launcher = false
     session_placement = "attached"
+    shadow = false
     wallpaper_placement = "floating"
 
     [shell.screen_corners]
-    enabled = true
+    enabled = false
     size = 22
 
     [[shell.session.actions]]
@@ -218,6 +237,14 @@ ui_scale = 1.0500000081956387
     shortcut = ""
     variant = "ghost"
 
+[system.monitor]
+cpu_poll_seconds = 5.0
+disk_poll_seconds = 30.0
+enabled = true
+gpu_poll_seconds = 0.0
+memory_poll_seconds = 5.0
+network_poll_seconds = 8.0
+
 [theme]
 builtin = "Kanagawa"
 community_palette = "Vesper"
@@ -231,6 +258,8 @@ wallpaper_scheme = "muted"
 
 [wallpaper]
 directory = "/home/asura/Wallpaper"
+enabled = false
+transition_duration = 0.0
 
     [wallpaper.default]
     path = "/home/asura/Wallpaper/random_wallpaper.jpg"
@@ -321,6 +350,10 @@ type = "custom_button"
 [widget.ram]
 stat = "ram_pct"
 type = "sysmon"
+
+[weather]
+effects = false
+enabled = false
 
 [widget.record_btn]
 command = "/run/current-system/sw/bin/asura-screen-record-toggle"

@@ -56,5 +56,6 @@ in
     desktop-file-utils
   ];
 
-  services.tumbler.enable = true;
+  # PCManFM-Qt thumbnails are disabled in the default config; keep the thumbnailer off idle.
+  services.tumbler.enable = false;
 }

@@ -13,6 +13,10 @@ let
   system = pkgs.stdenv.hostPlatform.system;
   noctaliaPackage = inputs.noctalia.packages.${system}.default;
   wallpaper = ../bspwm/assets/tokyo.png;
+  libinputGesturesConfig = pkgs.writeText "asura-labwc-libinput-gestures.conf" ''
+    gesture swipe left 3 ${pkgs.wtype}/bin/wtype -M logo -M ctrl -P right -p right -m ctrl -m logo
+    gesture swipe right 3 ${pkgs.wtype}/bin/wtype -M logo -M ctrl -P left -p left -m ctrl -m logo
+  '';
 
   workspaceKeybinds = lib.concatMapStringsSep "\n" (
     workspace:
@@ -34,8 +38,8 @@ let
         <labwc_config>
           <core>
             <decoration>server</decoration>
-            <gap>8</gap>
-            <xwaylandPersistence>yes</xwaylandPersistence>
+            <gap>6</gap>
+            <xwaylandPersistence>no</xwaylandPersistence>
             <primarySelection>yes</primarySelection>
           </core>
 
@@ -60,6 +64,7 @@ let
             <dropShadows>yes</dropShadows>
             <dropShadowsOnTiled>no</dropShadowsOnTiled>
             <keepBorder>yes</keepBorder>
+            <maximizedDecoration>none</maximizedDecoration>
             <font place="ActiveWindow">
               <name>JetBrainsMono Nerd Font</name>
               <size>10</size>
@@ -76,8 +81,34 @@ let
           </theme>
 
           <placement>
-            <policy>center</policy>
+            <policy>automatic</policy>
+            <cascadeOffset x="24" y="24" />
           </placement>
+
+          <snapping>
+            <range>
+              <inner>16</inner>
+              <outer>16</outer>
+            </range>
+            <cornerRange>48</cornerRange>
+            <overlay>
+              <enabled>yes</enabled>
+            </overlay>
+            <topMaximize>no</topMaximize>
+            <notifyClient>always</notifyClient>
+          </snapping>
+
+          <libinput>
+            <device category="touchpad">
+              <naturalScroll>yes</naturalScroll>
+              <tap>yes</tap>
+              <tapButtonMap>lrm</tapButtonMap>
+              <disableWhileTyping>yes</disableWhileTyping>
+              <clickMethod>clickfinger</clickMethod>
+              <scrollMethod>twofinger</scrollMethod>
+              <threeFingerDrag>no</threeFingerDrag>
+            </device>
+          </libinput>
 
           <keyboard>
             <default />
@@ -206,6 +237,12 @@ let
             <keybind key="W-Down">
               <action name="SnapToEdge" direction="down" combine="yes" />
             </keybind>
+            <keybind key="W-C-Left">
+              <action name="GoToDesktop" to="left" wrap="yes" />
+            </keybind>
+            <keybind key="W-C-Right">
+              <action name="GoToDesktop" to="right" wrap="yes" />
+            </keybind>
             <keybind key="A-Tab">
               <action name="NextWindow" workspace="current" />
             </keybind>
@@ -306,6 +343,8 @@ let
     systemctl --user --no-block start labwc-session.target >/dev/null 2>&1 || true
 
     ${pkgs.swaybg}/bin/swaybg -i ${wallpaper} -m fill >>"$state_dir/swaybg.log" 2>&1 &
+    ${pkgs.procps}/bin/pkill -xu "''${USER:-asura}" -f "libinput-gestures.*asura-labwc-libinput-gestures.conf" >/dev/null 2>&1 || true
+    ${pkgs.libinput-gestures}/bin/libinput-gestures -c ${libinputGesturesConfig} >>"$state_dir/libinput-gestures.log" 2>&1 &
 
     if systemctl --user --quiet is-active noctalia.service >/dev/null 2>&1; then
       exit 0
@@ -392,11 +431,14 @@ let
         pkgs.coreutils
         pkgs.foot
         pkgs.labwc
+        pkgs.libinput-gestures
         pkgs.libnotify
         pkgs.playerctl
+        pkgs.procps
         pkgs.rofi
         pkgs.swaybg
         pkgs.telegram-desktop
+        pkgs.wtype
         pkgs.wl-clipboard
         pkgs.xwayland
       ]
@@ -435,8 +477,10 @@ in
     noctaliaPackage
     pkgs.foot
     pkgs.labwc
+    pkgs.libinput-gestures
     pkgs.rofi
     pkgs.swaybg
+    pkgs.wtype
     pkgs.wl-clipboard
     pkgs.xwayland
   ];

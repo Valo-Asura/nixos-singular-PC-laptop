@@ -15,6 +15,7 @@ Item {
 
     property Component defaultViewComponent
     property Component dashboardViewComponent
+    property Component clipboardViewComponent
     property Component powermenuViewComponent
     property Component toolsMenuViewComponent
     property Component notificationViewComponent
@@ -25,7 +26,7 @@ Item {
 
     // Screen-specific visibility properties passed from parent
     property var visibilities
-    readonly property bool screenNotchOpen: visibilities ? (visibilities.launcher || visibilities.dashboard || visibilities.powermenu || visibilities.tools) : false
+    readonly property bool screenNotchOpen: visibilities ? (visibilities.launcher || visibilities.dashboard || visibilities.clipboard || visibilities.powermenu || visibilities.tools) : false
     readonly property bool hasActiveNotifications: Notifications.popupList.length > 0
     readonly property bool morphActive: screenNotchOpen || hasActiveNotifications || isHovered || hoverLatch || stackViewInternal.busy
     readonly property string morphMode: {
@@ -34,6 +35,8 @@ Item {
                 return "launcher";
             if (visibilities.dashboard)
                 return "dashboard";
+            if (visibilities.clipboard)
+                return "clipboard";
             if (visibilities.powermenu)
                 return "powermenu";
             if (visibilities.tools)
@@ -49,6 +52,7 @@ Item {
     readonly property int minHoverWidth: 264
     readonly property int minLauncherWidth: 486
     readonly property int minDashboardWidth: 430
+    readonly property int minClipboardWidth: 920
     readonly property int minToolsWidth: 520
     readonly property int minPowerWidth: 420
     readonly property int minNotificationWidth: 410
@@ -59,6 +63,8 @@ Item {
             return minLauncherWidth;
         if (mode === "dashboard")
             return minDashboardWidth;
+        if (mode === "clipboard")
+            return minClipboardWidth;
         if (mode === "powermenu")
             return minPowerWidth;
         if (mode === "tools")
@@ -93,7 +99,7 @@ Item {
     readonly property string fallbackAmeForm: morphMode === "rest" ? "rest"
         : (morphMode === "hover" ? "soul"
         : (morphMode === "launcher" ? "caret"
-        : (morphMode === "dashboard" ? "off"
+        : (morphMode === "dashboard" || morphMode === "clipboard" ? "off"
         : (morphMode === "powermenu" || morphMode === "tools" ? "dock"
         : (morphMode === "notification" ? "rowseam" : "off")))))
     readonly property string activeAmeForm: activeSurfaceItem && activeSurfaceItem.hasOwnProperty("ameForm") ? activeSurfaceItem.ameForm : fallbackAmeForm

@@ -45,7 +45,7 @@ Rectangle {
             if (currentTab === 0) {
                 appLauncher.focusSearchInput();
             } else {
-                let currentItem = internalStack.itemAt(currentTab);
+                let currentItem = internalStack.itemAt(currentTab - 1);
                 if (currentItem && currentItem.focusSearchInput) {
                     currentItem.focusSearchInput();
                 }

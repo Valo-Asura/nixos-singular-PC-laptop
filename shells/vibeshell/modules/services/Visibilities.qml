@@ -18,7 +18,7 @@ Singleton {
     property string lastFocusedScreen: ""
     property var contextMenu: null
     property bool playerMenuOpen: false
-    readonly property var moduleNames: ["launcher", "dashboard", "overview", "powermenu", "tools", "presets"]
+    readonly property var moduleNames: ["launcher", "dashboard", "clipboard", "overview", "powermenu", "tools", "presets"]
 
     function setContextMenu(menu) {
         contextMenu = menu;
@@ -135,6 +135,7 @@ Singleton {
             property string screenName
             property bool launcher: false
             property bool dashboard: false
+            property bool clipboard: false
             property bool overview: false
             property bool powermenu: false
             property bool tools: false

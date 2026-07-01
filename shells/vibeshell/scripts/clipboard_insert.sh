@@ -90,7 +90,7 @@ WHERE pinned = 0
     FROM clipboard_items
     WHERE pinned = 0
     ORDER BY display_index ASC, updated_at DESC, id DESC
-    LIMIT 10
+    LIMIT 20
   );
 WITH reindexed AS (
   SELECT id, ROW_NUMBER() OVER (ORDER BY updated_at DESC, id DESC) - 1 AS new_idx

@@ -15,7 +15,7 @@ var data = {
     "monoFontSize": 14,
     "tintIcons": false,
     "enableCorners": true,
-    "animDuration": 300,
+    "animDuration": 220,
     "borderOpacity": 1.0,
     "shadowOpacity": 0.5,
     "shadowColor": "shadow",

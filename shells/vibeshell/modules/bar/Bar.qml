@@ -26,13 +26,21 @@ PanelWindow {
     property string barPosition: ["top", "bottom", "left", "right"].includes(Config.bar.position) ? Config.bar.position : "top"
     property string orientation: barPosition === "left" || barPosition === "right" ? "vertical" : "horizontal"
     readonly property bool barEnabled: Config.bar?.enabled ?? true
-    readonly property int barThickness: clampInt(Config.bar?.height ?? 44, 24, 80)
+    readonly property int barButtonSize: 36
+    readonly property int barEdgeInset: 2
+    readonly property int barMinimumThickness: barButtonSize + barEdgeInset * 2
+    readonly property int barThickness: clampInt(Config.bar?.height ?? 44, barMinimumThickness, 80)
     readonly property int barPadding: clampInt(Config.bar?.padding ?? 4, 0, 32)
+    readonly property int barCrossAxisPadding: Math.max(barEdgeInset, Math.min(barPadding, Math.max(0, Math.floor((barThickness - barButtonSize) / 2))))
     readonly property int barMargin: clampInt(Config.bar?.margin ?? 0, 0, 32)
     readonly property int moduleGap: clampInt(Config.bar?.spacing ?? 4, 0, 32)
     readonly property int configuredLength: Config.bar?.width ?? 0
     readonly property int availableLength: orientation === "horizontal" ? Math.max(width - barMargin * 2, 1) : Math.max(height - barMargin * 2, 1)
     readonly property int barLength: configuredLength > 0 ? clampInt(configuredLength, Math.min(200, availableLength), availableLength) : availableLength
+    readonly property bool motionEnabled: (Config.animDuration ?? 0) > 0
+    readonly property int motionDuration: motionEnabled ? clampInt(Config.animDuration, 80, 220) : 0
+    readonly property int quickMotionDuration: motionEnabled ? Math.max(60, Math.round(motionDuration * 0.45)) : 0
+    readonly property int feedbackMotionDuration: motionEnabled ? Math.max(70, Math.round(motionDuration * 0.5)) : 0
 
     function clampInt(value, minValue, maxValue) {
         return Math.max(minValue, Math.min(maxValue, Math.round(value)));
@@ -234,31 +242,31 @@ PanelWindow {
         ]
 
         Behavior on width {
-            enabled: Config.animDuration > 0 && panel.shouldAutoHide && panel.orientation === "vertical"
+            enabled: panel.motionEnabled && panel.shouldAutoHide && panel.orientation === "vertical"
             NumberAnimation {
-                duration: Config.animDuration / 4
-                easing.type: Easing.OutCubic
+                duration: panel.quickMotionDuration
+                easing.type: Easing.OutQuart
             }
         }
         Behavior on height {
-            enabled: Config.animDuration > 0 && panel.shouldAutoHide && panel.orientation === "horizontal"
+            enabled: panel.motionEnabled && panel.shouldAutoHide && panel.orientation === "horizontal"
             NumberAnimation {
-                duration: Config.animDuration / 4
-                easing.type: Easing.OutCubic
+                duration: panel.quickMotionDuration
+                easing.type: Easing.OutQuart
             }
         }
         Behavior on y {
-            enabled: Config.animDuration > 0 && panel.shouldAutoHide && panel.barPosition === "bottom"
+            enabled: panel.motionEnabled && panel.shouldAutoHide && panel.barPosition === "bottom"
             NumberAnimation {
-                duration: Config.animDuration / 4
-                easing.type: Easing.OutCubic
+                duration: panel.quickMotionDuration
+                easing.type: Easing.OutQuart
             }
         }
         Behavior on x {
-            enabled: Config.animDuration > 0 && panel.shouldAutoHide && panel.barPosition === "right"
+            enabled: panel.motionEnabled && panel.shouldAutoHide && panel.barPosition === "right"
             NumberAnimation {
-                duration: Config.animDuration / 4
-                easing.type: Easing.OutCubic
+                duration: panel.quickMotionDuration
+                easing.type: Easing.OutQuart
             }
         }
 
@@ -266,16 +274,16 @@ PanelWindow {
         Item {
             id: bar
 
-            layer.enabled: true
+            layer.enabled: false
             layer.effect: Shadow {}
 
             // Opacity animation
             opacity: panel.reveal ? 1 : 0
             Behavior on opacity {
-                enabled: Config.animDuration > 0 && panel.shouldAutoHide
+                enabled: panel.motionEnabled && panel.shouldAutoHide
                 NumberAnimation {
-                    duration: Config.animDuration / 2
-                    easing.type: Easing.OutCubic
+                    duration: panel.motionDuration
+                    easing.type: Easing.OutQuart
                 }
             }
 
@@ -300,17 +308,17 @@ PanelWindow {
                     return 0;
                 }
                 Behavior on x {
-                    enabled: Config.animDuration > 0 && panel.shouldAutoHide
+                    enabled: panel.motionEnabled && panel.shouldAutoHide
                     NumberAnimation {
-                        duration: Config.animDuration / 2
-                        easing.type: Easing.OutCubic
+                        duration: panel.motionDuration
+                        easing.type: Easing.OutQuart
                     }
                 }
                 Behavior on y {
-                    enabled: Config.animDuration > 0 && panel.shouldAutoHide
+                    enabled: panel.motionEnabled && panel.shouldAutoHide
                     NumberAnimation {
-                        duration: Config.animDuration / 2
-                        easing.type: Easing.OutCubic
+                        duration: panel.motionDuration
+                        easing.type: Easing.OutQuart
                     }
                 }
             }
@@ -400,8 +408,8 @@ PanelWindow {
                 id: horizontalLayout
                 visible: panel.orientation === "horizontal"
                 anchors.fill: parent
-                anchors.topMargin: panel.barPadding
-                anchors.bottomMargin: panel.barPadding
+                anchors.topMargin: panel.barCrossAxisPadding
+                anchors.bottomMargin: panel.barCrossAxisPadding
                 anchors.leftMargin: panel.barPadding + 14
                 anchors.rightMargin: panel.barPadding + 14
                 spacing: panel.moduleGap
@@ -452,9 +460,9 @@ PanelWindow {
                                 radius: parent.radius ?? 0
 
                                 Behavior on opacity {
-                                    enabled: (Config.animDuration ?? 0) > 0
+                                    enabled: panel.motionEnabled
                                     NumberAnimation {
-                                        duration: (Config.animDuration ?? 0) / 2
+                                        duration: panel.feedbackMotionDuration
                                     }
                                 }
                             }
@@ -462,24 +470,26 @@ PanelWindow {
 
                         contentItem: Text {
                             text: Icons.pin
+                            textFormat: Text.PlainText
                             font.family: Icons.font
                             font.pixelSize: 18
                             color: panel.pinned ? pinButtonBg.item : (pinButton.pressed ? Colors.background : (Styling.srItem("overprimary") || Colors.foreground))
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
+                            renderType: Text.NativeRendering
 
                             rotation: panel.pinned ? 0 : 45
                             Behavior on rotation {
-                                enabled: Config.animDuration > 0
+                                enabled: panel.motionEnabled
                                 NumberAnimation {
-                                    duration: Config.animDuration / 2
+                                    duration: panel.feedbackMotionDuration
                                 }
                             }
 
                             Behavior on color {
-                                enabled: Config.animDuration > 0
+                                enabled: panel.motionEnabled
                                 ColorAnimation {
-                                    duration: Config.animDuration / 2
+                                    duration: panel.feedbackMotionDuration
                                 }
                             }
                         }
@@ -604,8 +614,8 @@ PanelWindow {
                 id: verticalLayout
                 visible: panel.orientation === "vertical"
                 anchors.fill: parent
-                anchors.leftMargin: panel.barPadding
-                anchors.rightMargin: panel.barPadding
+                anchors.leftMargin: panel.barCrossAxisPadding
+                anchors.rightMargin: panel.barCrossAxisPadding
                 anchors.topMargin: panel.barPadding + 14
                 anchors.bottomMargin: panel.barPadding + 14
                 spacing: panel.moduleGap
@@ -714,9 +724,9 @@ PanelWindow {
                                         radius: parent.radius ?? 0
 
                                         Behavior on opacity {
-                                            enabled: (Config.animDuration ?? 0) > 0
+                                            enabled: panel.motionEnabled
                                             NumberAnimation {
-                                                duration: (Config.animDuration ?? 0) / 2
+                                                duration: panel.feedbackMotionDuration
                                             }
                                         }
                                     }
@@ -724,24 +734,26 @@ PanelWindow {
 
                                 contentItem: Text {
                                     text: Icons.pin
+                                    textFormat: Text.PlainText
                                     font.family: Icons.font
                                     font.pixelSize: 18
                                     color: panel.pinned ? pinButtonVBg.item : (pinButtonV.pressed ? Colors.background : (Styling.srItem("overprimary") || Colors.foreground))
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
+                                    renderType: Text.NativeRendering
 
                                     rotation: panel.pinned ? 0 : 45
                                     Behavior on rotation {
-                                        enabled: Config.animDuration > 0
+                                        enabled: panel.motionEnabled
                                         NumberAnimation {
-                                            duration: Config.animDuration / 2
+                                            duration: panel.feedbackMotionDuration
                                         }
                                     }
 
                                     Behavior on color {
-                                        enabled: Config.animDuration > 0
+                                        enabled: panel.motionEnabled
                                         ColorAnimation {
-                                            duration: Config.animDuration / 2
+                                            duration: panel.feedbackMotionDuration
                                         }
                                     }
                                 }

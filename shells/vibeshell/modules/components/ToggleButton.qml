@@ -20,6 +20,7 @@ Button {
 
     implicitWidth: 36
     implicitHeight: 36
+    clip: false
 
     padding: 0
     topPadding: 0
@@ -51,17 +52,19 @@ Button {
     contentItem: Item {
         implicitWidth: root.implicitWidth
         implicitHeight: root.implicitHeight
+        clip: false
         // Text icon (single character)
         Text {
             visible: !root.isIconPath
             anchors.fill: parent
             text: root.buttonIcon
-            textFormat: Text.RichText
+            textFormat: Text.PlainText
             font.family: Icons.font
-            font.pixelSize: 18
+            font.pixelSize: root.iconSize
             color: root.pressed ? Colors.background : (Styling.srItem("overprimary") || Colors.foreground)
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
+            renderType: Text.NativeRendering
         }
 
         // Image icon (SVG/PNG)

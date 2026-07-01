@@ -4,7 +4,7 @@ let
   terminal = "${pkgs.foot}/bin/foot";
   browser = "${pkgs.brave}/bin/brave";
   editor = "code --ozone-platform=wayland";
-  lock = "/run/current-system/sw/bin/vibeshell-safe-lock";
+  lock = "/run/current-system/sw/bin/asura-session-lock";
 in
 {
   wayland.windowManager.hyprland = {
@@ -18,29 +18,29 @@ in
         "SUPER, B, exec, ${browser}"
         "SUPER, T, exec, ${terminal}"
         "SUPER, C, exec, ${editor}"
-        "SUPER, A, exec, asura-vibeshell run tools"
+        "SUPER, A, exec, asura-shell-launcher /tools"
         "SUPER, E, exec, ${pkgs.telegram-desktop}/bin/telegram-desktop"
         "SUPER, W, exec, skwd-wall"
         "SUPER, P, exec, asura-display-manager"
         "SUPER SHIFT, P, exec, asura-monitor-guard --restore"
         "CTRL, L, exec, ${lock}"
         "SUPER, L, exec, ${lock}"
-        "SUPER, V, exec, asura-vibeshell run dashboard-clipboard"
+        "SUPER, V, exec, asura-shell-launcher /clipboard"
         "SUPER SHIFT, V, togglefloating"
-        "SUPER SHIFT, C, exec, clipboard"
+        "SUPER SHIFT, C, exec, asura-shell-launcher /clipboard"
         "SUPER SHIFT, E, exec, asura-shell-launcher /emo"
         "SUPER SHIFT, S, exec, asura-screenshot region"
         "SUPER SHIFT, W, exec, skwd-wall"
         "SUPER SHIFT, R, exec, /run/current-system/sw/bin/asura-screen-record-toggle"
         "SUPER SHIFT, X, exec, asura-screenshot region-edit"
         "SUPER, F2, exec, night-shift"
-        "SUPER, N, exec, asura-vibeshell run dashboard-notes"
-        "SUPER, D, exec, asura-vibeshell run dashboard-controls"
-        "SUPER, S, exec, asura-vibeshell run config"
-        "CTRL ALT, Delete, exec, asura-vibeshell run powermenu"
-        "SUPER, BackSpace, exec, asura-vibeshell run powermenu"
-        "SUPER, Period, exec, asura-vibeshell run dashboard-emoji"
-        "CTRL SUPER, R, exec, asura-vibeshell reload"
+        "SUPER, N, exec, asura-shell-launcher /notes"
+        "SUPER, D, exec, asura-shell-launcher /tools"
+        "SUPER, S, exec, asura-shell-launcher /config"
+        "CTRL ALT, Delete, exec, asura-shell-launcher /session"
+        "SUPER, BackSpace, exec, asura-shell-launcher /session"
+        "SUPER, Period, exec, asura-shell-launcher /emo"
+        "CTRL SUPER, R, exec, asura-shell-switch reload"
         ", Print, exec, asura-screenshot full"
         "SHIFT, Print, exec, asura-screenshot region"
         "SUPER, Print, exec, asura-screenshot output"
@@ -77,8 +77,8 @@ in
       ];
 
       bindr = [
-        "SUPER, SUPER_L, exec, asura-vibeshell run notch-launcher"
-        "SUPER, SUPER_R, exec, asura-vibeshell run notch-launcher"
+        "SUPER, SUPER_L, exec, asura-shell-launcher"
+        "SUPER, SUPER_R, exec, asura-shell-launcher"
       ];
 
       bindl = [

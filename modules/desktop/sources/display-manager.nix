@@ -59,7 +59,7 @@ let
       ;
   };
 
-  labwcSession = import ../sessions/labwc {
+  swaySession = import ../sessions/sway {
     inherit
       inputs
       lib
@@ -168,7 +168,7 @@ let
 in
 {
   # Shared login/session menu for laptop and PC. Hyprland remains the default,
-  # BSPWM/Qtile are X11 fallbacks, and Labwc is an experimental Wayland option.
+  # BSPWM/Qtile are X11 fallbacks, and Sway is an experimental Wayland option.
 
   environment.etc."asura-wayland-sessions/noctalia-hyprland.desktop".text = ''
     [Desktop Entry]
@@ -178,7 +178,7 @@ in
     Type=Application
   '';
 
-  environment.etc."asura-wayland-sessions/noctalia-labwc.desktop".text = labwcSession.desktopEntry;
+  environment.etc."asura-wayland-sessions/noctalia-sway.desktop".text = swaySession.desktopEntry;
   environment.etc."asura-xsessions/bspwm.desktop".text = bspwmSession.desktopEntry;
   environment.etc."asura-xsessions/qtile.desktop".text = qtileSession.desktopEntry;
 
@@ -217,5 +217,5 @@ in
   ]
   ++ bspwmSession.packages
   ++ qtileSession.packages
-  ++ labwcSession.packages;
+  ++ swaySession.packages;
 }

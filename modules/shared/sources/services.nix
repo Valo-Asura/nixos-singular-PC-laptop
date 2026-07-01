@@ -5,8 +5,31 @@
   ...
 }:
 
+let
+  asuraBluetoothManager = pkgs.writeShellApplication {
+    name = "asura-bluetooth-manager";
+    runtimeInputs = with pkgs; [
+      blueman
+      bluez
+      coreutils
+      systemd
+    ];
+    text = ''
+      set -euo pipefail
+
+      systemctl start bluetooth.service >/dev/null 2>&1 || true
+      bluetoothctl power on >/dev/null 2>&1 || true
+      exec blueman-manager "$@"
+    '';
+  };
+in
 {
   systemd.services.mongodb.wantedBy = lib.mkForce [ ];
+
+  environment.systemPackages = [
+    asuraBluetoothManager
+    pkgs.blueman
+  ];
 
   # systemd-user can deadlock on this laptop when pam_systemd tries to open a
   # second logind session for the user manager. When it times out, boot waits
@@ -30,6 +53,7 @@
     path = [
       pkgs.coreutils
       pkgs.networkmanager
+      pkgs.procps
       pkgs.systemd
     ];
     serviceConfig = {
@@ -48,7 +72,14 @@
         sleep 0.25
       done
 
-      systemctl --user try-restart noctalia.service || true
+      active_shell="$(tr -d '[:space:]' < /etc/asura-shell/active-shell 2>/dev/null || true)"
+      [ "$active_shell" = "noctalia" ] || exit 0
+
+      if systemctl --user cat noctalia.service >/dev/null 2>&1; then
+        systemctl --user try-restart noctalia.service || true
+      elif command -v noctalia >/dev/null 2>&1 && pgrep -u 1000 -x noctalia >/dev/null 2>&1; then
+        noctalia msg config-reload || true
+      fi
     '';
   };
 

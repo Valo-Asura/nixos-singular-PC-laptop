@@ -19,8 +19,8 @@ let
     UseTrash=true
 
     [Desktop]
-    BgColor=#191724
-    FgColor=#e0def4
+    BgColor=#141218
+    FgColor=#e6e1e5
     HideItems=false
     ShadowColor=#000000
     ShowHidden=true
@@ -273,6 +273,22 @@ in
     '';
   };
 
+  xdg.dataFile."applications/asura-bluetooth-manager.desktop" = {
+    force = true;
+    text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=Bluetooth Manager
+      Comment=Open Blueman only when requested
+      Exec=/run/current-system/sw/bin/asura-bluetooth-manager
+      TryExec=/run/current-system/sw/bin/asura-bluetooth-manager
+      Icon=blueman
+      Terminal=false
+      Categories=Settings;HardwareSettings;
+      StartupNotify=true
+    '';
+  };
+
   xdg.configFile."autostart/xdm-app.desktop" = {
     force = true;
     text = ''
@@ -283,6 +299,20 @@ in
       Hidden=true
     '';
   };
+
+  xdg.configFile."autostart/blueman.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=Blueman Applet
+    Hidden=true
+  '';
+
+  xdg.configFile."autostart/blueman-applet.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=Blueman Applet
+    Hidden=true
+  '';
 
   xdg.mimeApps = {
     enable = true;

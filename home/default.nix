@@ -21,7 +21,7 @@
   xdg.dataFile."dbus-1/services/org.knopwob.dunst.service".text = ''
     [D-BUS Service]
     Name=org.freedesktop.Notifications
-    Exec=/bin/false
+    Exec=${pkgs.coreutils}/bin/false
   '';
 
   home = {
