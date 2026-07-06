@@ -53,7 +53,7 @@ QtObject {
         }
     }
 
-    // Poll status — only while recording to avoid idle process churn
+    // Poll status - only while recording to avoid idle process churn
     property Timer statusTimer: Timer {
         interval: 2000
         repeat: true

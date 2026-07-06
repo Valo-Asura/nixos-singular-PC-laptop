@@ -1054,6 +1054,7 @@ Singleton {
 
         adapter: JsonAdapter {
             property list<string> disks: ["/"]
+            property bool debugLogging: false
             property JsonObject idle: JsonObject {
                 property JsonObject general: JsonObject {
                     property string lock_cmd: "vibeshell-safe-lock"
@@ -1192,7 +1193,6 @@ Singleton {
     }
 
     // ============================================
-    // KEYBINDS (kept separate as binds.json)
     // ============================================
     Process {
         id: checkKeybindsFile

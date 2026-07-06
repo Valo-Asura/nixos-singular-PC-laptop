@@ -12,7 +12,6 @@ SOCKET_PATH="$RUNTIME_DIR/mpvpaper-ipc.sock"
 
 # Try sending a command to check if it's responsive
 if [ -S "$SOCKET_PATH" ] && echo '{"command": ["get_property", "path"]}' | nc -w 1 -U "$SOCKET_PATH" >/dev/null 2>&1; then
-	echo "DEBUG: mpvpaper is running. Loading new file via IPC."
 	echo "{\"command\": [\"loadfile\", \"$WALLPAPER\"]}" | nc -w 1 -U "$SOCKET_PATH" >/dev/null 2>&1
 	exit 0
 fi

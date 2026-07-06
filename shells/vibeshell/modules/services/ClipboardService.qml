@@ -444,6 +444,26 @@ QtObject {
 
     signal fullContentRetrieved(string itemId, string content)
     signal linkPreviewFetched(string url, var metadata, string itemId)
+
+    function sqlNumericId(value, context) {
+        var text = String(value);
+        if (/^[0-9]+$/.test(text)) {
+            return text;
+        }
+
+        console.warn("ClipboardService: rejected non-numeric item id for", context + ":", value);
+        return "";
+    }
+
+    function sqlNumericIndex(value, context) {
+        var text = String(value);
+        if (/^[0-9]+$/.test(text)) {
+            return text;
+        }
+
+        console.warn("ClipboardService: rejected non-numeric display index for", context + ":", value);
+        return "";
+    }
     
     // Function to decode URL-encoded strings
     function decodeUriString(str) {
@@ -515,20 +535,24 @@ QtObject {
 
     function getFullContent(id) {
         if (!_initialized) return;
-        getContentProcess.itemId = id;
-        getContentProcess.command = ["sh", "-c", "sqlite3 '" + dbPath + "' '.timeout 5000' 'SELECT full_content FROM clipboard_items WHERE id = " + id + ";'"];
+        var itemId = sqlNumericId(id, "getFullContent");
+        if (itemId === "") return;
+        getContentProcess.itemId = itemId;
+        getContentProcess.command = ["sh", "-c", "sqlite3 '" + dbPath + "' '.timeout 5000' 'SELECT full_content FROM clipboard_items WHERE id = " + itemId + ";'"];
         getContentProcess.running = true;
     }
 
     function deleteItem(id) {
         if (!_initialized) return;
+        var itemId = sqlNumericId(id, "deleteItem");
+        if (itemId === "") return;
         _operationInProgress = true;
-        deleteProcess.itemId = id;
+        deleteProcess.itemId = itemId;
         
         // First, get the item's hash to check if it's currently in clipboard
         deleteProcess.command = ["sh", "-c", 
-            "HASH=$(sqlite3 '" + dbPath + "' '.timeout 5000' 'SELECT content_hash FROM clipboard_items WHERE id = " + id + ";'); " +
-            "sqlite3 '" + dbPath + "' '.timeout 5000' 'DELETE FROM clipboard_items WHERE id = " + id + ";'; " +
+            "HASH=$(sqlite3 '" + dbPath + "' '.timeout 5000' 'SELECT content_hash FROM clipboard_items WHERE id = " + itemId + ";'); " +
+            "sqlite3 '" + dbPath + "' '.timeout 5000' 'DELETE FROM clipboard_items WHERE id = " + itemId + ";'; " +
             "echo \"$HASH\""
         ];
         deleteProcess.running = true;
@@ -545,21 +569,23 @@ QtObject {
 
     function togglePin(id) {
         if (!_initialized) return;
+        var itemId = sqlNumericId(id, "togglePin");
+        if (itemId === "") return;
         _operationInProgress = true;
-        togglePinProcess.itemId = id;
+        togglePinProcess.itemId = itemId;
         togglePinProcess.command = ["sh", "-c", 
             "sqlite3 '" + dbPath + "' <<'EOSQL'\n" +
             ".timeout 5000\n" +
             "BEGIN TRANSACTION;\n" +
             "-- Toggle pin status\n" +
-            "UPDATE clipboard_items SET pinned = CASE WHEN pinned = 1 THEN 0 ELSE 1 END WHERE id = " + id + ";\n" +
+            "UPDATE clipboard_items SET pinned = CASE WHEN pinned = 1 THEN 0 ELSE 1 END WHERE id = " + itemId + ";\n" +
             "-- Get new pinned status\n" +
             "-- If item is now pinned (pinned=1), set its index to 0 and shift others\n" +
             "-- If item is now unpinned (pinned=0), set its index to 0 and shift others\n" +
             "UPDATE clipboard_items SET display_index = CASE \n" +
-            "  WHEN id = " + id + " THEN 0\n" +
+            "  WHEN id = " + itemId + " THEN 0\n" +
             "  ELSE display_index + 1\n" +
-            "END WHERE pinned = (SELECT pinned FROM clipboard_items WHERE id = " + id + ");\n" +
+            "END WHERE pinned = (SELECT pinned FROM clipboard_items WHERE id = " + itemId + ");\n" +
             "-- Compact indices to remove gaps for both pinned and unpinned\n" +
             "WITH reindexed_pinned AS (\n" +
             "  SELECT id, ROW_NUMBER() OVER (ORDER BY display_index ASC, updated_at DESC, id DESC) - 1 AS new_idx\n" +
@@ -579,14 +605,17 @@ QtObject {
 
     function setAlias(id, alias) {
         if (!_initialized) return;
+        var itemId = sqlNumericId(id, "setAlias");
+        if (itemId === "") return;
         _operationInProgress = true;
-        setAliasProcess.itemId = id;
+        setAliasProcess.itemId = itemId;
         // Escape single quotes in alias by replacing ' with ''
-        var escapedAlias = alias.replace(/'/g, "''");
-        if (alias.trim() === "") {
-            setAliasProcess.command = ["sh", "-c", "sqlite3 '" + dbPath + "' '.timeout 5000' 'UPDATE clipboard_items SET alias = NULL WHERE id = " + id + ";'"];
+        var aliasText = String(alias || "");
+        var escapedAlias = aliasText.replace(/'/g, "''");
+        if (aliasText.trim() === "") {
+            setAliasProcess.command = ["sqlite3", dbPath, ".timeout 5000", "UPDATE clipboard_items SET alias = NULL WHERE id = " + itemId + ";"];
         } else {
-            setAliasProcess.command = ["sh", "-c", "sqlite3 '" + dbPath + "' '.timeout 5000' \"UPDATE clipboard_items SET alias = '" + escapedAlias + "' WHERE id = " + id + ";\""];
+            setAliasProcess.command = ["sqlite3", dbPath, ".timeout 5000", "UPDATE clipboard_items SET alias = '" + escapedAlias + "' WHERE id = " + itemId + ";"];
         }
         setAliasProcess.running = true;
     }
@@ -634,11 +663,16 @@ QtObject {
     // Reorder item by moving it to a new index
     function reorderItem(itemId, newIndex) {
         if (!_initialized) return;
+        var safeItemId = sqlNumericId(itemId, "reorderItem");
+        if (safeItemId === "") return;
+        if (Number(newIndex) < 0) newIndex = 0;
+        var safeNewIndex = sqlNumericIndex(newIndex, "reorderItem");
+        if (safeNewIndex === "") return;
         
         // Get current item info
         var item = null;
         for (var i = 0; i < items.length; i++) {
-            if (items[i].id === itemId) {
+            if (String(items[i].id) === safeItemId) {
                 item = items[i];
                 break;
             }
@@ -648,18 +682,15 @@ QtObject {
         
         var isPinned = item.pinned ? 1 : 0;
         
-        // Validate newIndex is non-negative
-        if (newIndex < 0) newIndex = 0;
-        
         // Execute reordering with conflict resolution
         reorderProcess.command = ["sh", "-c", 
             "sqlite3 '" + dbPath + "' <<'EOSQL'\n" +
             ".timeout 5000\n" +
             "BEGIN TRANSACTION;\n" +
             "-- Shift other items to make room\n" +
-            "UPDATE clipboard_items SET display_index = display_index + 1 WHERE pinned = " + isPinned + " AND display_index >= " + newIndex + " AND id != " + itemId + ";\n" +
+            "UPDATE clipboard_items SET display_index = display_index + 1 WHERE pinned = " + isPinned + " AND display_index >= " + safeNewIndex + " AND id != " + safeItemId + ";\n" +
             "-- Set new index for target item\n" +
-            "UPDATE clipboard_items SET display_index = " + newIndex + " WHERE id = " + itemId + ";\n" +
+            "UPDATE clipboard_items SET display_index = " + safeNewIndex + " WHERE id = " + safeItemId + ";\n" +
             "-- Compact indices to remove gaps\n" +
             "WITH reindexed AS (\n" +
             "  SELECT id, ROW_NUMBER() OVER (ORDER BY display_index ASC, updated_at DESC, id DESC) - 1 AS new_idx\n" +
@@ -674,10 +705,12 @@ QtObject {
     
     // Move item up (decrease index)
     function moveItemUp(itemId) {
+        var safeItemId = sqlNumericId(itemId, "moveItemUp");
+        if (safeItemId === "") return;
         var item = null;
         var currentIdx = -1;
         for (var i = 0; i < items.length; i++) {
-            if (items[i].id === itemId) {
+            if (String(items[i].id) === safeItemId) {
                 item = items[i];
                 currentIdx = i;
                 break;
@@ -702,15 +735,17 @@ QtObject {
         listCompleted();
         
         // Swap indices with previous item
-        swapItems(itemId, prevItem.id);
+        swapItems(safeItemId, prevItem.id);
     }
     
     // Move item down (increase index)
     function moveItemDown(itemId) {
+        var safeItemId = sqlNumericId(itemId, "moveItemDown");
+        if (safeItemId === "") return;
         var item = null;
         var currentIdx = -1;
         for (var i = 0; i < items.length; i++) {
-            if (items[i].id === itemId) {
+            if (String(items[i].id) === safeItemId) {
                 item = items[i];
                 currentIdx = i;
                 break;
@@ -735,12 +770,15 @@ QtObject {
         listCompleted();
         
         // Swap indices with next item
-        swapItems(itemId, nextItem.id);
+        swapItems(safeItemId, nextItem.id);
     }
     
     // Swap display indices between two items
     function swapItems(itemId1, itemId2) {
         if (!_initialized) return;
+        var safeItemId1 = sqlNumericId(itemId1, "swapItems");
+        var safeItemId2 = sqlNumericId(itemId2, "swapItems");
+        if (safeItemId1 === "" || safeItemId2 === "") return;
         
         var cmd = "sqlite3 '" + dbPath + "' <<'EOSQL'\n" +
             ".timeout 5000\n" +
@@ -761,11 +799,11 @@ QtObject {
             "DELETE FROM swap_temp;\n" +
             "INSERT INTO swap_temp (idx1, idx2) \n" +
             "  SELECT \n" +
-            "    (SELECT display_index FROM clipboard_items WHERE id = " + itemId1 + "),\n" +
-            "    (SELECT display_index FROM clipboard_items WHERE id = " + itemId2 + ");\n" +
+            "    (SELECT display_index FROM clipboard_items WHERE id = " + safeItemId1 + "),\n" +
+            "    (SELECT display_index FROM clipboard_items WHERE id = " + safeItemId2 + ");\n" +
             "-- Perform the swap\n" +
-            "UPDATE clipboard_items SET display_index = (SELECT idx2 FROM swap_temp) WHERE id = " + itemId1 + ";\n" +
-            "UPDATE clipboard_items SET display_index = (SELECT idx1 FROM swap_temp) WHERE id = " + itemId2 + ";\n" +
+            "UPDATE clipboard_items SET display_index = (SELECT idx2 FROM swap_temp) WHERE id = " + safeItemId1 + ";\n" +
+            "UPDATE clipboard_items SET display_index = (SELECT idx1 FROM swap_temp) WHERE id = " + safeItemId2 + ";\n" +
             "-- Clean up\n" +
             "DELETE FROM swap_temp;\n" +
             "COMMIT;\n" +

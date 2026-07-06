@@ -6,7 +6,7 @@ import qs.config
 Menu {
     id: root
 
-    // Propiedades principales
+    // Main properties
     property var items: []
 
     // Update menu width when items change
@@ -42,22 +42,21 @@ Menu {
     }
     property int itemHeight: 36
 
-    // Propiedades de estilo del menú
+    // Menu style properties
     property color backgroundColor: Colors.background
     property color borderColor: Colors.surfaceBright
     property int borderWidth: 2
     property int menuRadius: Config.roundness
 
-    // Propiedades de highlight por defecto
+    // Default highlight properties
     property color defaultHighlightColor: Styling.srItem("overprimary")
     property color defaultTextColor: Colors.overPrimary
     property color normalTextColor: Colors.overBackground
 
-    // Propiedades internas
+    // Internal properties
     property int hoveredIndex: -1
     property int previousHoveredIndex: -1
 
-    // Detectar si algún item tiene iconos para ajustar el layout
     property bool hasIcons: {
         for (let i = 0; i < items.length; i++) {
             if (items[i].icon && items[i].icon !== "") {
@@ -67,7 +66,6 @@ Menu {
         return false;
     }
 
-    // TextMetrics para medir el texto
     TextMetrics {
         id: textMetrics
         font.family: Config.theme.font
@@ -80,16 +78,14 @@ Menu {
         }
     }
 
-    // Configuración del menú
+    // Menu configuration
     width: menuWidth  // Use fixed width instead of calculated to avoid binding loop
     padding: 8
     spacing: 0
 
-    // Estilo del menú principal
     background: Item {
         implicitWidth: root.menuWidth
 
-        // Fondo principal
         Rectangle {
             anchors.fill: parent
             color: root.backgroundColor
@@ -161,7 +157,6 @@ Menu {
         }
     }
 
-    // Generar MenuItems dinámicamente
     Instantiator {
         model: root.items
         delegate: MenuItem {
@@ -175,7 +170,6 @@ Menu {
             height: isSeparatorItem ? 10 : root.itemHeight // 2px separador + 4px margen arriba + 4px margen abajo
             enabled: !isSeparatorItem
 
-            // Fondo - diferente para separadores
             background: Rectangle {
                 anchors.fill: parent
                 anchors.topMargin: isSeparatorItem ? 4 : 0
@@ -184,7 +178,6 @@ Menu {
                 radius: isSeparatorItem ? 0 : (root.menuRadius > 6 ? root.menuRadius - 6 : 0)
             }
 
-            // Manejo del hover - desactivado para separadores
             onHoveredChanged: {
                 if (isSeparatorItem)
                     return;
@@ -214,7 +207,7 @@ Menu {
                     spacing: root.hasIcons ? 8 : 0
                     visible: !menuItem.isSeparatorItem
 
-                    // Icono (opcional) - Puede ser fuente o imagen
+                    // Optional icon, either font or image
                     Loader {
                         id: iconLoader
                         width: root.hasIcons ? 16 : 0
@@ -276,7 +269,7 @@ Menu {
                         }
                     }
 
-                    // Texto
+                    // Text
                     Text {
                         text: menuItem.itemData.text || ""
                         color: {
@@ -303,7 +296,6 @@ Menu {
                 }
             }
 
-            // Acción al hacer click
             onTriggered: {
                 if (itemData && itemData.onTriggered) {
                     let callback = itemData.onTriggered;

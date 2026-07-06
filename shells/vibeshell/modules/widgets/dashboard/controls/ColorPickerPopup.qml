@@ -160,7 +160,6 @@ Popup {
             }
         }
 
-        // Separator
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1

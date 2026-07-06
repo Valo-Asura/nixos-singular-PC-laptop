@@ -113,14 +113,13 @@ ShellRoot {
             Timer {
                 id: notchDelayTimer
                 property bool triggered: false
-                interval: 200  // increased from 50ms — let bar fully render first
+                interval: 200  // increased from 50ms - let bar fully render first
                 running: true
                 onTriggered: triggered = true
             }
         }
     }
 
-    // Overview popup window (separate from notch)
     Variants {
         model: {
             const screens = Quickshell.screens;
@@ -203,14 +202,14 @@ ShellRoot {
     Loader {
         id: notesLoader
         active: GlobalStates.notesVisible
-        source: "modules/widgets/notes/QuickShellNotes.qml"
+        source: "modules/widgets/notes/NotesWindow.qml"
     }
 
     // Vibeshell Monitor floating window (deferred)
     Loader {
         id: monitorLoader
         active: GlobalStates.monitorVisible
-        source: "modules/widgets/monitor/QuickShellMonitor.qml"
+        source: "modules/widgets/monitor/SystemMonitorWindow.qml"
     }
 
     // Screenshot Tool
@@ -242,11 +241,11 @@ ShellRoot {
     }
 
 
-    // Screen Record Tool (deferred — loads on demand)
+    // Screen Record Tool (deferred - loads on demand)
     Loader {
         id: screenRecordLoader
         active: GlobalStates.screenRecordToolVisible
-        source: "modules/tools/ScreenrecordTool.qml"
+        source: "modules/tools/ScreenRecordTool.qml"
         
         Connections {
             target: GlobalStates
@@ -272,7 +271,7 @@ ShellRoot {
         }
     }
 
-    // Mirror Tool (deferred — loads on demand)
+    // Mirror Tool (deferred - loads on demand)
     Loader {
         id: mirrorLoader
         active: GlobalStates.mirrorWindowVisible
@@ -294,7 +293,7 @@ ShellRoot {
         }
     }
 
-    // Deferred init timer — non-critical modules load after 500ms
+    // Deferred init timer - non-critical modules load after 500ms
     Timer {
         id: deferredInitTimer
         property bool triggered: false

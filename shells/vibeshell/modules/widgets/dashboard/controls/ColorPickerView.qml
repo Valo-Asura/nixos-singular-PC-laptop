@@ -210,7 +210,6 @@ Item {
             }
         }
 
-        // Separator (FIXED)
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1

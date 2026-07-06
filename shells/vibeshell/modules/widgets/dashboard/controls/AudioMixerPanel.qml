@@ -193,7 +193,6 @@ Item {
                         }
                     }
 
-                    // Separator
                     Separator {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 2

@@ -235,7 +235,6 @@ QtObject {
             return;
         }
         
-        // Build a single command string to run grim for all monitors in parallel
         // cmd: grim -o output1 path1 & grim -o output2 path2 & wait
         var cmd = "";
         for (var i = 0; i < root.monitors.length; i++) {

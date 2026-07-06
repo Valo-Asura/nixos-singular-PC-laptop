@@ -266,7 +266,7 @@ FocusScope {
                         contentItem: Item {
                             anchors.fill: parent
 
-                            // 1. Icono centrado en el área base del botón (siempre fijo a la izquierda)
+                            // 1. Icon centered in the button base area (always fixed on the left)
                             Text {
                                 width: root.buttonSize
                                 height: parent.height
@@ -288,7 +288,7 @@ FocusScope {
                                 }
                             }
 
-                            // 2. Texto alineado a la derecha del área base del botón
+                            // 2. Text aligned to the right of the button base area
                             Text {
                                 visible: delegateWrapper.hasText
                                 text: visible ? modelData.text : ""

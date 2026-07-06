@@ -104,24 +104,27 @@ QtObject {
     }
 
     function applyKeybindsInternal() {
-        // Verify that the adapter is charged
+        // Wait until the keybind config has loaded.
         if (!Config.keybindsLoader.loaded) {
-            console.log("HyprlandKeybinds: Esperando que se cargue el adapter...");
+            if (Config.system.debugLogging)
+                console.log("HyprlandKeybinds: waiting for the keybind adapter to load...");
             return;
         }
 
         // Wait for the layout to be ready
         if (!GlobalStates.hyprlandLayoutReady) {
-            console.log("HyprlandKeybinds: Esperando que se detecte el layout de Hyprland...");
+            if (Config.system.debugLogging)
+                console.log("HyprlandKeybinds: waiting for Hyprland layout detection...");
             return;
         }
 
-        console.log("HyprlandKeybinds: Aplicando keybindings (layout: " + GlobalStates.hyprlandLayout + ")...");
+        if (Config.system.debugLogging)
+            console.log("HyprlandKeybinds: applying keybindings (layout: " + GlobalStates.hyprlandLayout + ")...");
 
-        // Construir lista de unbinds
+        // Build the unbind list.
         let unbindCommands = [];
 
-        // Helper function para formatear modifiers
+        // Format Hyprland modifier lists.
         function formatModifiers(modifiers) {
             if (!modifiers || modifiers.length === 0)
                 return "";
@@ -213,7 +216,6 @@ QtObject {
             }
         }
 
-        // Helper function para crear un bind command for Hyprland's Lua parser
         function createBindCommand(keybind, flags) {
             if (!hasKeybindKey(keybind))
                 return "";
@@ -222,21 +224,18 @@ QtObject {
             return `eval hl.bind(${luaString(luaKeyString(keybind))}, ${luaDispatcher(dispatcher, argument, flags)}${luaBindOptions(flags)})`;
         }
 
-        // Helper function para crear un unbind command
         function createUnbindCommand(keybind) {
             if (!hasKeybindKey(keybind))
                 return "";
             return `eval hl.unbind(${luaString(luaKeyString(keybind))})`;
         }
 
-        // Helper function para crear unbind command desde key object (new format)
         function createUnbindFromKey(keyObj) {
             if (!hasKeybindKey(keyObj))
                 return "";
             return `eval hl.unbind(${luaString(luaKeyString(keyObj))})`;
         }
 
-        // Helper function para crear bind command desde key + action (new format)
         function createBindFromKeyAction(keyObj, action) {
             if (!hasKeybindKey(keyObj))
                 return "";
@@ -377,7 +376,8 @@ QtObject {
         if (!fullBatchCommand)
             return;
 
-        console.log("HyprlandKeybinds: Ejecutando batch command");
+        if (Config.system.debugLogging)
+            console.log("HyprlandKeybinds: executing batch command");
         hyprctlProcess.command = ["hyprctl", "--batch", fullBatchCommand];
         hyprctlProcess.running = true;
     }
@@ -399,7 +399,8 @@ QtObject {
     property Connections globalStatesConnections: Connections {
         target: GlobalStates
         function onHyprlandLayoutChanged() {
-            console.log("HyprlandKeybinds: Layout changed to " + GlobalStates.hyprlandLayout + ", reapplying keybindings...");
+            if (Config.system.debugLogging)
+                console.log("HyprlandKeybinds: layout changed to " + GlobalStates.hyprlandLayout + ", reapplying keybindings...");
             applyKeybinds();
         }
         function onHyprlandLayoutReadyChanged() {
@@ -413,7 +414,8 @@ QtObject {
         target: Hyprland
         function onRawEvent(event) {
             if (event.name === "configreloaded") {
-                console.log("HyprlandKeybinds: Detectado configreloaded, reaplicando keybindings...");
+                if (Config.system.debugLogging)
+                    console.log("HyprlandKeybinds: configreloaded detected, reapplying keybindings...");
                 applyKeybinds();
             }
         }

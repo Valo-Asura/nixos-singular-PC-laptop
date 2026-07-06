@@ -124,7 +124,7 @@ WlSessionLockSurface {
         live: false
         paintCursor: false
         visible: startAnim  // Visible solo cuando startAnim es true
-        z: 0  // Capa más baja - fondo absoluto
+        z: 0  // Lowest layer - absolute background
 
         property real zoomScale: startAnim ? 1.14 : 1.0
 
@@ -950,13 +950,11 @@ WlSessionLockSurface {
         }
     }
 
-    // Holder temporal para la contraseña durante autenticación
     QtObject {
         id: authPasswordHolder
         property string password: ""
     }
 
-    // Proceso para verificar tiempo de faillock
     Process {
         id: failLockCheck
         command: ["bash", "-c", `faillock --user '${usernameCollector.text.trim()}' 2>/dev/null | grep -oP 'left \\K[0-9]+' | head -1`]
@@ -979,7 +977,6 @@ WlSessionLockSurface {
         }
     }
 
-    // Timer para actualizar el countdown de faillock
     Timer {
         id: failLockCountdown
         interval: 1000
@@ -1012,11 +1009,11 @@ WlSessionLockSurface {
         }
 
         onCompleted: result => {
-            // Limpiar contraseña
+            // Clear password
             authPasswordHolder.password = "";
 
             if (result === PamResult.Success) {
-                // Autenticación exitosa - trigger exit animation
+                // Authentication succeeded - trigger exit animation
                 startAnim = false;
 
                 // Wait for exit animation, then unlock
@@ -1025,7 +1022,6 @@ WlSessionLockSurface {
                 errorMessage = "";
                 authenticating = false;
             } else {
-                // Error de autenticación
                 errorMessage = "Authentication failed";
                 console.warn("PAM auth failed with result:", result);
                 if (Config.animDuration > 0) {

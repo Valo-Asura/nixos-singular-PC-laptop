@@ -11,14 +11,12 @@ Item {
     property real fullLength: width
     property real speed: 2.4
 
-    // Factor de supersampling más agresivo
     readonly property real supersampleFactor: 4.0
 
     layer.enabled: true
     layer.smooth: true
     layer.samples: 8  // MSAA para el layer principal
 
-    // Contenedor para el shader renderizado a mayor resolución
     Item {
         id: shaderContainer
         anchors.fill: parent
@@ -26,11 +24,9 @@ Item {
 
         ShaderEffect {
             id: wavyShader
-            // Renderizar a 4x la resolución
             width: root.width * root.supersampleFactor
             height: root.height * root.supersampleFactor
 
-            // Escalar hacia abajo al tamaño original
             scale: 1.0 / root.supersampleFactor
             transformOrigin: Item.TopLeft
 
@@ -50,7 +46,6 @@ Item {
             antialiasing: true
             blending: true  // Habilitar blending para mejor antialiasing
 
-            // Layer con MSAA y tamaño completo
             layer.enabled: true
             layer.smooth: true
             layer.samples: 8  // Multisampling antialiasing

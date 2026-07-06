@@ -22,7 +22,7 @@ Item {
     property alias value: slider.value
     property alias isDragging: slider.isDragging
 
-    // Propiedades opcionales para sobrescribir colores
+    // Optional properties for overriding colors
     property color customProgressColor: Styling.srItem("overprimary")
     property color customBackgroundColor: Colors.shadow
     property bool useCustomColors: false

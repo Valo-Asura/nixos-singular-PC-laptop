@@ -494,7 +494,6 @@ Scope {
                             }
                         }
 
-                        // Separator after pin button
                         Loader {
                             active: Config.dock?.showPinButton ?? true
                             visible: active
@@ -518,7 +517,6 @@ Scope {
                             }
                         }
 
-                        // Separator before overview button
                         Loader {
                             active: Config.dock?.showOverviewButton ?? true
                             visible: active
@@ -635,7 +633,6 @@ Scope {
                             }
                         }
 
-                        // Separator after pin button
                         Loader {
                             active: Config.dock?.showPinButton ?? true
                             visible: active
@@ -659,7 +656,6 @@ Scope {
                             }
                         }
 
-                        // Separator before overview button
                         Loader {
                             active: Config.dock?.showOverviewButton ?? true
                             visible: active

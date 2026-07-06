@@ -313,7 +313,6 @@ PanelWindow {
                 spacing: 10
 
                 onCurrentIndexChanged: {
-                    // Skip toggles and separator
                     if (currentIndex > 2) {
                         var captureIndex = currentIndex - 3;
                         var captureOptions = ["region", "window", "screen", "portal"];

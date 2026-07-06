@@ -175,9 +175,9 @@ Item {
     property point hoveredActionPoint: Qt.point(width / 2, mainRowHeight + actionRailHeight / 2)
     property real morphCloseness: 1
     readonly property bool actionBeadActive: expandedState && hoveredActionIndex >= 0
-    property string ameForm: actionBeadActive ? "dock" : (expandedState ? "soul" : "rest")
-    property point amePoint: actionBeadActive ? hoveredActionPoint : Qt.point(expandedState ? width / 2 : (mainRowMargin / 2 + beadSlotWidth / 2), expandedState ? mainRowHeight + actionRailHeight / 2 : mainRowHeight / 2)
-    property real ameHeat: actionBeadActive ? 0.45 : 0
+    property string morphForm: actionBeadActive ? "dock" : (expandedState ? "soul" : "rest")
+    property point morphPoint: actionBeadActive ? hoveredActionPoint : Qt.point(expandedState ? width / 2 : (mainRowMargin / 2 + beadSlotWidth / 2), expandedState ? mainRowHeight + actionRailHeight / 2 : mainRowHeight / 2)
+    property real morphHeat: actionBeadActive ? 0.45 : 0
 
     HoverHandler {
         id: contentHoverHandler

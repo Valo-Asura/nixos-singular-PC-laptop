@@ -122,7 +122,6 @@ QtObject {
 
             // Construct command safely
             // Use cat with HEREDOC for better safety against special chars if possible, but echo is simpler for now if escaped
-            // Note: split into separate commands to avoid one failure blocking others?
             // But we want directory created first.
             
             const cmd = `

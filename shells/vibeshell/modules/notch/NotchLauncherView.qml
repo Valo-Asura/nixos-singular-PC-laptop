@@ -20,9 +20,9 @@ Item {
     property int selectedIndex: GlobalStates.launcherSelectedIndex
     property point lastPointer: Qt.point(-1, -1)
     property real morphCloseness: 1
-    property string ameForm: "caret"
-    property point amePoint: searchInput ? searchInput.cursorCenterIn(root) : Qt.point(width / 2, 32)
-    property real ameHeat: 0
+    property string morphForm: "caret"
+    property point morphPoint: searchInput ? searchInput.cursorCenterIn(root) : Qt.point(width / 2, 32)
+    property real morphHeat: 0
     property int totalApps: 0
 
     function focusSearchInput() {
@@ -272,7 +272,7 @@ Item {
                             onStatusChanged: if (status === Image.Error) source = "image://icon/image-missing"
                         }
 
-                        Tinted {
+                        IconTintEffect {
                             anchors.fill: parent
                             visible: Config.tintIcons
                             sourceItem: Image {

@@ -48,7 +48,7 @@ Item {
         updateSelectedIndex();
         keyboardNavigationActive = true;
         schemeButton.forceActiveFocus();
-        // Posicionar el ListView en el item seleccionado después de que se expanda
+        // Position the ListView on the selected item after expansion.
         positionTimer.restart();
     }
 
@@ -360,7 +360,6 @@ Item {
                         preferredHighlightBegin: 0
                         preferredHighlightEnd: height
 
-                        // Propiedad para detectar si está en movimiento
                         property bool isScrolling: dragging || flicking
 
                         onCurrentIndexChanged: {

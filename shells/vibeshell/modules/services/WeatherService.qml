@@ -546,7 +546,7 @@ QtObject {
     }
 
     property Timer refreshTimer: Timer {
-        interval: 900000  // 15 minutes — weather doesn't change faster
+        interval: 900000  // 15 minutes - weather doesn't change faster
         running: true
         repeat: true
         onTriggered: root.updateWeather()

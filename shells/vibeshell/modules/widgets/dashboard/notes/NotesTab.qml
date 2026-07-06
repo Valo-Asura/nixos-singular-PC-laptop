@@ -2311,7 +2311,6 @@ Item {
             }
         }
 
-        // Separator
         Separator {
             Layout.preferredWidth: 2
             Layout.fillHeight: true
@@ -2465,7 +2464,6 @@ Item {
                         }
                     }
 
-                    // Separator
                     Rectangle {
                         width: 1
                         height: 24
@@ -2633,7 +2631,6 @@ Item {
                         }
                     }
 
-                    // Separator
                     Rectangle {
                         width: 1
                         height: 24
@@ -2815,7 +2812,6 @@ Item {
                 }
             }
 
-            // Separator below toolbar
             Separator {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 2
@@ -3116,7 +3112,6 @@ Item {
                         }
                     }
 
-                    // Separator
                     Rectangle {
                         width: 1
                         height: 24
@@ -3280,7 +3275,6 @@ Item {
                         }
                     }
 
-                    // Separator
                     Rectangle {
                         width: 1
                         height: 24
@@ -3370,7 +3364,6 @@ Item {
                 }
             }
 
-            // Separator below toolbar
             Separator {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 2
@@ -3520,7 +3513,6 @@ Item {
                     }
                 }
 
-                // Separator
                 Item {
                     Layout.preferredWidth: 1
                     Layout.fillHeight: true

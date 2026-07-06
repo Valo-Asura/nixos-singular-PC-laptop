@@ -531,7 +531,7 @@ Item {
                             }
                         }
 
-                        Tinted {
+                        IconTintEffect {
                             sourceItem: mainAppIcon
                             anchors.fill: mainAppIcon
                         }
@@ -654,7 +654,7 @@ Item {
                             }
                         }
 
-                        Tinted {
+                        IconTintEffect {
                             sourceItem: mainAppIconVert
                             anchors.fill: mainAppIconVert
                         }

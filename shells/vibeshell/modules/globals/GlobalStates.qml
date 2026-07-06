@@ -49,9 +49,7 @@ Singleton {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════
     // HYPRLAND LAYOUT STATE (dynamic, not persisted)
-    // ═══════════════════════════════════════════════════════════════
     property string hyprlandLayout: "dwindle"
     property bool hyprlandLayoutReady: false
     readonly property var availableLayouts: ["dwindle", "master", "scrolling"]
@@ -344,9 +342,7 @@ Singleton {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════
     // SHELL SETTINGS STATE
-    // ═══════════════════════════════════════════════════════════════
     property bool shellHasChanges: false
     property var shellSnapshot: null
 
@@ -469,9 +465,7 @@ Singleton {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════
     // COMPOSITOR SETTINGS STATE
-    // ═══════════════════════════════════════════════════════════════
     property bool compositorHasChanges: false
     property var compositorSnapshot: null
 

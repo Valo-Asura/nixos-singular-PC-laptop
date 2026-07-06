@@ -137,11 +137,13 @@ Item {
 
     function cancelDeleteModeFromExternal() {
         if (deleteMode) {
-            console.log("DEBUG: Canceling delete mode from external source (tab change)");
+            if (Config.system.debugLogging)
+                console.log("TmuxTab: canceling delete mode from external source");
             cancelDeleteMode();
         }
         if (renameMode) {
-            console.log("DEBUG: Canceling rename mode from external source (tab change)");
+            if (Config.system.debugLogging)
+                console.log("TmuxTab: canceling rename mode from external source");
             cancelRenameMode();
         }
     }
@@ -317,7 +319,7 @@ Item {
             createProcess.command = ["bash", "-c", `cd "$HOME" && setsid foot --title "Vibeshell Tmux" tmux < /dev/null > /dev/null 2>&1 &`];
         }
         createProcess.running = true;
-        // Cerrar el dashboard
+        // Close the dashboard.
         Visibilities.setActiveModule("");
     }
 
@@ -415,7 +417,7 @@ Item {
         running: false
 
         onStarted: function () {
-            // Cerrar el dashboard
+            // Close the dashboard.
             Visibilities.setActiveModule("");
         }
     }
@@ -426,7 +428,6 @@ Item {
 
         onExited: function (code) {
             if (code === 0) {
-                // Sesión eliminada exitosamente, refrescar la lista
                 root.refreshTmuxSessions();
             }
         }
@@ -438,7 +439,6 @@ Item {
 
         onExited: function (code) {
             if (code === 0) {
-                // Sesión renombrada exitosamente, marcar para seleccionar después del refresh
                 root.pendingRenamedSession = root.newSessionName;
                 root.refreshTmuxSessions();
             }
@@ -628,7 +628,8 @@ Item {
                                 }
                             }
                         } else {
-                            console.log("DEBUG: No action taken - selectedIndex:", root.selectedIndex, "count:", resultsList.count);
+                            if (Config.system.debugLogging)
+                                console.log("TmuxTab: no action for selectedIndex:", root.selectedIndex, "count:", resultsList.count);
                         }
                     }
                 }
@@ -759,7 +760,6 @@ Item {
                 cacheBuffer: 96
                 reuseItems: false
 
-                // Propiedad para detectar si está en movimiento (drag o flick)
                 property bool isScrolling: dragging || flicking
 
                 model: sessionsModel
@@ -953,7 +953,6 @@ Item {
                                 let deltaY = mouse.y - startY;
                                 let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-                                // Si se mueve más de 10 píxeles, considerar como arrastre
                                 if (distance > 10) {
                                     isDragging = true;
                                     longPressTimer.stop();
@@ -1267,7 +1266,7 @@ Item {
                             anchors.fill: parent
                             spacing: 4
 
-                            // Botón cancelar (cruz) para rename
+                            // Cancel button for rename.
                             Rectangle {
                                 id: renameCancelButton
                                 width: 32
@@ -1563,7 +1562,7 @@ Item {
                             anchors.fill: parent
                             spacing: 4
 
-                            // Botón cancelar (cruz)
+                            // Cancel button.
                             Rectangle {
                                 id: cancelButton
                                 width: 32
@@ -1785,7 +1784,8 @@ Item {
                             mouse.accepted = true;
                         } else if (root.expandedItemIndex >= 0) {
                             if (!isClickInsideActiveItem(mouse.y)) {
-                                console.log("DEBUG: Clicked outside expanded item - closing options");
+                                if (Config.system.debugLogging)
+                                    console.log("TmuxTab: clicked outside expanded item; closing options");
                                 root.expandedItemIndex = -1;
                                 root.selectedOptionIndex = 0;
                                 root.keyboardNavigation = false;
@@ -1813,7 +1813,6 @@ Item {
             }
         }
 
-        // Separator
         Rectangle {
             Layout.preferredWidth: 2
             Layout.fillHeight: true
@@ -2038,7 +2037,6 @@ Item {
                     }
                 }
 
-                // Separator
                 Rectangle {
                     id: separator
                     anchors.bottom: windowsSection.top

@@ -162,10 +162,11 @@ PopupWindow {
         if (visible)
             return;
 
-        // Debug positioning
-        console.log("BarPopup OPEN - position:", barPosition, 
-                    "anchorItem:", anchorItem.width, "x", anchorItem.height,
-                    "rect.x:", anchor.rect.x, "rect.y:", anchor.rect.y);
+        if (Config.system.debugLogging) {
+            console.log("BarPopup open - position:", barPosition,
+                        "anchorItem:", anchorItem.width, "x", anchorItem.height,
+                        "rect.x:", anchor.rect.x, "rect.y:", anchor.rect.y);
+        }
 
         // Set logical state immediately
         isOpen = true;

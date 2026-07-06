@@ -116,7 +116,6 @@ Item {
             }
         }
 
-        // Second row: Name + Separator + Percentage
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
@@ -129,7 +128,6 @@ Item {
                 color: Colors.overSurfaceVariant
             }
 
-            // Separator line
             Separator {
                 Layout.fillWidth: true
             }

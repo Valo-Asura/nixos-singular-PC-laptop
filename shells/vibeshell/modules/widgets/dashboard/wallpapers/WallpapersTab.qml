@@ -8,15 +8,14 @@ import qs.modules.globals
 import qs.modules.services
 import qs.config
 
-// Componente principal para el selector de fondos de pantalla.
+// Main wallpaper picker component.
 FocusScope {
     id: wallpapersTabRoot
 
-    // Propiedades personalizadas para la funcionalidad del componente.
+    // Custom properties for component behavior.
     property string searchText: ""
     property int selectedIndex: GlobalStates.wallpaperSelectedIndex
 
-    // Función para actualizar el índice seleccionado de forma centralizada
     function setSelectedIndex(newIndex: int) {
         GlobalStates.wallpaperSelectedIndex = newIndex;
         selectedIndex = newIndex;
@@ -24,11 +23,10 @@ FocusScope {
 
     property var activeFilters: []  // Lista de tipos de archivo seleccionados para filtrar
 
-    // Configuración interna del grid
+    // Internal grid configuration.
     readonly property int gridColumns: 8
     readonly property int wallpaperMargin: 4
 
-    // Array de elementos focusables para navegación cíclica
     property var focusableElements: [
         {
             id: "oledCheckbox",
@@ -53,36 +51,30 @@ FocusScope {
 
     property int currentFocusIndex: -1
 
-    // Función para enfocar el campo de búsqueda
     function focusSearch() {
         currentFocusIndex = -1;
         wallpaperSearchInput.focusInput();
 
-        // Restaurar índice válido si está en -1 y hay wallpapers
         if (selectedIndex === -1 && filteredWallpapers.length > 0) {
             const currentIndex = findCurrentWallpaperIndex();
             setSelectedIndex(currentIndex !== -1 ? currentIndex : 0);
         }
     }
 
-    // Alias para compatibilidad con Dashboard
     function focusSearchInput() {
         focusSearch();
     }
 
-    // Función para enfocar los filtros
     function focusFilters() {
         currentFocusIndex = 2;
         focusableElements[2].focusFunc();
     }
 
-    // Función para navegar hacia adelante (Tab)
     function focusNextElement() {
         if (currentFocusIndex === -1) {
             currentFocusIndex = 0;
             focusableElements[currentFocusIndex].focusFunc();
         } else if (currentFocusIndex === focusableElements.length - 1) {
-            // Si estamos en el último elemento, volver al search
             focusSearch();
         } else {
             currentFocusIndex++;
@@ -90,7 +82,6 @@ FocusScope {
         }
     }
 
-    // Función para navegar hacia atrás (Shift+Tab)
     function focusPreviousElement() {
         if (currentFocusIndex === -1 || currentFocusIndex === 0) {
             // Si estamos en el search o en el primer elemento focusable, volver al search
@@ -101,23 +92,21 @@ FocusScope {
         }
     }
 
-    // Función para posicionar el wallpaper actual centrado verticalmente
     function centerCurrentWallpaper() {
         const currentIndex = findCurrentWallpaperIndex();
         if (currentIndex !== -1) {
             setSelectedIndex(currentIndex);
 
-            // Calcular la fila del wallpaper actual
+            // Calculate the current wallpaper row.
             const currentRow = Math.floor(currentIndex / wallpapersTabRoot.gridColumns);
-            // Calcular el índice del primer item de esa fila
+            // Calculate the first item index for that row.
             const rowStartIndex = currentRow * wallpapersTabRoot.gridColumns;
 
-            // Posicionar para que la fila esté centrada verticalmente
+            // Position the row so it is vertically centered.
             wallpaperGrid.positionViewAtIndex(rowStartIndex, GridView.Center);
         }
     }
 
-    // Función para encontrar el índice del wallpaper actual en la lista filtrada
     function findCurrentWallpaperIndex() {
         if (!GlobalStates.wallpaperManager || !GlobalStates.wallpaperManager.currentWallpaper) {
             return -1;
@@ -132,7 +121,6 @@ FocusScope {
         centerTimer.start();
     }
 
-    // Actualizar subcarpetas cuando la pestaña se haga visible
     onVisibleChanged: {
         if (visible) {
             if (GlobalStates.wallpaperManager) {
@@ -144,7 +132,6 @@ FocusScope {
         }
     }
 
-    // Timer para asegurar que el centrado ocurre después de que el GridView esté listo
     Timer {
         id: centerTimer
         interval: 50
@@ -155,14 +142,12 @@ FocusScope {
         }
     }
 
-    // Propiedad calculada que filtra los fondos de pantalla según el texto de búsqueda y tipos activos.
     property var filteredWallpapers: {
         if (!GlobalStates.wallpaperManager)
             return [];
 
         let wallpapers = GlobalStates.wallpaperManager.wallpaperPaths;
 
-        // Filtrar por texto de búsqueda
         if (searchText.length > 0) {
             wallpapers = wallpapers.filter(function (path) {
                 const fileName = path.split('/').pop().toLowerCase();
@@ -170,13 +155,11 @@ FocusScope {
             });
         }
 
-        // Filtrar por tipos activos si hay filtros seleccionados
         if (activeFilters.length > 0) {
             wallpapers = wallpapers.filter(function (path) {
                 const fileType = GlobalStates.wallpaperManager.getFileType(path);
                 const subfolder = GlobalStates.wallpaperManager.getSubfolderFromPath(path);
 
-                // Verificar si coincide con algún filtro activo
                 for (var i = 0; i < activeFilters.length; i++) {
                     var filter = activeFilters[i];
                     if (filter === fileType) {
@@ -193,7 +176,6 @@ FocusScope {
         return wallpapers;
     }
 
-    // Scheme Selector posicionado absolutamente para que se superponga al expandirse
     SchemeSelector {
         id: schemeSelector
         anchors.right: parent.right
@@ -222,7 +204,6 @@ FocusScope {
         anchors.fill: parent
         spacing: 8
 
-        // Barra superior con OLED mode, búsqueda y scheme selector
         Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 48
@@ -384,7 +365,6 @@ FocusScope {
                 }
             }
 
-            // Barra de búsqueda centrada
             SearchInput {
                 id: wallpaperSearchInput
                 anchors.centerIn: parent
@@ -397,7 +377,7 @@ FocusScope {
                 disableCursorNavigation: true
                 radius: Styling.radius(4)
 
-                // Manejo de eventos de búsqueda y teclado.
+                // Search and keyboard event handling.
                 onSearchTextChanged: text => {
                     searchText = text;
                     if (text.length > 0 && filteredWallpapers.length > 0) {
@@ -469,7 +449,6 @@ FocusScope {
                 }
             }
 
-            // Scheme Selector a la derecha (placeholder para el espacio)
             Item {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
@@ -516,8 +495,7 @@ FocusScope {
             radius: Styling.radius(4)
             clip: true
 
-            // Calcular tamaño de celda basado en columnas y proporción 1:1
-            // El grid tiene margins negativos, así que el ancho real es width + margin*2
+            // Calculate cell size from columns and a 1:1 ratio.
             readonly property real gridWidth: width + (wallpapersTabRoot.wallpaperMargin * 2)
             readonly property real cellSize: gridWidth / wallpapersTabRoot.gridColumns
 
@@ -532,10 +510,8 @@ FocusScope {
                 model: filteredWallpapers
                 currentIndex: selectedIndex
 
-                // Propiedad para detectar si está en movimiento (drag o flick)
                 property bool isScrolling: dragging || flicking
 
-                // Deshabilitar highlight durante scroll para evitar glitches
                 highlightFollowsCurrentItem: !isScrolling
 
                 // Optimizaciones de rendimiento
@@ -544,7 +520,7 @@ FocusScope {
                 displayMarginEnd: cellHeight
                 reuseItems: true
 
-                // Configuración de scroll optimizada
+                // Optimized scroll configuration.
                 flickDeceleration: 5000
                 maximumFlickVelocity: 8000
 
@@ -555,13 +531,11 @@ FocusScope {
                     }
                 }
 
-                // Elemento de realce para el wallpaper seleccionado.
                 highlight: Item {
                     width: wallpaperGrid.cellWidth
                     height: wallpaperGrid.cellHeight
                     z: 100
 
-                    // Deshabilitar animaciones durante scroll para evitar saltos
                     Behavior on x {
                         enabled: Config.animDuration > 0 && !wallpaperGrid.isScrolling
                         NumberAnimation {
@@ -653,7 +627,6 @@ FocusScope {
 
                                         readonly property bool needsScroll: contentWidth > parent.width - 8
 
-                                        // Resetear posición cuando cambia el texto o cuando deja de necesitar scroll
                                         onTextChanged: {
                                             if (needsScroll) {
                                                 x = 4;
@@ -716,7 +689,7 @@ FocusScope {
                     }
                 }
 
-                // Delegado para cada elemento de la cuadrícula con lazy loading optimizado.
+                // Delegate for each grid item with optimized lazy loading.
                 delegate: Rectangle {
                     width: wallpaperGrid.cellWidth
                     height: wallpaperGrid.cellHeight
@@ -731,19 +704,17 @@ FocusScope {
                     property bool isHovered: false
                     property bool isSelected: selectedIndex === index
 
-                    // Calcular si el item está visible en el viewport (con buffer para precarga)
+                    // Calculate whether the item is visible in the viewport with a preload buffer.
                     readonly property bool isInViewport: {
                         var gridTop = wallpaperGrid.contentY;
                         var gridBottom = gridTop + wallpaperGrid.height;
                         var itemTop = y;
                         var itemBottom = itemTop + height;
 
-                        // Buffer de una fila arriba y abajo para precarga suave
                         var buffer = wallpaperGrid.cellHeight;
                         return itemBottom + buffer >= gridTop && itemTop - buffer <= gridBottom;
                     }
 
-                    // Contenedor de imagen optimizado con ClippingRectangle para radius
                     Item {
                         anchors.fill: parent
                         anchors.margins: wallpapersTabRoot.wallpaperMargin
@@ -753,7 +724,6 @@ FocusScope {
                             color: Colors.surface
                             radius: Styling.radius(4)
 
-                            // Lazy loader que solo carga cuando el item está visible
                             Loader {
                                 anchors.fill: parent
                                 sourceComponent: wallpaperComponent
@@ -776,7 +746,7 @@ FocusScope {
                         }
                     }
 
-                    // Manejo de eventos de ratón.
+                    // Mouse event handling.
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: !wallpaperGrid.isScrolling
@@ -827,7 +797,7 @@ FocusScope {
         }
     }
 
-    // Componente optimizado para wallpapers con lazy loading
+    // Optimized wallpaper component with lazy loading.
     Component {
         id: wallpaperComponent
 
@@ -837,7 +807,7 @@ FocusScope {
         }
     }
 
-    // Componentes de imagen optimizados y reutilizables
+    // Optimized reusable image components.
     Component {
         id: staticImageComponent
         Image {
@@ -845,7 +815,7 @@ FocusScope {
                 if (!parent.sourceFile)
                     return "";
 
-                // Usar thumbnail si está disponible, fallback a original
+                // Use the thumbnail when available, otherwise fall back to the original.
                 var thumbnailPath = GlobalStates.wallpaperManager.getThumbnailPath(parent.sourceFile);
                 return thumbnailPath ? "file://" + thumbnailPath : "file://" + parent.sourceFile;
             }

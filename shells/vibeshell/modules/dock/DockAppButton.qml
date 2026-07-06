@@ -65,7 +65,6 @@ Button {
     }
 
     contentItem: Item {
-        // Separator
         Loader {
             active: root.isSeparator
             anchors.centerIn: parent
@@ -107,7 +106,7 @@ Button {
                         visible: !Config.tintIcons
                     }
 
-                    Tinted {
+                    IconTintEffect {
                         sourceItem: appIcon
                         anchors.fill: appIcon
                     }

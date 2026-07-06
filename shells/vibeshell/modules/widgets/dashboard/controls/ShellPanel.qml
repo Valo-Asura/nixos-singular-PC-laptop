@@ -567,9 +567,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: 16
 
-                    // ═══════════════════════════════════════════════════════════════
                     // MENU SECTION
-                    // ═══════════════════════════════════════════════════════════════
                     ColumnLayout {
                         visible: root.currentSection === ""
                         Layout.fillWidth: true
@@ -605,9 +603,7 @@ Item {
                         }
                     }
 
-                    // ═══════════════════════════════════════════════════════════════
                     // BAR SECTION
-                    // ═══════════════════════════════════════════════════════════════
                     ColumnLayout {
                         visible: root.currentSection === "bar"
                         Layout.fillWidth: true
@@ -765,7 +761,7 @@ Item {
                             }
                         }
 
-                        // Bar color layer 0 — color name + opacity
+                        // Bar color layer 0 - color name + opacity
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: 8
@@ -818,7 +814,7 @@ Item {
                                 }
                             }
 
-                            // layer opacity input (0–100 %)
+                            // layer opacity input (0-100 %)
                             StyledRect {
                                 variant: "common"
                                 Layout.preferredWidth: 56
@@ -1032,9 +1028,7 @@ Item {
                         visible: false
                     }
 
-                    // ═══════════════════════════════════════════════════════════════
                     // NOTCH SECTION
-                    // ═══════════════════════════════════════════════════════════════
                     ColumnLayout {
                         visible: root.currentSection === "notch"
                         Layout.fillWidth: true
@@ -1091,9 +1085,7 @@ Item {
                         visible: false
                     }
 
-                    // ═══════════════════════════════════════════════════════════════
                     // WORKSPACES SECTION
-                    // ═══════════════════════════════════════════════════════════════
                     ColumnLayout {
                         visible: root.currentSection === "workspaces"
                         Layout.fillWidth: true
@@ -1171,9 +1163,7 @@ Item {
                         visible: false
                     }
 
-                    // ═══════════════════════════════════════════════════════════════
                     // OVERVIEW SECTION
-                    // ═══════════════════════════════════════════════════════════════
                     ColumnLayout {
                         visible: root.currentSection === "overview"
                         Layout.fillWidth: true
@@ -1285,9 +1275,7 @@ Item {
                         visible: false
                     }
 
-                    // ═══════════════════════════════════════════════════════════════
                     // DOCK SECTION
-                    // ═══════════════════════════════════════════════════════════════
                     ColumnLayout {
                         visible: root.currentSection === "dock"
                         Layout.fillWidth: true
@@ -1532,9 +1520,7 @@ Item {
                         visible: false
                     }
 
-                    // ═══════════════════════════════════════════════════════════════
                     // LOCKSCREEN SECTION
-                    // ═══════════════════════════════════════════════════════════════
                     ColumnLayout {
                         visible: root.currentSection === "lockscreen"
                         Layout.fillWidth: true
@@ -1590,9 +1576,7 @@ Item {
                         visible: false
                     }
 
-                    // ═══════════════════════════════════════════════════════════════
                     // DESKTOP SECTION
-                    // ═══════════════════════════════════════════════════════════════
                     ColumnLayout {
                         visible: root.currentSection === "desktop"
                         Layout.fillWidth: true
@@ -1683,9 +1667,7 @@ Item {
                                 visible: false
                             }
 
-                            // ═══════════════════════════════════════════════════════════════
                             // SYSTEM SECTION
-                            // ═══════════════════════════════════════════════════════════════
                             ColumnLayout {
                                 visible: root.currentSection === "system"
                                 Layout.fillWidth: true

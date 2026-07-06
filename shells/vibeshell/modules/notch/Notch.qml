@@ -96,17 +96,17 @@ Item {
     }
 
     readonly property var activeSurfaceItem: stackViewInternal.currentItem
-    readonly property string fallbackAmeForm: morphMode === "rest" ? "rest"
+    readonly property string fallbackMorphForm: morphMode === "rest" ? "rest"
         : (morphMode === "hover" ? "soul"
         : (morphMode === "launcher" ? "caret"
         : (morphMode === "dashboard" || morphMode === "clipboard" ? "off"
         : (morphMode === "powermenu" || morphMode === "tools" ? "dock"
         : (morphMode === "notification" ? "rowseam" : "off")))))
-    readonly property string activeAmeForm: activeSurfaceItem && activeSurfaceItem.hasOwnProperty("ameForm") ? activeSurfaceItem.ameForm : fallbackAmeForm
-    readonly property real activeAmeHeat: activeSurfaceItem && activeSurfaceItem.hasOwnProperty("ameHeat") ? activeSurfaceItem.ameHeat : 0
-    readonly property point activeAmePoint: {
-        if (activeSurfaceItem && activeSurfaceItem.hasOwnProperty("amePoint")) {
-            const p = activeSurfaceItem.amePoint;
+    readonly property string activeMorphForm: activeSurfaceItem && activeSurfaceItem.hasOwnProperty("morphForm") ? activeSurfaceItem.morphForm : fallbackMorphForm
+    readonly property real activeMorphHeat: activeSurfaceItem && activeSurfaceItem.hasOwnProperty("morphHeat") ? activeSurfaceItem.morphHeat : 0
+    readonly property point activeMorphPoint: {
+        if (activeSurfaceItem && activeSurfaceItem.hasOwnProperty("morphPoint")) {
+            const p = activeSurfaceItem.morphPoint;
             return activeSurfaceItem.mapToItem(notchRect, p.x, p.y);
         }
         return Qt.point(Math.max(1, width - totalCornerWidth) / 2, Math.min(height / 2, 22));
@@ -130,7 +130,6 @@ Item {
         }
     }
 
-    // StyledRect extendido que cubre todo (notch + corners) para usar como máscara
     StyledRect {
         variant: "bg"
         id: notchFullBackground
@@ -176,7 +175,7 @@ Item {
         }
     }
 
-    // Máscara completa para el notch + corners
+    // Full mask for the notch and corners
     Item {
         id: notchFullMask
         visible: false
@@ -234,7 +233,6 @@ Item {
     }
     }
 
-    // Contenedor del notch (solo visual, sin fondo)
     Item {
         id: notchRect
         anchors.centerIn: parent
@@ -249,7 +247,6 @@ Item {
         property int bottomLeftRadius: Config.notchTheme === "island" ? islandRadius : defaultRadius
         property int bottomRightRadius: Config.notchTheme === "island" ? islandRadius : defaultRadius
 
-        // Fondo del notch solo para theme "island"
         StyledRect {
             variant: "bg"
             id: notchIslandBg
@@ -260,7 +257,7 @@ Item {
             enableBorder: true // En island sí usar border de StyledRect
             animateRadius: false // Custom animation below
             
-            // Usar el islandRadius como radius base también
+            // Also use islandRadius as the base radius
             radius: parent.islandRadius
 
             topLeftRadius: parent.topLeftRadius
@@ -305,7 +302,6 @@ Item {
             }
         }
 
-        // HoverHandler para detectar hover sin bloquear eventos
         HoverHandler {
             id: notchHoverHandler
             enabled: true
@@ -356,7 +352,6 @@ Item {
                 }
             }
 
-            // Propiedad para controlar el blur durante las transiciones
             property real transitionBlur: 0.0
 
             // Aplicar MultiEffect con blur animable
@@ -367,7 +362,6 @@ Item {
                 blur: Math.min(Math.max(stackContainer.transitionBlur, 0.0), 1.0)
             }
 
-            // Animación simple de blur → nitidez durante transiciones
             PropertyAnimation {
                 id: blurTransitionAnimation
                 target: stackContainer
@@ -389,7 +383,6 @@ Item {
                     isShowingNotifications = false;
                 }
 
-                // Activar blur al inicio de transición y animarlo a nítido
                 onBusyChanged: {
                     if (busy) {
                         stackContainer.transitionBlur = 1.0;
@@ -513,20 +506,20 @@ Item {
             }
         }
 
-        Ame {
+        NotchMorph {
             id: ameBead
             anchors.fill: parent
             z: 3
             s: Math.max(0.85, Math.min(1.15, notchContainer.height / 44))
-            form: notchContainer.activeAmeForm
-            point: notchContainer.activeAmePoint
+            form: notchContainer.activeMorphForm
+            point: notchContainer.activeMorphPoint
             wake: Qt.point(notchRect.width / 2, Math.min(22, notchRect.height / 2))
-            heat: notchContainer.activeAmeHeat
+            heat: notchContainer.activeMorphHeat
             wickDir: notchContainer.morphMode === "launcher" ? 1 : -1
         }
     }
 
-    // Propiedades para mejorar el control del estado de las vistas
+    // Properties for tighter view state control
     property bool isShowingNotifications: false
     property bool isShowingDefault: false
 
@@ -593,7 +586,7 @@ Item {
             }
             // Right vertical line up
             ctx.lineTo(rTop + wCenter, rTop);
-            // Right top corner arc - center at (width - offset, rTop), from 180° to 270°
+            // Right top corner arc - center at (width - offset, rTop), from 180 degrees to 270 degrees
             if (rTop > 0) {
                 ctx.arc(width - offset, rTop, rTop - offset, Math.PI, 3 * Math.PI / 2);
                 // This ends at (width - offset - (rTop - offset), offset) = (width - rTop, offset)

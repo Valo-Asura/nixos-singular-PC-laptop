@@ -4,16 +4,14 @@ import qs.config
 Item {
     id: root
 
-    // Propiedades para la animación de destrucción
+    // Destruction animation properties
     property Item targetItem: null
     property real dismissOvershoot: 20
     property real parentWidth: 0
     property bool isDiscardAll: false
 
-    // Señales para diferentes tipos de animación
     signal destroyFinished
 
-    // Animación de destrucción
     ParallelAnimation {
         id: destroyAnimation
         running: false
@@ -50,7 +48,6 @@ Item {
         }
     }
 
-    // Función pública para ejecutar animación de destrucción
     function startDestroy() {
         destroyAnimation.running = true;
     }

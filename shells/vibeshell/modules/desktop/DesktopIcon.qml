@@ -182,7 +182,7 @@ Item {
 
     Component {
         id: tintedIconComponent
-        Tinted {
+        IconTintEffect {
             sourceItem: Image {
                 property bool thumbnailExists: false
                 source: {

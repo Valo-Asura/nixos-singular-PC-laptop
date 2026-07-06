@@ -24,7 +24,7 @@ Item {
         return Math.max(0, Math.min(isNaN(value) ? 0.22 : value, 1));
     }
 
-    // StyledRect expandido que cubre bar + corners
+    // Expanded background that covers the bar and its rounded corners.
     StyledRect {
         id: barBackground
         variant: "barbg"
@@ -32,7 +32,7 @@ Item {
         enableBorder: false
         opacity: Math.max(0, Math.min(Config.bar?.backgroundOpacity ?? 1.0, 1.0))
 
-        // Posicion y tamaño expandidos para cubrir corners
+        // Expand position and size to cover corner masks.
         x: position === "right" ? -cornerSize : 0
         y: position === "bottom" ? -cornerSize : 0
         width: root.width + (isHorizontal ? 0 : cornerSize)
@@ -54,7 +54,7 @@ Item {
         }
     }
 
-    // Mascara combinada para la bar + corners
+    // Combined mask for the bar and corners.
     Item {
         id: barMask
         visible: false
@@ -65,7 +65,7 @@ Item {
         layer.enabled: true
         layer.smooth: true
 
-        // Rectangulo central (la bar misma)
+        // Center mask for the bar body.
         Rectangle {
             id: centerMask
             color: "white"
@@ -75,7 +75,7 @@ Item {
             height: root.height
         }
 
-        // Corner izquierdo/superior
+        // Left or top corner.
         Item {
             id: cornerLeftMask
             width: cornerSize
@@ -133,7 +133,7 @@ Item {
             }
         }
 
-        // Corner derecho/inferior
+        // Right or bottom corner.
         Item {
             id: cornerRightMask
             width: cornerSize

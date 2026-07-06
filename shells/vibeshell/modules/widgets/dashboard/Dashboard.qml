@@ -40,10 +40,10 @@ NotchAnimationBehavior {
 
     focus: true
 
-    // Usar el comportamiento estándar de animaciones del notch
+    // Use the standard notch animation behavior.
     isVisible: GlobalStates.dashboardOpen
 
-    // Navegar a la pestaña seleccionada cuando se abre el dashboard
+    // Navigate to the selected tab when the dashboard opens.
     Component.onCompleted: {
         root.state.currentTab = GlobalStates.dashboardCurrentTab;
     }
@@ -64,7 +64,6 @@ NotchAnimationBehavior {
         }
     }
 
-    // Timer para focus en unified launcher tab
     Timer {
         id: focusUnifiedLauncherTimer
         interval: 150
@@ -78,7 +77,7 @@ NotchAnimationBehavior {
         }
     }
 
-    // Retry timer for focus — handles cases where compositor focus arrives late
+    // Retry timer for focus - handles cases where compositor focus arrives late
     Timer {
         id: focusRetryTimer
         interval: 200
@@ -90,7 +89,6 @@ NotchAnimationBehavior {
         }
     }
 
-    // Escuchar cambios en dashboardCurrentTab para navegar automáticamente
     Connections {
         target: GlobalStates
         function onDashboardCurrentTabChanged() {
@@ -118,32 +116,29 @@ NotchAnimationBehavior {
             width: root.tabWidth
             height: parent.height
 
-            // Manejo del scroll con rueda del mouse
+            // Mouse wheel scroll handling.
             WheelHandler {
                 id: wheelHandler
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
 
                 onWheel: event => {
-                    // Determinar dirección del scroll
+                    // Determine scroll direction.
                     let scrollUp = event.angleDelta.y > 0;
                     let newIndex = root.state.currentTab;
 
                     if (scrollUp && newIndex > 0) {
-                        // Scroll hacia arriba = pestaña anterior
                         newIndex = newIndex - 1;
                     } else if (!scrollUp && newIndex < root.tabCount - 1) {
-                        // Scroll hacia abajo = pestaña siguiente
                         newIndex = newIndex + 1;
                     }
 
-                    // Navegar solo si cambió el índice
+                    // Navigate only when the index changes.
                     if (newIndex !== root.state.currentTab) {
                         stack.navigateToTab(newIndex);
                     }
                 }
             }
 
-            // Background highlight que se desplaza verticalmente con efecto elástico
             StyledRect {
                 id: tabHighlight
                 variant: "primary"
@@ -154,7 +149,7 @@ NotchAnimationBehavior {
                 property real idx1: root.state.currentTab
                 property real idx2: root.state.currentTab
 
-                // Calcular posición Y para un índice dado
+                // Calculate the Y position for a given index.
                 function getYForIndex(idx) {
                     if (idx < root.tabModel.length) {
                         return idx * (width + root.tabSpacing);
@@ -246,7 +241,6 @@ NotchAnimationBehavior {
                 }
             }
 
-            // Controls button (separate at bottom)
             StyledRect {
                 id: controlsButtonContainer
                 anchors.bottom: parent.bottom
@@ -325,13 +319,10 @@ NotchAnimationBehavior {
                 id: stack
                 anchors.fill: parent
 
-                // Array de componentes para cargar dinámicamente
                 property var components: [unifiedLauncherComponent, pomodoroComponent, quickSettingsComponent]
 
-                // Cargar directamente el componente correcto según GlobalStates
                 initialItem: components[Math.max(0, Math.min(GlobalStates.dashboardCurrentTab, components.length - 1))]
 
-                // Handler para cuando el item actual cambia
                 onCurrentItemChanged: {
                     if (currentItem) {
                         if (currentItem.focusSearchInput) {
@@ -340,7 +331,6 @@ NotchAnimationBehavior {
                     }
                 }
 
-                // Función para navegar a un tab específico
                 function navigateToTab(index) {
                     if (index >= 0 && index < components.length && index !== root.state.currentTab) {
                         let targetComponent = components[index];
@@ -432,7 +422,6 @@ NotchAnimationBehavior {
                     }
                 }
 
-                // Gesture handling para swipe vertical
                 MouseArea {
                     anchors.fill: parent
                     property real startY: 0
@@ -452,7 +441,7 @@ NotchAnimationBehavior {
                         let deltaY = mouse.y - startY;
                         let deltaX = Math.abs(mouse.x - startX);
 
-                        // Solo considerar swipe vertical si el movimiento horizontal es mínimo
+                        // Treat it as a vertical swipe only when horizontal movement is minimal.
                         if (Math.abs(deltaY) > 20 && deltaX < 30) {
                             swiping = true;
                             swipeProgress = Math.max(-1, Math.min(1, deltaY / (parent.height * 0.3)));
@@ -483,7 +472,6 @@ NotchAnimationBehavior {
         }
     }
 
-    // Atajos de teclado para navegación
     Shortcut {
         id: nextTabShortcut
         sequence: "Ctrl+Tab"

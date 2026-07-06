@@ -136,9 +136,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: 16
 
-                    // ═══════════════════════════════════════════════════════════════
                     // MENU SECTION
-                    // ═══════════════════════════════════════════════════════════════
                     ColumnLayout {
                         visible: root.currentSection === ""
                         Layout.fillWidth: true

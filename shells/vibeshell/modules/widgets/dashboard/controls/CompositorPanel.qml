@@ -608,9 +608,7 @@ Item {
                     height: hyprlandPage.implicitHeight
                     currentIndex: 0
 
-                    // ═══════════════════════════════════════════════════════════════
                     // HYPRLAND TAB
-                    // ═══════════════════════════════════════════════════════════════
                     ColumnLayout {
                         id: hyprlandPage
                         Layout.fillWidth: true

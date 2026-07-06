@@ -124,13 +124,14 @@ Clickable repo map. Each linked node opens the matching file or folder.
     - [shells/walker/](shells/walker/) `# shared Walker config root`
     - [shells/noctalia/](shells/noctalia/) `# shared Noctalia config; dormant unless selected`
     - [shells/vibeshell/](shells/vibeshell/) `# one shared VibeShell/Quickshell default`
-      - [shells/vibeshell/home.nix](shells/vibeshell/home.nix) `# VibeShell Home Manager installer`
+      - [shells/vibeshell/shell.qml](shells/vibeshell/shell.qml) `# Quickshell entrypoint`
+      - [shells/vibeshell/cli.sh](shells/vibeshell/cli.sh) `# VibeShell CLI wrapper`
       - [shells/vibeshell/config/Config.qml](shells/vibeshell/config/Config.qml) `# VibeShell config entry`
       - [shells/vibeshell/modules/](shells/vibeshell/modules/) `# VibeShell UI modules`
   - [packages/](packages/) `# local packages and wrappers`
     - [packages/default.nix](packages/default.nix) `# package set export`
     - [packages/skwd-wall/](packages/skwd-wall/) `# active shared wallpaper backend`
-    - [packages/vibeshell/](packages/vibeshell/) `# VibeShell wrapper placeholder`
+    - [packages/vibeshell/](packages/vibeshell/) `# VibeShell package helpers`
     - [packages/vibewallREzero/](packages/vibewallREzero/) `# disabled for now; skwd-wall is active`
     - [packages/wrappers/](packages/wrappers/) `# wrapper docs`
   - [assets/](assets/) `# shared images, icons, wallpapers, theme assets`

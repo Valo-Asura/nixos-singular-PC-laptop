@@ -138,7 +138,6 @@ Singleton {
             }
         }
 
-        // Add separator only if there are pinned apps AND unpinned running apps
         if (pinnedApps.length > 0 && unpinnedRunningApps.length > 0) {
             map.set("SEPARATOR", { 
                 appId: "SEPARATOR", 

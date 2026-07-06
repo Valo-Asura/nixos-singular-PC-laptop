@@ -17,7 +17,6 @@ Singleton {
                     "text": action.text
                 })) ?? []
         property bool popup: false
-        // Capture values ​​immediately to avoid binding issues
         property string appIcon: ""
         property string appName: ""
         property string body: ""
@@ -34,7 +33,6 @@ Singleton {
         // Indicates if this notification was loaded from cache
         property bool isCached: false
 
-        // Initialize values ​​when notification is assigned
         onNotificationChanged: {
             if (notification) {
                 appIcon = notification.appIcon ?? "";
@@ -58,7 +56,7 @@ Singleton {
 
                 // Listen when the notification is closed by the app
                 notification.closed.connect(function (reason) {
-                    // CloseRequested = 3 – The app requested to close the notification
+                    // CloseRequested = 3 - The app requested to close the notification
                     if (reason === 3) {
                         root.discardNotification(id);
                     }

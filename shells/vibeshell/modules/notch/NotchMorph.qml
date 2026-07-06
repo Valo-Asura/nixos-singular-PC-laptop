@@ -6,7 +6,7 @@ import qs.modules.globals
 import qs.modules.theme
 
 /**
- * 飴 Ame, the shapeshifter. One molten-glass bead, the shell's only glowing
+ * NotchMorph, the shapeshifter. One molten-glass bead, the shell's only glowing
  * element. Idle it just breathes (2.5% scale over ~8s). No music/audio/physics
  * coupling; every motion is a fixed, scripted timeline.
  *
@@ -211,7 +211,7 @@ Item {
      * Coalesced decision point. form and point are sibling bindings in Pill
      * whose change handlers fire mid-cascade in unspecified order. Deciding
      * synchronously would read a stale partner value (a far form change sees
-     * dd≈0 against the not-yet-updated point and quietly degrades the flight to
+     * dd approximately 0 against the not-yet-updated point and quietly degrades the flight to
      * an in-place morph). Qt.callLater defers the decision until both bindings
      * have settled, and collapses the per-frame handler bursts of a pill morph
      * into one retarget per tick. lastTarget tracks the previous settled anchor

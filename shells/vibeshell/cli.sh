@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Vibeshell CLI - It was needed, so here it is. lol
+# Vibeshell CLI for launching and controlling the shell.
 
 set -euo pipefail
 
@@ -505,8 +505,6 @@ help | --help | -h)
 		# Set QS_ICON_THEME environment variable
 		if command -v gsettings >/dev/null 2>&1; then
 			export QS_ICON_THEME=$(gsettings get org.gnome.desktop.interface icon-theme | tr -d "'")
-		else
-			echo "DEBUG: gsettings not found in PATH" >&2
 		fi
 
 		# Force Qt6CT

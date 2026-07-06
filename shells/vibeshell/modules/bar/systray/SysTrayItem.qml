@@ -60,7 +60,7 @@ MouseArea {
         visible: !Config.tintIcons
     }
 
-    Tinted {
+    IconTintEffect {
         sourceItem: trayIcon
         anchors.fill: trayIcon
     }

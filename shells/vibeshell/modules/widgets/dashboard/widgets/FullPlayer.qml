@@ -483,7 +483,6 @@ StyledRect {
                         preferredHighlightEnd: height
                         currentIndex: -1
 
-                        // Propiedad para detectar si está en movimiento
                         property bool isScrolling: dragging || flicking
 
                         function getPlayerIcon(player) {

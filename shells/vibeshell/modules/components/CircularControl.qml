@@ -125,7 +125,7 @@ StyledRect {
                 let handleGapRad = root.handleSpacing * (360 / (2 * Math.PI * radius)) * Math.PI / 180;
                 let handleSizeRad = root.handleSize * (360 / (2 * Math.PI * radius)) * Math.PI / 180;
 
-                // Dibujar progreso (desde inicio hasta valor actual - gap)
+                // Draw progress from the start to the current value minus the gap
                 let progressEndAngle = baseStartAngle + progressAngleRad - handleGapRad;
                 if (progressCanvas.angle > 1 && progressEndAngle > (baseStartAngle + 0.01)) {
                     ctx.strokeStyle = root.accentColor;
@@ -135,7 +135,7 @@ StyledRect {
                     ctx.stroke();
                 }
 
-                // Dibujar handle (línea radial sobresaliente en la posición actual)
+                // Draw the handle as a radial line at the current position
                 if (progressCanvas.angle >= 0) {
                     let handleAngle = baseStartAngle + progressAngleRad;
                     let innerRadius = radius - 2;
@@ -154,7 +154,7 @@ StyledRect {
                     ctx.stroke();
                 }
 
-                // Dibujar resto (desde valor actual + gap hasta el final)
+                // Draw the remaining arc from the current value plus the gap to the end
                 let remainingStart = baseStartAngle + progressAngleRad + handleGapRad;
                 let totalAngle = (360 - 2 * root.gapAngle) * Math.PI / 180;
                 let remainingEnd = baseStartAngle + totalAngle;

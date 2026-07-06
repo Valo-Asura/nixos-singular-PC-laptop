@@ -231,7 +231,6 @@ Item {
                             width: 48
                             height: 48
 
-                            // Color button in center (behind CircularControl for visual, but we handle click separately)
                             Rectangle {
                                 id: borderColorButton
                                 anchors.centerIn: parent

@@ -34,19 +34,15 @@ Item {
     property bool isNavigating: false
     property bool hovered: notchHovered || isNavigating
     property real morphCloseness: 1
-    property string ameForm: currentNotification ? "rowseam" : "off"
-    property point amePoint: Qt.point(16, Math.max(20, height / 2))
-    property real ameHeat: 0
+    property string morphForm: currentNotification ? "rowseam" : "off"
+    property point morphPoint: Qt.point(16, Math.max(20, height / 2))
+    property real morphHeat: 0
 
-    // Índice actual para navegación
     property int currentIndex: 0
-    // Contador para detectar cuando se añaden nuevas notificaciones
     property int lastNotificationCount: 0
-    // Contador para forzar actualización del timestamp (incrementa cada minuto)
     property int timestampUpdateCounter: 0
 
-    // Timer para forzar actualización del timestamp cada minuto
-    // Solo corre cuando el componente es visible y hay notificaciones
+    // Only runs while the component is visible and notifications exist
     Timer {
         id: timestampUpdateTimer
         interval: 60000 // 1 minuto
@@ -54,12 +50,10 @@ Item {
         running: root.visible && currentNotification !== null
         triggeredOnStart: false
         onTriggered: {
-            // Incrementar contador para forzar re-evaluación del binding del timestamp
             root.timestampUpdateCounter++;
         }
     }
 
-    // MouseArea para scroll y middle-click
     MouseArea {
         id: mouseArea
         anchors.fill: parent
@@ -68,20 +62,16 @@ Item {
         propagateComposedEvents: true
         z: 50
 
-        // Navegación con rueda del ratón cuando hay múltiples notificaciones
         onWheel: wheel => {
             if (Notifications.popupList.length > 1) {
                 if (wheel.angleDelta.y > 0) {
-                    // Scroll hacia arriba - ir a la notificación anterior
                     navigateToPrevious();
                 } else {
-                    // Scroll hacia abajo - ir a la siguiente notificación
                     navigateToNext();
                 }
             }
         }
 
-        // Middle-click para descartar notificación
         onPressed: mouse => {
             if (mouse.button === Qt.MiddleButton && currentNotification) {
                 if (Notifications.popupList.length > 1) {
@@ -94,7 +84,6 @@ Item {
         }
     }
 
-    // Timer para mantener hover durante navegación
     Timer {
         id: navigationHoverTimer
         interval: Config.animDuration + 50
@@ -104,7 +93,6 @@ Item {
         }
     }
 
-    // Funciones de navegación
     function navigateToNext() {
         if (Notifications.popupList.length > 1) {
             root.isNavigating = true;
@@ -129,13 +117,11 @@ Item {
         }
     }
 
-    // Manejo del hover - pausa/reanuda timers de timeout de todas las notificaciones
+    // Hover handling pauses and resumes timeout timers for all notifications
     onHoveredChanged: {
         if (hovered) {
-            // Pausar todos los timers de notificaciones activas
             Notifications.pauseAllTimers();
         } else {
-            // Reanudar todos los timers de notificaciones activas
             Notifications.resumeAllTimers();
         }
     }
@@ -143,24 +129,22 @@ Item {
     // Sincronizar estado cuando el componente cambia de visibilidad
     onVisibleChanged: {
         if (visible && Notifications.popupList.length > 0) {
-            // Ajustar índice si está fuera de rango
+            // Clamp the index when it is out of range
             if (currentIndex >= Notifications.popupList.length) {
                 currentIndex = Math.max(0, Notifications.popupList.length - 1);
             }
             lastNotificationCount = Notifications.popupList.length;
-            // Actualizar el stack si es necesario
             if (notificationStack.depth === 0) {
                 notificationStack.push(notificationComponent, {
                     "notification": Notifications.popupList[currentIndex]
                 });
             }
         } else if (!visible) {
-            // Limpiar el stack cuando se oculta para evitar acumulación
-            // Usar clear(StackView.Immediate) para evitar animaciones pendientes
+            // Clear the stack when hidden to avoid buildup
+            // Use clear(StackView.Immediate) to avoid pending animations
             if (notificationStack.depth > 0) {
                 notificationStack.clear(StackView.Immediate);
             }
-            // Resetear contadores
             timestampUpdateCounter = 0;
         }
     }
@@ -170,7 +154,6 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        // ÁREA DE CONTENIDO CON SCROLL: Combina contenido y botones de acción
         RowLayout {
             id: contentWithScrollArea
             width: parent.width
@@ -178,7 +161,7 @@ Item {
             height: implicitHeight
             spacing: 8
 
-            // Área principal de notificaciones (StackView)
+            // Main notification area (StackView)
             Item {
                 id: notificationArea
                 Layout.fillWidth: true
@@ -202,7 +185,6 @@ Item {
                         }
                     }
 
-                    // Función para navegar a una notificación específica
                     function navigateToNotification(index, forceDirection = null) {
                         if (index >= 0 && index < Notifications.popupList.length) {
                             const newNotification = Notifications.popupList[index];
@@ -210,7 +192,7 @@ Item {
 
                             if (!currentItem || !currentItem.notification || currentItem.notification.id !== newNotification.id) {
 
-                                // Determinar dirección de la transición
+                                // Determine the transition direction
                                 let direction;
                                 if (forceDirection !== null) {
                                     direction = forceDirection;
@@ -218,7 +200,7 @@ Item {
                                     direction = index > root.currentIndex ? StackView.PushTransition : StackView.PopTransition;
                                 }
 
-                                // Usar replace para evitar acumulación en el stack
+                                // Use replace to avoid stack buildup
                                 replace(notificationComponent, {
                                     "notification": newNotification
                                 }, direction);
@@ -228,8 +210,7 @@ Item {
                         }
                     }
 
-                    // Actualizar cuando cambie la lista de notificaciones
-                    // Solo activo cuando el componente es visible para evitar trabajo duplicado
+                    // Only active while visible to avoid duplicate work
                     Connections {
                         target: root.visible ? Notifications : null
                         function onPopupListChanged() {
@@ -240,7 +221,6 @@ Item {
                                 return;
                             }
 
-                            // Si no hay items en el stack, añadir la primera notificación
                             if (notificationStack.depth === 0) {
                                 notificationStack.push(notificationComponent, {
                                     "notification": Notifications.popupList[0]
@@ -250,8 +230,7 @@ Item {
                                 return;
                             }
 
-                            // Detectar nueva notificación: si la lista creció, ir a la más reciente (última)
-                            // Solo si no hay hover para no interrumpir la interacción del usuario
+                            // Only advance without hover so user interaction is not interrupted
                             if (Notifications.popupList.length > root.lastNotificationCount && !root.hovered) {
                                 const newIndex = Notifications.popupList.length - 1;
                                 root.currentIndex = newIndex;
@@ -260,37 +239,30 @@ Item {
                                 return;
                             }
 
-                            // Actualizar el contador
                             root.lastNotificationCount = Notifications.popupList.length;
 
-                            // Manejar eliminación de notificaciones
-                            // Obtener la notificación actual antes del ajuste
                             const currentNotificationId = notificationStack.currentItem?.notification?.id;
                             const oldIndex = root.currentIndex;
 
-                            // Ajustar el índice si es necesario
+                            // Adjust the index if needed
                             if (root.currentIndex >= Notifications.popupList.length) {
                                 root.currentIndex = Math.max(0, Notifications.popupList.length - 1);
                             }
 
-                            // Determinar si una notificación fue eliminada y calcular la dirección apropiada
+                            // Detect removed notifications and calculate the right direction
                             const newNotification = Notifications.popupList[root.currentIndex];
                             let forceDirection = null;
 
-                            // Si la notificación actual cambió, significa que se eliminó una
                             if (currentNotificationId && newNotification && currentNotificationId !== newNotification.id) {
-                                // Si estábamos viendo una notificación posterior y ahora vemos una anterior,
-                                // significa que se eliminó una notificación antes de la actual -> transición hacia abajo
                                 if (oldIndex > 0 && root.currentIndex < oldIndex) {
                                     forceDirection = StackView.PopTransition; // Aparece desde arriba (hacia abajo)
                                 } else
-                                // Si se eliminó la notificación actual y vamos a la siguiente
                                 if (root.currentIndex === oldIndex) {
                                     forceDirection = StackView.PushTransition; // Aparece desde abajo (hacia arriba)
                                 }
                             }
 
-                            // Navegar a la notificación actual con la dirección calculada
+                            // Navigate to the current notification with the calculated direction
                             notificationStack.navigateToNotification(root.currentIndex, forceDirection);
                         }
                     }
@@ -365,7 +337,7 @@ Item {
                     }
                 }
 
-                // Componente de notificación reutilizable
+                // Reusable notification component
                 Component {
                     id: notificationComponent
 
@@ -388,7 +360,6 @@ Item {
                                 }
                             }
 
-                            // Contenido principal de la notificación
                             Item {
                                 width: parent.width
                                 property int criticalMargins: hovered && notification && notification.urgency == NotificationUrgency.Critical ? 16 : 0
@@ -448,7 +419,7 @@ Item {
                                             }
                                         }
 
-                                        // Textos de la notificación
+                                        // Notification text
                                         Item {
                                             id: textContainer
                                             Layout.fillWidth: true
@@ -465,7 +436,6 @@ Item {
                                                     width: parent.width
                                                     spacing: 4
 
-                                                    // Contenedor izquierdo para summary y app name
                                                     Row {
                                                         id: leftTextsContainer
                                                         Layout.fillWidth: true
@@ -518,7 +488,7 @@ Item {
                                                     // Timestamp a la derecha
                                                     Text {
                                                         id: timestampText
-                                                        // Usar timestampUpdateCounter para forzar re-evaluación cada minuto
+                                                        // Use timestampUpdateCounter to force re-evaluation each minute
                                                         text: notification ? (root.timestampUpdateCounter, NotificationUtils.getFriendlyNotifTimeString(notification.time)) : ""
                                                         font.family: Config.theme.font
                                                         font.pixelSize: Config.theme.fontSize
@@ -604,7 +574,7 @@ Item {
                                         }
                                     }
 
-                                    // Botón de descartar
+                                    // Dismiss button
                                     Item {
                                         property int buttonSize: hovered ? 24 : 0
                                         Layout.preferredWidth: buttonSize
@@ -678,7 +648,6 @@ Item {
                                 }
                             }
 
-                            // Botones de acción (solo visible con hover)
                             Item {
                                 id: actionButtonsRow
                                 width: parent.width
@@ -754,7 +723,6 @@ Item {
                 }
             }
 
-            // Indicadores de navegación (solo visible con múltiples notificaciones)
             Item {
                 id: pageIndicators
                 Layout.preferredWidth: (Notifications.popupList.length > 1) ? 8 : 0
@@ -776,7 +744,6 @@ Item {
                     width: parent.width
                     spacing: 4
 
-                    // Posición Y animada para el efecto de scroll
                     y: {
                         if (Notifications.popupList.length <= 3)
                             return 0;
@@ -786,13 +753,11 @@ Item {
                         const maxY = -(totalNotifications - 3) * dotHeight;
                         const currentIndex = root.currentIndex;
 
-                        // Calcular posición basada en el índice actual
+                        // Calculate position from the current index
                         let targetY = 0;
                         if (currentIndex >= 1 && currentIndex < totalNotifications - 1) {
-                            // Centrar en el punto actual (mantener en posición media)
                             targetY = -(currentIndex - 1) * dotHeight;
                         } else if (currentIndex >= totalNotifications - 1) {
-                            // Al final, mostrar los últimos 3
                             targetY = maxY;
                         }
 
@@ -825,7 +790,6 @@ Item {
                                 }
                             }
 
-                            // Animación de escala para el punto activo
                             scale: index === root.currentIndex ? 1.0 : 0.5
 
                             Behavior on scale {
@@ -842,14 +806,13 @@ Item {
         }
     }
 
-    // Función auxiliar para procesar el cuerpo de la notificación
     function processNotificationBody(body, appName) {
         if (!body)
             return "";
 
         let processedBody = body;
 
-        // Limpiar notificaciones de navegadores basados en Chromium
+        // Clean up Chromium-based browser notifications
         if (appName) {
             const lowerApp = appName.toLowerCase();
             const chromiumBrowsers = ["brave", "chrome", "chromium", "vivaldi", "opera", "microsoft edge"];
@@ -863,7 +826,6 @@ Item {
             }
         }
 
-        // No reemplazar saltos de línea con espacios
         return processedBody;
     }
 }

@@ -494,7 +494,6 @@ Item {
                 visible: compactPlayer.player !== null
                 player: compactPlayer.player
                 enableWavyAnimation: compactPlayer.isPlaying
-                // Le pasamos 'hasArtwork' para que el slider también pueda usar los colores dinámicos
                 hasArtwork: compactPlayer.hasArtwork
             }
 

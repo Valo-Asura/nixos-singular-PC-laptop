@@ -2,6 +2,7 @@
 
 var data = {
     "disks": ["/"],
+    "debugLogging": false,
     "idle": {
         "general": {
             "lock_cmd": "vibeshell-safe-lock",

@@ -8,7 +8,7 @@
 let
   vibeshellRoot = ../../shells/vibeshell;
   hyprlandPackage = config.programs.hyprland.package;
-  vibeshellPhosphorIcons = import (vibeshellRoot + "/nix/packages/phosphor-icons.nix") {
+  vibeshellPhosphorIcons = import ../../packages/vibeshell/phosphor-icons.nix {
     inherit pkgs;
   };
   vibeshellFonts = pkgs.symlinkJoin {

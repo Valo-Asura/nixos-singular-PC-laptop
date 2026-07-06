@@ -86,7 +86,6 @@ StyledRect {
         spacing: 12
         visible: MprisController.activePlayer
 
-        // Album artwork con botón de play/pause superpuesto
         Item {
             Layout.preferredWidth: 58
             Layout.preferredHeight: 58
@@ -138,7 +137,7 @@ StyledRect {
                 }
             }
 
-            // Botón de play/pause superpuesto (visible solo en hover)
+            // Overlay play/pause button (visible only on hover).
             Text {
                 anchors.centerIn: parent
                 text: lockPlayer.isPlaying ? Icons.pause : Icons.play
@@ -170,13 +169,11 @@ StyledRect {
             }
         }
 
-        // Información de la pista y controles
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 4
 
-            // Título y artista
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 0

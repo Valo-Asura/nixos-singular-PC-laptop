@@ -6,47 +6,40 @@ import qs.modules.components
 import qs.modules.globals
 import qs.config
 
-// Componente para la barra de filtros de tipo de archivo
+// File-type filter bar component.
 FocusScope {
     id: root
 
-    // Propiedades públicas
+    // Public properties.
     property var activeFilters: []
 
-    // Asegurar que activeFilters siempre sea un array válido
     readonly property var safeFilters: activeFilters || []
 
-    // Señales
     signal filterToggled(string filterType)
     signal escapePressedOnFilters
     signal shiftTabPressed
     signal tabPressed
 
-    // Propiedad para rastrear si el scrollbar está siendo presionado
     property bool scrollBarPressed: false
 
-    // Propiedad para navegación por teclado
     property int focusedFilterIndex: -1
     property int lastFocusedFilterIndex: 0
     property bool keyboardNavigationActive: false
 
-    // Función para tomar el foco
     function focusFilters() {
         keyboardNavigationActive = true;
-        // Restaurar el último filtro que tuvo foco, o el primero si no hay historial
         focusedFilterIndex = lastFocusedFilterIndex >= 0 && lastFocusedFilterIndex < filterModel.count ? lastFocusedFilterIndex : 0;
         ensureVisible(focusedFilterIndex);
         root.focus = true;
     }
 
-    // Configuración del Flickable
+    // Flickable configuration.
     height: 32 + (scrollBar.visible ? 4 + scrollBar.implicitHeight : 0)
     implicitWidth: filterRow.width
 
     onActiveFocusChanged: {
         if (!activeFocus) {
             keyboardNavigationActive = false;
-            // Recordar el índice del filtro enfocado antes de perder el foco
             if (focusedFilterIndex >= 0) {
                 lastFocusedFilterIndex = focusedFilterIndex;
             }
@@ -55,7 +48,6 @@ FocusScope {
     }
 
     Keys.onPressed: event => {
-        // Manejar Shift+Tab para volver al search
         if (event.key === Qt.Key_Tab && (event.modifiers & Qt.ShiftModifier)) {
             keyboardNavigationActive = false;
             focusedFilterIndex = -1;
@@ -64,7 +56,6 @@ FocusScope {
             return;
         }
 
-        // Manejar Tab para avanzar al siguiente elemento
         if (event.key === Qt.Key_Tab) {
             keyboardNavigationActive = false;
             focusedFilterIndex = -1;
@@ -122,14 +113,12 @@ FocusScope {
         const viewportWidth = flickable.width;
         const contentX = flickable.contentX;
 
-        // Calcular la posición de destino con scroll suave
+        // Calculate the smooth-scroll target position.
         let targetX = contentX;
 
         if (itemX < contentX) {
-            // El elemento está fuera del viewport por la izquierda
             targetX = itemX;
         } else if (itemX + itemWidth > contentX + viewportWidth) {
-            // El elemento está fuera del viewport por la derecha
             targetX = itemX + itemWidth - viewportWidth;
         }
 
@@ -148,7 +137,6 @@ FocusScope {
         flickableDirection: Flickable.HorizontalFlick
         clip: true
 
-        // Animación suave para el scroll programático
         NumberAnimation on contentX {
             id: scrollAnimation
             duration: Config.animDuration / 2
@@ -172,15 +160,13 @@ FocusScope {
             }
         }
 
-        // Función para actualizar filtros dinámicamente
         function updateFilters() {
             console.log("Updating filters in FilterBar");
-            // Limpiar filtros de subcarpetas existentes
+            // Clear existing subfolder filters.
             for (var i = filterModel.count - 1; i >= 3; i--) {
                 filterModel.remove(i);
             }
 
-            // Agregar filtros de subcarpetas
             if (GlobalStates.wallpaperManager && GlobalStates.wallpaperManager.subfolderFilters) {
                 var subfolders = GlobalStates.wallpaperManager.subfolderFilters;
                 console.log("Adding subfolder filters:", subfolders);
@@ -194,7 +180,6 @@ FocusScope {
             console.log("Filter model now has", filterModel.count, "items");
         }
 
-        // Actualizar filtros cuando cambien las subcarpetas
         Connections {
             target: GlobalStates.wallpaperManager
             function onSubfolderFiltersChanged() {
@@ -206,7 +191,6 @@ FocusScope {
             flickable.updateFilters();
         }
 
-        // Actualizar filtros cuando cambie el directorio de wallpapers
         Connections {
             target: GlobalStates.wallpaperManager
             function onWallpaperDirChanged() {
@@ -231,7 +215,6 @@ FocusScope {
                     property bool hasFocus: root.keyboardNavigationActive && root.focusedFilterIndex === index
                     property bool isHovered: false
 
-                    // Variante dinámica según estado
                     variant: {
                         if (isActive && (hasFocus || isHovered))
                             return "primaryfocus";
@@ -242,7 +225,6 @@ FocusScope {
                         return "common";
                     }
 
-                    // Ancho dinámico: incluye icono solo cuando está activo
                     width: filterText.width + 24 + (isActive ? filterIcon.width + 4 : 0)
                     height: 32
                     radius: isActive ? Styling.radius(0) / 2 : Styling.radius(0)
@@ -255,7 +237,7 @@ FocusScope {
                             anchors.centerIn: parent
                             spacing: isActive ? 4 : 0
 
-                            // Icono con animación de revelación
+                            // Icon with reveal animation.
                             Item {
                                 width: filterIcon.visible ? filterIcon.width : 0
                                 height: filterIcon.height

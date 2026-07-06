@@ -51,6 +51,7 @@ mkHost {
     ./system/thermal.nix
     ./system/fan-control.nix
     ./system/power.nix
+    ./system/vpn.nix
     ./system/secrets.nix
     ./shell/active-shell.nix
   ];

@@ -141,7 +141,7 @@ Item {
                             urgency: latestNotification ? latestNotification.urgency : NotificationUrgency.Normal
                         }
 
-                        // Textos de la notificación
+                        // Notification text
                         Column {
                             id: textColumn
                             Layout.fillWidth: true
@@ -153,7 +153,6 @@ Item {
                                 width: parent.width
                                 spacing: 4
 
-                                // Contenedor izquierdo para summary y app name
                                 Row {
                                     id: leftTextsContainer
                                     Layout.fillWidth: true
@@ -232,7 +231,7 @@ Item {
                         }
                     }
 
-                    // Botón de descartar
+                    // Dismiss button
                     Item {
                         Layout.preferredWidth: 24
                         Layout.preferredHeight: 24
@@ -311,7 +310,6 @@ Item {
                                         }
                                     }
 
-                                    // Mostrar todos los body ordenados antiguo a reciente con spacing 4
                                     Column {
                                         width: parent.width
                                         spacing: 4
@@ -376,7 +374,7 @@ Item {
                         }
                     }
 
-                    // Botón de descartar
+                    // Dismiss button
                     Item {
                         Layout.preferredWidth: expanded ? 24 : 0
                         Layout.minimumWidth: 0
@@ -393,7 +391,6 @@ Item {
             }
         }
 
-        // Botones de acción (para notificaciones individuales o expandidas)
         Item {
             id: actionButtonsContainer
             width: parent.width

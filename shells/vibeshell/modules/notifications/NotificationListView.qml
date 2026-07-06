@@ -11,7 +11,6 @@ ListView {
 
     spacing: 8
 
-    // Mostrar todas las notificaciones individuales en lugar de grupos
     model: root.popup ? Notifications.popupNotifications : Notifications.notifications
 
     delegate: NotificationDelegate {
@@ -24,7 +23,6 @@ ListView {
         onlyNotification: true // Mostrar como notificación individual con header
 
         onDestroyRequested:
-        // No necesitamos lógica especial aquí
         {}
     }
 }

@@ -73,7 +73,6 @@ ClippingRectangle {
         }
     }
 
-    // Mostrar imagen de notificación si existe
     Loader {
         id: notifImageLoader
         active: root.image != ""
@@ -102,7 +101,6 @@ ClippingRectangle {
                 }
             }
 
-            // App icon pequeño superpuesto si hay imagen
             Loader {
                 id: notifImageAppIconLoader
                 active: root.appIcon != "" && !usingAppIconFallback

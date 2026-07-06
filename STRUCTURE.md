@@ -147,7 +147,6 @@ Clickable repo map. Each linked node opens the matching file or folder.
   - [shells/vibeshell/](shells/vibeshell/) `# one shared VibeShell/Quickshell default`
     - [shells/vibeshell/README.md](shells/vibeshell/README.md) `# VibeShell notes`
     - [shells/vibeshell/shell.qml](shells/vibeshell/shell.qml) `# Quickshell entrypoint`
-    - [shells/vibeshell/home.nix](shells/vibeshell/home.nix) `# VibeShell Home Manager installer`
     - [shells/vibeshell/cli.sh](shells/vibeshell/cli.sh) `# VibeShell CLI wrapper`
     - [shells/vibeshell/binds.json](shells/vibeshell/binds.json) `# VibeShell keybind definitions`
     - [shells/vibeshell/system.json](shells/vibeshell/system.json) `# VibeShell system config seed`
@@ -157,7 +156,7 @@ Clickable repo map. Each linked node opens the matching file or folder.
       - [shells/vibeshell/config/defaults/theme.js](shells/vibeshell/config/defaults/theme.js) `# theme defaults`
     - [shells/vibeshell/modules/](shells/vibeshell/modules/) `# VibeShell UI modules`
       - [shells/vibeshell/modules/bar/Bar.qml](shells/vibeshell/modules/bar/Bar.qml) `# top bar shell`
-      - [shells/vibeshell/modules/bar/BarBg.qml](shells/vibeshell/modules/bar/BarBg.qml) `# bar background and tint`
+      - [shells/vibeshell/modules/bar/BarBackground.qml](shells/vibeshell/modules/bar/BarBackground.qml) `# bar background and tint`
       - [shells/vibeshell/modules/notch/Notch.qml](shells/vibeshell/modules/notch/Notch.qml) `# notch container`
       - [shells/vibeshell/modules/notch/NotchLauncherView.qml](shells/vibeshell/modules/notch/NotchLauncherView.qml) `# notch app launcher`
       - [shells/vibeshell/modules/lockscreen/LockScreen.qml](shells/vibeshell/modules/lockscreen/LockScreen.qml) `# VibeShell lock UI`
@@ -170,7 +169,8 @@ Clickable repo map. Each linked node opens the matching file or folder.
 - [packages/](packages/) `# local packages and wrappers`
   - [packages/default.nix](packages/default.nix) `# package set export`
   - [packages/skwd-wall/](packages/skwd-wall/) `# active shared wallpaper backend`
-  - [packages/vibeshell/](packages/vibeshell/) `# VibeShell package wrapper`
+  - [packages/vibeshell/](packages/vibeshell/) `# VibeShell package helpers`
+    - [packages/vibeshell/phosphor-icons.nix](packages/vibeshell/phosphor-icons.nix) `# VibeShell icon font package`
   - [packages/vibewallREzero/](packages/vibewallREzero/) `# present but disabled; skwd-wall is active`
   - [packages/wrappers/](packages/wrappers/) `# wrapper docs`
 

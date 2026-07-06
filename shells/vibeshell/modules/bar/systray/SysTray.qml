@@ -10,10 +10,8 @@ StyledRect {
 
     required property var bar
 
-    // Orientación derivada de la barra
     property bool vertical: bar.orientation === "vertical"
 
-    // Ajustes de tamaño dinámicos según orientación
     height: vertical ? implicitHeight : parent.height
     Layout.preferredWidth: (vertical ? columnLayout.implicitWidth : rowLayout.implicitWidth) + 16
     implicitWidth: (vertical ? columnLayout.implicitWidth : rowLayout.implicitWidth) + 16

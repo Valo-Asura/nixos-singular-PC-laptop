@@ -27,7 +27,7 @@ Item {
         } else if (root.aliasMode) {
             root.cancelAliasMode();
         } else {
-            // Cerrar el dashboard
+            // Close the dashboard.
             Visibilities.setActiveModule("");
         }
     }
@@ -614,7 +614,6 @@ Item {
         requestOpenItem(itemId, root.allItems, root.safeCurrentContent, getFilePathFromUri, ClipboardUtils.isUrl);
     }
 
-    // MouseArea global para detectar clicks en cualquier espacio vacío
     MouseArea {
         anchors.fill: parent
         enabled: root.deleteMode
@@ -635,7 +634,6 @@ Item {
         }
     }
 
-    // Conexión para cargar imágenes cuando cambia la selección
     Connections {
         target: root
         function onSelectedIndexChanged() {
@@ -650,14 +648,12 @@ Item {
                 if (item.isImage && !ClipboardService.getImageData(item.id)) {
                     ClipboardService.decodeToDataUrl(item.id, item.mime);
                 } else if (!item.isImage) {
-                    // Obtener contenido completo para texto
                     ClipboardService.getFullContent(item.id);
                 }
             }
         }
     }
 
-    // Conexión para recibir el contenido completo
     Connections {
         target: ClipboardService
         function onFullContentRetrieved(itemId, content) {
@@ -686,13 +682,11 @@ Item {
         }
     }
 
-    // Proceso para copiar al portapapeles
     Process {
         id: copyProcess
         running: false
 
         onExited: function (code) {
-        // No cerrar el dashboard después de copiar
         // if (code === 0) {
         //     root.itemSelected();
         // }
@@ -709,7 +703,6 @@ Item {
             Layout.preferredWidth: root.leftPanelWidth
             Layout.fillHeight: true
 
-            // Barra de búsqueda con botón de limpiar
             Row {
                 id: searchRow
                 width: parent.width
@@ -879,7 +872,7 @@ Item {
                     }
                 }
 
-                // Botón de limpiar historial
+                // Clear history button.
                 StyledRect {
                     id: clearButton
                     width: root.clearButtonConfirmState ? 120 : 48
@@ -1008,7 +1001,6 @@ Item {
                     reuseItems: false
                     boundsBehavior: Flickable.StopAtBounds
 
-                    // Propiedad para detectar si está en movimiento (drag o flick)
                     property bool isScrolling: dragging || flicking
 
                     model: itemsModel
@@ -1347,7 +1339,6 @@ Item {
                                 }
                             }
 
-                            // Botones de acción que aparecen desde la derecha
                             Rectangle {
                                 id: actionContainer
                                 anchors.right: parent.right
@@ -1756,7 +1747,6 @@ Item {
                                     interactive: true
                                     boundsBehavior: Flickable.StopAtBounds
 
-                                    // Propiedad para detectar si está en movimiento
                                     property bool isScrolling: dragging || flicking
 
                                     model: {
@@ -2450,7 +2440,6 @@ Item {
                     anchors.bottom: separator.top
                     anchors.bottomMargin: 8
 
-                    // Preview para imagen estática
                     Image {
                         id: previewImage
                         anchors.fill: parent
@@ -2500,7 +2489,6 @@ Item {
                         }
                     }
 
-                    // Preview para GIF animado
                     AnimatedImage {
                         id: previewGif
                         anchors.fill: parent
@@ -2551,7 +2539,6 @@ Item {
                         }
                     }
 
-                    // Placeholder cuando la imagen no está lista
                     Rectangle {
                         anchors.centerIn: parent
                         width: 120
@@ -2583,7 +2570,6 @@ Item {
                         }
                     }
 
-                    // Preview para texto con scroll
                     Flickable {
                         anchors.fill: parent
                         visible: previewPanel.currentItem && !previewPanel.currentItem.isImage && !previewPanel.currentItem.isFile
@@ -3142,7 +3128,6 @@ Item {
                         }
                     }
 
-                    // Preview para archivos (text/uri-list) - solo no-imágenes
                     Item {
                         anchors.fill: parent
                         visible: previewPanel.currentItem && previewPanel.currentItem.isFile && !isImage
@@ -3166,7 +3151,6 @@ Item {
                             }
                         }
 
-                        // Preview genérico para archivos no-imagen
                         Column {
                             anchors.centerIn: parent
                             spacing: 16
@@ -3245,7 +3229,6 @@ Item {
                     }
                 }
 
-                // Separator
                 Separator {
                     id: separator
                     anchors.bottom: metadataSection.top
@@ -3559,7 +3542,6 @@ Item {
         }
     }
 
-    // Handler de teclas global para manejar navegación en modo eliminar y alias
     Keys.onPressed: event => {
         if (root.deleteMode) {
             if (event.key === Qt.Key_Left) {

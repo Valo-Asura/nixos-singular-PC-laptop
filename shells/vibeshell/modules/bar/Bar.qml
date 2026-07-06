@@ -398,7 +398,7 @@ PanelWindow {
                 }
             ]
 
-            BarBg {
+            BarBackground {
                 id: barBg
                 anchors.fill: parent
                 position: panel.barPosition

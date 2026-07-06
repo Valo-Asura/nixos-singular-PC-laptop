@@ -4,6 +4,7 @@ import QtQuick
 import QtQml
 import Quickshell
 import Quickshell.Io
+import qs.config
 
 Singleton {
     id: root
@@ -20,6 +21,20 @@ Singleton {
     readonly property string presetsDir: configDir + "/presets"
     readonly property string assetsPresetsDir: Qt.resolvedUrl("../../assets/presets").toString().replace("file://", "")
     readonly property string activePresetFile: presetsDir + "/active_preset"
+    readonly property var allowedPresetConfigFiles: [
+        "bar.json",
+        "desktop.json",
+        "dock.json",
+        "hyprland.json",
+        "lockscreen.json",
+        "notch.json",
+        "overview.json",
+        "performance.json",
+        "prefix.json",
+        "theme.json",
+        "weather.json",
+        "workspaces.json"
+    ]
 
     // Signal when presets change
     signal presetsUpdated()
@@ -35,6 +50,51 @@ Singleton {
         return presets.some(p => p.name === name && p.isOfficial)
     }
 
+    function shellQuote(value) {
+        return "'" + String(value).replace(/'/g, "'\\''") + "'"
+    }
+
+    function isSafePresetName(name) {
+        if (typeof name !== "string")
+            return false
+
+        const trimmed = name.trim()
+        return name === trimmed
+            && name.length > 0
+            && name.length <= 64
+            && /^[A-Za-z0-9][A-Za-z0-9 _().-]*$/.test(name)
+            && name.indexOf("..") === -1
+            && name.indexOf("/") === -1
+            && name.indexOf("\\") === -1
+    }
+
+    function rejectUnsafePresetName(name, action) {
+        if (isSafePresetName(name))
+            return false
+
+        console.warn("Unsafe preset name rejected for", action + ":", name)
+        Quickshell.execDetached([
+            "notify-send",
+            "Invalid Preset Name",
+            "Use letters, numbers, spaces, dots, dashes, underscores, or parentheses. Names must not contain paths."
+        ])
+        return true
+    }
+
+    function allowedConfigJsonName(configFile) {
+        const jsonFile = String(configFile).replace(".js", ".json")
+        return allowedPresetConfigFiles.indexOf(jsonFile) !== -1 ? jsonFile : ""
+    }
+
+    function isKnownPresetPath(path) {
+        const value = String(path)
+        return value.indexOf(root.presetsDir + "/") === 0 || value.indexOf(root.assetsPresetsDir + "/") === 0
+    }
+
+    function writeActivePresetCommand(presetName) {
+        return "printf '%s\\n' " + shellQuote(presetName) + " > " + shellQuote(activePresetFile)
+    }
+
     // Load a preset by name
     function loadPreset(presetName: string) {
         if (presetName === "") {
@@ -42,43 +102,38 @@ Singleton {
             return
         }
 
-        console.log("Loading preset:", presetName)
+        if (Config.system.debugLogging) console.log("Loading preset:", presetName)
         currentPreset = presetName
 
-        // Find the preset object to get its config files
-        // Prioritize user presets if names collide? Or just find the first match?
-        // Since names can be duplicated now, we need to know WHICH one to load.
-        // But the loadPreset signature only takes a name. 
-        // For now, let's assume the UI passes the unique ID or we handle the ambiguity.
-        // Given the constraints, let's try to find a match.
-        // If we have duplicate names, 'activePreset' just stores the string name.
-        // This is a limitation of the current active_preset storage (just a string).
-        // Use the first match found.
+        // active_preset stores only the name, so load the first scanned match.
         const preset = presets.find(p => p.name === presetName)
         if (!preset) {
             console.warn("Preset not found in list:", presetName)
             return
         }
 
-        // Build command to copy config files
-        // Use the preset's actual path (which could be in assets)
         const presetPath = preset.path
-        let copyCmd = ""
+        if (!isKnownPresetPath(presetPath)) {
+            console.warn("Refusing to load preset from unknown path:", presetPath)
+            return
+        }
+
+        let commands = []
         
         for (const configFile of preset.configFiles) {
-             const jsonFile = configFile.replace('.js', '.json')
-             if (jsonFile === 'system.json') continue; // Skip system.json
+             const jsonFile = allowedConfigJsonName(configFile)
+             if (jsonFile === "")
+                 continue
 
              const srcPath = presetPath + "/" + jsonFile
              const dstPath = configDir + "/config/" + jsonFile
-             copyCmd += `cp "${srcPath}" "${dstPath}" && `
+             commands.push("cp -- " + shellQuote(srcPath) + " " + shellQuote(dstPath))
         }
         
-        // Update active preset file
-        copyCmd += `echo "${presetName}" > "${activePresetFile}"`
+        commands.push(writeActivePresetCommand(presetName))
 
-        if (copyCmd.length > 0) {
-            loadProcess.command = ["sh", "-c", copyCmd]
+        if (commands.length > 1) {
+            loadProcess.command = ["sh", "-c", commands.join(" && ")]
             loadProcess.running = true
         } else {
             console.warn("No config files found in preset:", presetName)
@@ -92,6 +147,9 @@ Singleton {
             return
         }
 
+        if (rejectUnsafePresetName(presetName, "save"))
+            return
+
         if (isOfficialName(presetName)) {
             console.warn("Cannot create preset with official name:", presetName)
             Quickshell.execDetached(["notify-send", "Error", `Cannot use reserved official name "${presetName}".`])
@@ -103,45 +161,25 @@ Singleton {
             return
         }
 
-        console.log("Saving preset:", presetName, "with files:", configFiles)
+        if (Config.system.debugLogging) console.log("Saving preset:", presetName, "with files:", configFiles)
 
-        // Create preset directory and copy config files
         const presetPath = presetsDir + "/" + presetName
-        const createCmd = `mkdir -p "${presetPath}"`
+        let commands = ["mkdir -p -- " + shellQuote(presetPath)]
 
-        let copyCmd = ""
         for (const configFile of configFiles) {
-            const jsonFile = configFile.replace('.js', '.json')
-            if (jsonFile === 'system.json') continue; // Skip system.json
+            const jsonFile = allowedConfigJsonName(configFile)
+            if (jsonFile === "")
+                continue
 
-            // The source is configDir (~/.config/Vibeshell), NOT configDir/config
-            // But wait, the configDir property is defined as ~/.config/Vibeshell below?
-            // Let's check the property definition.
-            // property string configDir: ... + "/Vibeshell"
-            // But Config.qml says configDir is ... + "/Vibeshell/config"
-            // We need to match Config.qml's path.
-            
-            // In Config.qml: property string configDir: ... + "/Vibeshell/config"
-            // Here: readonly property string configDir: ... + "/Vibeshell"
-            // This is a mismatch!
-            
-            // We should use the same path as Config.qml for reading/writing config files.
-            // Let's assume the files are in .../Vibeshell/config based on Config.qml and ls output.
-            
             const srcPath = configDir + "/config/" + jsonFile 
             const dstPath = presetPath + "/" + jsonFile
-            copyCmd += `cp "${srcPath}" "${dstPath}" && `
+            commands.push("cp -- " + shellQuote(srcPath) + " " + shellQuote(dstPath))
         }
         
-        // Create info.json with default author
         const infoContent = JSON.stringify({ author: "User", authorUrl: "" }, null, 4)
-        // Use printf to write info.json safely
-        copyCmd += `printf '${infoContent}' > "${presetPath}/info.json" && `
+        commands.push("printf '%s' " + shellQuote(infoContent) + " > " + shellQuote(presetPath + "/info.json"))
 
-        copyCmd = copyCmd.slice(0, -4) // Remove last " && "
-
-        const fullCmd = `${createCmd} && ${copyCmd}`
-        saveProcess.command = ["sh", "-c", fullCmd]
+        saveProcess.command = ["sh", "-c", commands.join(" && ")]
         saveProcess.running = true
 
         root.pendingPresetName = presetName
@@ -266,6 +304,9 @@ Singleton {
             return
         }
 
+        if (rejectUnsafePresetName(oldName, "rename") || rejectUnsafePresetName(newName, "rename"))
+            return
+
         const preset = presets.find(p => p.name === oldName)
         if (preset && preset.isOfficial) {
              console.warn("Cannot rename official preset")
@@ -278,12 +319,12 @@ Singleton {
             return
         }
 
-        console.log("Renaming preset:", oldName, "to:", newName)
+        if (Config.system.debugLogging) console.log("Renaming preset:", oldName, "to:", newName)
         root.pendingRename = { oldName: oldName, newName: newName }
 
         const oldPath = presetsDir + "/" + oldName
         const newPath = presetsDir + "/" + newName
-        renameProcess.command = ["mv", oldPath, newPath]
+        renameProcess.command = ["mv", "--", oldPath, newPath]
         renameProcess.running = true
     }
 
@@ -294,31 +335,38 @@ Singleton {
             return
         }
 
-        // Find the preset to check if it's official
         const preset = presets.find(p => p.name === presetName)
         if (preset && preset.isOfficial) {
-            console.log("Updating official preset - creating custom copy")
+            if (Config.system.debugLogging) console.log("Updating official preset - creating custom copy")
             const newName = presetName + " (Custom)"
             savePreset(newName, configFiles)
             return
         }
 
-        console.log("Updating preset:", presetName, "with files:", configFiles)
+        if (rejectUnsafePresetName(presetName, "update"))
+            return
+
+        if (Config.system.debugLogging) console.log("Updating preset:", presetName, "with files:", configFiles)
         root.pendingUpdateName = presetName
 
         const presetPath = presetsDir + "/" + presetName
 
-        let copyCmd = ""
+        let commands = []
         for (const configFile of configFiles) {
-            const jsonFile = configFile.replace('.js', '.json')
-            if (jsonFile === 'system.json') continue; // Skip system.json
+            const jsonFile = allowedConfigJsonName(configFile)
+            if (jsonFile === "")
+                continue
             const srcPath = configDir + "/config/" + jsonFile
             const dstPath = presetPath + "/" + jsonFile
-            copyCmd += `cp "${srcPath}" "${dstPath}" && `
+            commands.push("cp -- " + shellQuote(srcPath) + " " + shellQuote(dstPath))
         }
-        copyCmd = copyCmd.slice(0, -4) // Remove last " && "
 
-        updateProcess.command = ["sh", "-c", copyCmd]
+        if (commands.length === 0) {
+            console.warn("No valid config files selected for preset update")
+            return
+        }
+
+        updateProcess.command = ["sh", "-c", commands.join(" && ")]
         updateProcess.running = true
     }
 
@@ -329,17 +377,20 @@ Singleton {
             return
         }
 
+        if (rejectUnsafePresetName(presetName, "delete"))
+            return
+
         const preset = presets.find(p => p.name === presetName)
         if (preset && preset.isOfficial) {
              console.warn("Cannot delete official preset")
              return
         }
 
-        console.log("Deleting preset:", presetName)
+        if (Config.system.debugLogging) console.log("Deleting preset:", presetName)
         root.pendingDeleteName = presetName
 
         const presetPath = presetsDir + "/" + presetName
-        deleteProcess.command = ["rm", "-rf", presetPath]
+        deleteProcess.command = ["rm", "-rf", "--", presetPath]
         deleteProcess.running = true
     }
 
@@ -355,7 +406,7 @@ Singleton {
 
         onExited: function(exitCode) {
             if (exitCode === 0) {
-                console.log("Preset saved successfully:", root.pendingPresetName)
+                if (Config.system.debugLogging) console.log("Preset saved successfully:", root.pendingPresetName)
                 Quickshell.execDetached(["notify-send", "Preset Saved", `Preset "${root.pendingPresetName}" saved successfully.`])
                 // Trigger scan
                 root.scanProcess.running = true
@@ -374,13 +425,12 @@ Singleton {
 
         onExited: function(exitCode) {
             if (exitCode === 0 && root.pendingRename) {
-                console.log("Preset renamed successfully:", root.pendingRename.oldName, "->", root.pendingRename.newName)
+                if (Config.system.debugLogging) console.log("Preset renamed successfully:", root.pendingRename.oldName, "->", root.pendingRename.newName)
                 Quickshell.execDetached(["notify-send", "Preset Renamed", `Preset renamed to "${root.pendingRename.newName}".`])
                 // Update active preset if it was the renamed one
                 if (root.activePreset === root.pendingRename.oldName) {
                     root.activePreset = root.pendingRename.newName
-                    // Update active preset file
-                    updateActivePresetFileProcess.command = ["sh", "-c", `echo "${root.pendingRename.newName}" > "${activePresetFile}"`]
+                    updateActivePresetFileProcess.command = ["sh", "-c", writeActivePresetCommand(root.pendingRename.newName)]
                     updateActivePresetFileProcess.running = true
                 }
                 root.scanProcess.running = true
@@ -399,7 +449,7 @@ Singleton {
 
         onExited: function(exitCode) {
             if (exitCode === 0) {
-                console.log("Preset updated successfully:", root.pendingUpdateName)
+                if (Config.system.debugLogging) console.log("Preset updated successfully:", root.pendingUpdateName)
                 Quickshell.execDetached(["notify-send", "Preset Updated", `Preset "${root.pendingUpdateName}" updated successfully.`])
                 root.scanProcess.running = true
             } else {
@@ -417,7 +467,7 @@ Singleton {
 
         onExited: function(exitCode) {
             if (exitCode === 0) {
-                console.log("Preset deleted successfully:", root.pendingDeleteName)
+                if (Config.system.debugLogging) console.log("Preset deleted successfully:", root.pendingDeleteName)
                 Quickshell.execDetached(["notify-send", "Preset Deleted", `Preset "${root.pendingDeleteName}" deleted.`])
                 // Clear active preset if it was the deleted one
                 if (root.activePreset === root.pendingDeleteName) {
@@ -445,7 +495,7 @@ Singleton {
 
         onExited: function(exitCode) {
             if (exitCode === 0) {
-                console.log("Preset loaded successfully:", root.currentPreset)
+                if (Config.system.debugLogging) console.log("Preset loaded successfully:", root.currentPreset)
                 Quickshell.execDetached(["notify-send", "Preset Loaded", `Preset "${root.currentPreset}" loaded successfully.`])
                 root.activePreset = root.currentPreset
             } else {
@@ -476,7 +526,7 @@ Singleton {
         printErrors: false
 
         onFileChanged: {
-            console.log("Presets directory changed, rescanning...")
+            if (Config.system.debugLogging) console.log("Presets directory changed, rescanning...")
             scanProcess.running = true
         }
     }
@@ -490,7 +540,7 @@ Singleton {
             watchChanges: true
             printErrors: false
             onFileChanged: {
-                console.log("Preset modified (content change):", modelData.name)
+                if (Config.system.debugLogging) console.log("Preset modified (content change):", modelData.name)
                 // Use a debouncer or simple timer to avoid spamming scans if multiple files change
                 root.scanProcess.running = true
             }
@@ -511,7 +561,7 @@ Singleton {
 
     // Initialize
     Component.onCompleted: {
-        console.log("PresetsService created, presetsDir:", presetsDir)
+        if (Config.system.debugLogging) console.log("PresetsService created, presetsDir:", presetsDir)
         initProcess.running = true
     }
 }

@@ -40,7 +40,7 @@ const processNotificationBody = (body, appName) => {
 
     let processedBody = body;
 
-    // Limpiar notificaciones de navegadores basados en Chromium
+    // Clean up Chromium-based browser notifications
     if (appName) {
         const lowerApp = appName.toLowerCase();
         const chromiumBrowsers = ["brave", "chrome", "chromium", "vivaldi", "opera", "microsoft edge"];
@@ -54,6 +54,5 @@ const processNotificationBody = (body, appName) => {
         }
     }
 
-    // No reemplazar saltos de línea con espacios
     return processedBody;
 };

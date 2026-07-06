@@ -95,7 +95,6 @@ Item {
         anchors.top: parent.top
         spacing: 8
 
-        // Title row: "Gradient Stops (X)" + Separator + "Stop X"
         RowLayout {
             Layout.fillWidth: true
             spacing: 8

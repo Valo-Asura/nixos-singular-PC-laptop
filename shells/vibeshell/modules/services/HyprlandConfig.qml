@@ -60,13 +60,15 @@ QtObject {
     function applyHyprlandConfigInternal() {
         // Verify that adapters are loaded before applying configuration
         if (!Config.loader.loaded) {
-            console.log("HyprlandConfig: Waiting for Config to load...");
+            if (Config.system.debugLogging)
+                console.log("HyprlandConfig: Waiting for Config to load...");
             return;
         }
 
         // Wait for layout to be ready
         if (!GlobalStates.hyprlandLayoutReady) {
-            console.log("HyprlandConfig: Waiting for Hyprland layout detection...");
+            if (Config.system.debugLogging)
+                console.log("HyprlandConfig: Waiting for Hyprland layout detection...");
             return;
         }
 
@@ -178,12 +180,15 @@ QtObject {
             const barBgOpacity = (Config.theme.srBarBg && Config.theme.srBarBg.opacity !== undefined) ? Config.theme.srBarBg.opacity : 0;
             const bgOpacity = (Config.theme.srBg && Config.theme.srBg.opacity !== undefined) ? Config.theme.srBg.opacity : 1.0;
             ignoreAlphaValue = (barBgOpacity > 0 ? Math.min(barBgOpacity, bgOpacity) : bgOpacity).toFixed(2);
-            console.log(`HyprlandConfig: Auto ignorealpha calculated: ${ignoreAlphaValue} (bg: ${bgOpacity}, bar: ${barBgOpacity})`);
+            if (Config.system.debugLogging)
+                console.log(`HyprlandConfig: Auto ignorealpha calculated: ${ignoreAlphaValue} (bg: ${bgOpacity}, bar: ${barBgOpacity})`);
         }
 
-        console.log(`HyprlandConfig: Applying ignorealpha: ${ignoreAlphaValue}, explicit: ${Config.hyprland.blurExplicitIgnoreAlpha}`);
+        if (Config.system.debugLogging)
+            console.log(`HyprlandConfig: Applying ignorealpha: ${ignoreAlphaValue}, explicit: ${Config.hyprland.blurExplicitIgnoreAlpha}`);
         batchCommand += ` ; keyword layerrule "no_anim on, match:namespace quickshell" ; keyword layerrule "blur off, match:namespace quickshell" ; keyword layerrule "ignore_alpha ${ignoreAlphaValue}, match:namespace quickshell"`;
-        console.log("HyprlandConfig: Applying hyprctl batch command.");
+        if (Config.system.debugLogging)
+            console.log("HyprlandConfig: Applying hyprctl batch command.");
         hyprctlProcess.command = ["hyprctl", "--batch", batchCommand];
         hyprctlProcess.running = true;
     }
@@ -372,7 +377,8 @@ QtObject {
         target: Hyprland
         function onRawEvent(event) {
             if (event.name === "configreloaded") {
-                console.log("HyprlandConfig: configreloaded detected, reapplying configuration...");
+                if (Config.system.debugLogging)
+                    console.log("HyprlandConfig: configreloaded detected, reapplying configuration...");
                 applyHyprlandConfig();
             }
         }
@@ -381,7 +387,8 @@ QtObject {
     property Connections gameModeConnections: Connections {
         target: GameModeService
         function onToggledChanged() {
-            console.log("HyprlandConfig: GameMode toggled to", GameModeService.toggled, ", applying config...");
+            if (Config.system.debugLogging)
+                console.log("HyprlandConfig: GameMode toggled to", GameModeService.toggled, ", applying config...");
             applyHyprlandConfig();
         }
     }

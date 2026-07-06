@@ -559,7 +559,6 @@ Rectangle {
                     cacheBuffer: 96
                     reuseItems: false
 
-                    // Propiedad para detectar si está en movimiento (drag o flick)
                     property bool isScrolling: dragging || flicking
 
                     model: appsModel
@@ -719,7 +718,7 @@ Rectangle {
                                     }
                                 }
 
-                                Tinted {
+                                IconTintEffect {
                                     anchors.fill: parent
                                     visible: Config.tintIcons
                                     sourceItem: Image {
@@ -1085,7 +1084,8 @@ Rectangle {
                             appLauncher.focusSearchInput();
                         }
                         onRequestOpenItem: (itemId, items, currentContent, filePathGetter, urlChecker) => {
-                            console.log("DEBUG: Received requestOpenItem signal for:", itemId);
+                            if (Config.system.debugLogging)
+                                console.log("WidgetsTab: received requestOpenItem signal for:", itemId);
                             openItemInternal(itemId, items, currentContent, filePathGetter, urlChecker);
                         }
                     }
@@ -1173,7 +1173,6 @@ Rectangle {
             }
         }
 
-        // Separator (only visible when in launcher tab)
         Separator {
             Layout.preferredWidth: 2
             Layout.fillHeight: true
@@ -1982,44 +1981,52 @@ Rectangle {
         running: false
 
         onStarted: function () {
-            console.log("DEBUG: globalOpenProcess started with command:", globalOpenProcess.command);
+            if (Config.system.debugLogging)
+                console.log("WidgetsTab: globalOpenProcess started with command:", globalOpenProcess.command);
         }
 
         onExited: function (code, status) {
             if (code === 0) {
-                console.log("DEBUG: globalOpenProcess completed successfully");
+                if (Config.system.debugLogging)
+                    console.log("WidgetsTab: globalOpenProcess completed successfully");
             } else {
-                console.warn("DEBUG: globalOpenProcess failed with exit code:", code, "status:", status);
+                console.warn("WidgetsTab: globalOpenProcess failed with exit code:", code, "status:", status);
             }
         }
     }
 
     // Internal function to open items - called by signal handlers
     function openItemInternal(itemId, items, currentContent, getFilePathFromUri, isUrl) {
-        console.log("DEBUG: WidgetsTab.openItemInternal called for itemId:", itemId);
+        if (Config.system.debugLogging)
+            console.log("WidgetsTab.openItemInternal called for itemId:", itemId);
         for (var i = 0; i < items.length; i++) {
             if (items[i].id === itemId) {
                 var item = items[i];
                 var content = currentContent || item.preview;
-                console.log("DEBUG: item found - isFile:", item.isFile, "isImage:", item.isImage, "content:", content);
+                if (Config.system.debugLogging)
+                    console.log("WidgetsTab: item found - isFile:", item.isFile, "isImage:", item.isImage, "content:", content);
 
                 if (item.isFile) {
                     var filePath = getFilePathFromUri(content);
-                    console.log("DEBUG: Opening file with path:", filePath);
+                    if (Config.system.debugLogging)
+                        console.log("WidgetsTab: opening file with path:", filePath);
                     if (filePath) {
                         globalOpenProcess.command = ["xdg-open", filePath];
                         globalOpenProcess.running = true;
                     }
                 } else if (item.isImage && item.binaryPath) {
-                    console.log("DEBUG: Opening image with binaryPath:", item.binaryPath);
+                    if (Config.system.debugLogging)
+                        console.log("WidgetsTab: opening image with binaryPath:", item.binaryPath);
                     globalOpenProcess.command = ["xdg-open", item.binaryPath];
                     globalOpenProcess.running = true;
                 } else if (isUrl(content)) {
-                    console.log("DEBUG: Opening URL:", content.trim());
+                    if (Config.system.debugLogging)
+                        console.log("WidgetsTab: opening URL:", content.trim());
                     globalOpenProcess.command = ["xdg-open", content.trim()];
                     globalOpenProcess.running = true;
                 } else {
-                    console.warn("DEBUG: Item does not match any openable type");
+                    if (Config.system.debugLogging)
+                        console.warn("WidgetsTab: item does not match any openable type");
                 }
                 break;
             }

@@ -291,9 +291,9 @@ PanelWindow {
             width: implicitWidth
             height: implicitHeight
             property real morphCloseness: 1
-            property string ameForm: launcherLoader.item && launcherLoader.item.hasOwnProperty("ameForm") ? launcherLoader.item.ameForm : "caret"
-            property point amePoint: launcherLoader.item && launcherLoader.item.hasOwnProperty("amePoint") ? launcherLoader.item.mapToItem(launcherSurface, launcherLoader.item.amePoint.x, launcherLoader.item.amePoint.y) : Qt.point(width / 2, 32)
-            property real ameHeat: launcherLoader.item && launcherLoader.item.hasOwnProperty("ameHeat") ? launcherLoader.item.ameHeat : 0
+            property string morphForm: launcherLoader.item && launcherLoader.item.hasOwnProperty("morphForm") ? launcherLoader.item.morphForm : "caret"
+            property point morphPoint: launcherLoader.item && launcherLoader.item.hasOwnProperty("morphPoint") ? launcherLoader.item.mapToItem(launcherSurface, launcherLoader.item.morphPoint.x, launcherLoader.item.morphPoint.y) : Qt.point(width / 2, 32)
+            property real morphHeat: launcherLoader.item && launcherLoader.item.hasOwnProperty("morphHeat") ? launcherLoader.item.morphHeat : 0
 
             Loader {
                 id: launcherLoader
@@ -332,9 +332,9 @@ PanelWindow {
             focus: true
 
             property real morphCloseness: 1
-            property string ameForm: "off"
-            property point amePoint: Qt.point(width / 2, 34)
-            property real ameHeat: 0
+            property string morphForm: "off"
+            property point morphPoint: Qt.point(width / 2, 34)
+            property real morphHeat: 0
 
             ClipboardTab {
                 id: clipboardTab
@@ -469,7 +469,6 @@ PanelWindow {
             }
         }
 
-        // Popup de notificaciones debajo del notch
         StyledRect {
             id: notificationPopupContainer
             variant: "bg"
@@ -510,7 +509,6 @@ PanelWindow {
             property bool popupHovered: false
 
             readonly property bool shouldShowNotificationPopup: {
-                // Mostrar solo si hay notificaciones y el notch esta expandido
                 if (!notchPanel.hasActiveNotifications || !notchPanel.screenNotchOpen)
                     return false;
 
@@ -519,7 +517,7 @@ PanelWindow {
                     if (screenVisibilities.launcher || screenVisibilities.clipboard)
                         return false;
 
-                    // Solo ocultar si estamos en el widgets tab (dashboard tab 0) Y mostrando el launcher (widgetsTab index 0)
+                    // Only hide when the widgets tab is active and the launcher is showing
                     return !(GlobalStates.dashboardCurrentTab === 0 && GlobalStates.widgetsTabCurrentIndex === 0);
                 }
 

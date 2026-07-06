@@ -18,9 +18,9 @@ Item {
     focus: true
 
     property real morphCloseness: 1
-    property string ameForm: "off"
-    property point amePoint: Qt.point(width / 2, 34)
-    property real ameHeat: 0
+    property string morphForm: "off"
+    property point morphPoint: Qt.point(width / 2, 34)
+    property real morphHeat: 0
     property real wheelAccumX: 0
     property real wheelAccumY: 0
     readonly property int pageCount: 3
