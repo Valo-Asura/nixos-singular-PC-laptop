@@ -204,6 +204,44 @@ let
     ${notify} "Camera app unavailable" "Install GNOME Snapshot or Cheese."
   '';
 
+  brightnessUp = pkgs.writeShellScriptBin "brightness-up" ''
+    set -euo pipefail
+
+    if command -v vibeshell >/dev/null 2>&1 && vibeshell brightness +5 >/dev/null 2>&1; then
+      exit 0
+    fi
+
+    ${pkgs.brightnessctl}/bin/brightnessctl --class backlight set +5% --quiet
+  '';
+
+  brightnessDown = pkgs.writeShellScriptBin "brightness-down" ''
+    set -euo pipefail
+
+    if command -v vibeshell >/dev/null 2>&1 && vibeshell brightness -5 >/dev/null 2>&1; then
+      exit 0
+    fi
+
+    ${pkgs.brightnessctl}/bin/brightnessctl --class backlight set 5%- --quiet
+  '';
+
+  soundUp = pkgs.writeShellScriptBin "sound-up" ''
+    set -euo pipefail
+
+    ${pkgs.wireplumber}/bin/wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+
+  '';
+
+  soundDown = pkgs.writeShellScriptBin "sound-down" ''
+    set -euo pipefail
+
+    ${pkgs.wireplumber}/bin/wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%-
+  '';
+
+  soundToggle = pkgs.writeShellScriptBin "sound-toggle" ''
+    set -euo pipefail
+
+    ${pkgs.wireplumber}/bin/wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+  '';
+
   clipboard = pkgs.writeShellScriptBin "clipboard" ''
     exec /run/current-system/sw/bin/asura-shell-launcher /clipboard
   '';
@@ -237,7 +275,12 @@ in
     asuraVideoWallpaperBatteryGuard
     asuraVideoWallpaperStop
     asuraWallpaperPanel
+    brightnessDown
+    brightnessUp
     clipboard
+    soundDown
+    soundToggle
+    soundUp
   ];
 
   systemd.user.services.asura-video-wallpaper-battery-guard = {

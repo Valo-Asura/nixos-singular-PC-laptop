@@ -151,7 +151,9 @@ Item {
                 }
             }
 
-            onIconClicked: {}
+            onIconClicked: {
+                Brightness.syncBrightness = !Brightness.syncBrightness;
+            }
 
             Connections {
                 target: currentMonitor

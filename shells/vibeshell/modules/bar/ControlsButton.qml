@@ -205,7 +205,9 @@ Item {
                     }
                 }
 
-                onIconClicked: {}
+                onIconClicked: {
+                    Brightness.syncBrightness = !Brightness.syncBrightness;
+                }
 
                 Connections {
                     target: brightnessRow.currentMonitor ?? null

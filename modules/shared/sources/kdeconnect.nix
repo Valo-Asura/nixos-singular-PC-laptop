@@ -7,6 +7,17 @@
 }:
 
 let
+  kdeconnectManual = pkgs.symlinkJoin {
+    name = "kdeconnect-kde-manual";
+    paths = [
+      pkgs.kdePackages.kdeconnect-kde
+    ];
+    postBuild = ''
+      rm -f "$out/etc/xdg/autostart/org.kde.kdeconnect.daemon.desktop"
+    '';
+    meta = pkgs.kdePackages.kdeconnect-kde.meta;
+  };
+
   hyprKdeconnectFix = pkgs.stdenv.mkDerivation rec {
     pname = "hypr-kdeconnect-fix";
     version = "0.1.0-ea55f66";
@@ -55,7 +66,7 @@ in
 {
   programs.kdeconnect = {
     enable = true;
-    package = pkgs.kdePackages.kdeconnect-kde;
+    package = kdeconnectManual;
   };
 
   environment.systemPackages = [

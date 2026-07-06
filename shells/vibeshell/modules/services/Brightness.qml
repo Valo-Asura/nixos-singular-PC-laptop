@@ -48,16 +48,19 @@ Singleton {
         return monitors.find(m => m.screen === screen);
     }
 
+    function focusedMonitor(): var {
+        const focusedName = Hyprland.focusedMonitor ? Hyprland.focusedMonitor.name : "";
+        return monitors.find(m => m && m.screen && m.screen.name === focusedName) || (monitors.length > 0 ? monitors[0] : null);
+    }
+
     function increaseBrightness(): void {
-        const focusedName = Hyprland.focusedMonitor.name;
-        const monitor = monitors.find(m => focusedName === m.screen.name);
+        const monitor = focusedMonitor();
         if (monitor)
             monitor.setBrightness(monitor.brightness + 0.05);
     }
 
     function decreaseBrightness(): void {
-        const focusedName = Hyprland.focusedMonitor.name;
-        const monitor = monitors.find(m => focusedName === m.screen.name);
+        const monitor = focusedMonitor();
         if (monitor)
             monitor.setBrightness(monitor.brightness - 0.05);
     }
@@ -234,11 +237,11 @@ Singleton {
         target: "brightness"
 
         function increment() {
-            onPressed: root.increaseBrightness();
+            root.increaseBrightness();
         }
 
         function decrement() {
-            onPressed: root.decreaseBrightness();
+            root.decreaseBrightness();
         }
 
         function set(value: real, monitorName: string) {

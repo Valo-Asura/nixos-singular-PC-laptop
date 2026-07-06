@@ -138,7 +138,7 @@ in
       dwindle = {
         force_split = 2;
         preserve_split = true;
-        smart_split = true;
+        smart_split = false;
         smart_resizing = true;
       };
 
