@@ -116,6 +116,12 @@ let
         fi
       }
 
+      caffeine_reset_default() {
+        printf '%s\n' off > "$caffeine_file"
+        systemctl --user stop "$caffeine_unit" >/dev/null 2>&1 || true
+        pkill -u "$uid" -f 'systemd-inhibit --what=idle:sleep:handle-lid-switch --who=asura-shell-switch' 2>/dev/null || true
+      }
+
       read_active() {
         if [ -r "$active_file" ]; then
           tr -d '[:space:]' < "$active_file"
@@ -176,6 +182,7 @@ let
 
       case "''${1:-autostart}" in
         autostart)
+          caffeine_reset_default
           start_shell "$(read_active)"
           ;;
         current)

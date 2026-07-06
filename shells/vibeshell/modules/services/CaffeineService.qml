@@ -9,7 +9,7 @@ Singleton {
     id: root
 
     property alias inhibit: idleInhibitor.enabled
-    inhibit: StateService.get("caffeine", false)
+    inhibit: false
 
     function toggleInhibit() {
         inhibit = !inhibit;
@@ -31,7 +31,8 @@ Singleton {
     Connections {
         target: StateService
         function onStateLoaded() {
-            root.inhibit = StateService.get("caffeine", false);
+            StateService.set("caffeine", false);
+            root.inhibit = false;
         }
     }
 
