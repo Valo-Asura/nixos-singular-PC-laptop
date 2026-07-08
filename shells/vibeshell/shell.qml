@@ -12,6 +12,7 @@ import qs.modules.notifications
 import qs.modules.widgets.notes
 import qs.modules.widgets.settings
 import qs.modules.widgets.monitor
+import qs.modules.widgets.cheatsheet
 import qs.modules.notch
 import qs.modules.widgets.overview
 import qs.modules.widgets.presets
@@ -45,7 +46,7 @@ ShellRoot {
 
         Loader {
             id: desktopLoader
-            active: Config.desktop.enabled
+            active: Config.desktop.enabled && !GameModeService.toggled
             required property ShellScreen modelData
             sourceComponent: Desktop {
                 screen: desktopLoader.modelData
@@ -103,7 +104,7 @@ ShellRoot {
             id: notchLoader
             // Delay notch creation to ensure it renders above the bar
             // Both use WlrLayer.Overlay, so we need the notch to be created last
-            active: notchDelayTimer.triggered
+            active: notchDelayTimer.triggered && !GameModeService.toggled
             required property ShellScreen modelData
             sourceComponent: NotchWindow {
                 screen: notchLoader.modelData
@@ -131,7 +132,7 @@ ShellRoot {
 
         Loader {
             id: overviewLoader
-            active: (Config.overview?.enabled ?? true) && GlobalStates.overviewOpen
+            active: !GameModeService.toggled && (Config.overview?.enabled ?? true) && GlobalStates.overviewOpen
             required property ShellScreen modelData
             sourceComponent: OverviewPopup {
                 screen: overviewLoader.modelData
@@ -151,7 +152,7 @@ ShellRoot {
 
         Loader {
             id: presetsLoader
-            active: GlobalStates.presetsOpen
+            active: !GameModeService.toggled && GlobalStates.presetsOpen
             required property ShellScreen modelData
             sourceComponent: PresetsPopup {
                 screen: presetsLoader.modelData
@@ -175,7 +176,7 @@ ShellRoot {
     // Application Dock - only load when enabled and not integrated
     Loader {
         id: dockLoader
-        active: (Config.dock?.enabled ?? false) && (Config.dock?.theme ?? "default") !== "integrated"
+        active: !GameModeService.toggled && (Config.dock?.enabled ?? false) && (Config.dock?.theme ?? "default") !== "integrated"
         sourceComponent: Dock {}
     }
 
@@ -210,6 +211,12 @@ ShellRoot {
         id: monitorLoader
         active: GlobalStates.monitorVisible
         source: "modules/widgets/monitor/SystemMonitorWindow.qml"
+    }
+
+    Loader {
+        id: cheatSheetLoader
+        active: GlobalStates.cheatSheetVisible
+        sourceComponent: CheatSheetWindow {}
     }
 
     // Screenshot Tool
@@ -312,9 +319,46 @@ ShellRoot {
             let _ = NightLightService.active
             _ = GameModeService.toggled
             _ = CaffeineService.inhibit
-            _ = WeatherService.dataAvailable
-            _ = SystemResources.cpuUsage
+            if (!GameModeService.toggled) {
+                _ = WeatherService.dataAvailable
+                _ = SystemResources.cpuUsage
+            }
             _ = IdleService.lockCmd
+        }
+    }
+
+    Binding {
+        target: ClipboardService
+        property: "active"
+        value: !GameModeService.toggled
+    }
+
+    Binding {
+        target: WeatherService
+        property: "active"
+        value: !GameModeService.toggled
+    }
+
+    Binding {
+        target: UsageTracker
+        property: "active"
+        value: !GameModeService.toggled
+    }
+
+    Connections {
+        target: GameModeService
+        function onToggledChanged() {
+            if (!GameModeService.toggled)
+                return;
+
+            Visibilities.setActiveModule("");
+            GlobalStates.settingsVisible = false;
+            GlobalStates.notesVisible = false;
+            GlobalStates.monitorVisible = false;
+            GlobalStates.cheatSheetVisible = false;
+            GlobalStates.screenshotToolVisible = false;
+            GlobalStates.screenRecordToolVisible = false;
+            GlobalStates.mirrorWindowVisible = false;
         }
     }
 
@@ -336,6 +380,11 @@ ShellRoot {
                 Visibilities.setActiveModule("");
             }
         }
+        function onCheatSheetVisibleChanged() {
+            if (GlobalStates.cheatSheetVisible) {
+                Visibilities.setActiveModule("");
+            }
+        }
     }
 
     Connections {
@@ -345,6 +394,7 @@ ShellRoot {
                 GlobalStates.settingsVisible = false;
                 GlobalStates.notesVisible = false;
                 GlobalStates.monitorVisible = false;
+                GlobalStates.cheatSheetVisible = false;
             }
         }
     }

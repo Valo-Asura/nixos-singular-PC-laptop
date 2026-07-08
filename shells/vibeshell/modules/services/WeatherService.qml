@@ -16,6 +16,7 @@ QtObject {
     property int weatherCode: 0
     property real windSpeed: 0
     property bool dataAvailable: false
+    property bool active: true
     property bool isLoading: false
     readonly property bool isRefreshing: isLoading
     property bool hasFailed: false
@@ -359,13 +360,19 @@ QtObject {
     property Timer retryTimer: Timer {
         interval: 3000
         repeat: false
-        onTriggered: root.updateWeather()
+        onTriggered: {
+            if (root.active)
+                root.updateWeather()
+        }
     }
 
     property Timer pendingRefreshTimer: Timer {
         interval: 0
         repeat: false
-        onTriggered: root.updateWeather()
+        onTriggered: {
+            if (root.active)
+                root.updateWeather()
+        }
     }
 
     function schedulePendingRefresh() {
@@ -547,7 +554,7 @@ QtObject {
 
     property Timer refreshTimer: Timer {
         interval: 900000  // 15 minutes - weather doesn't change faster
-        running: true
+        running: root.active
         repeat: true
         onTriggered: root.updateWeather()
     }
@@ -556,7 +563,7 @@ QtObject {
     // when weather is already available (cheap pure-JS calc, no subprocess needed).
     property Timer sunPositionTimer: Timer {
         interval: 300000  // 5-minute clock update (sunrise/set bar accuracy)
-        running: root.dataAvailable
+        running: root.active && root.dataAvailable
         repeat: true
         onTriggered: root.calculateSunPosition()
     }
@@ -585,6 +592,9 @@ QtObject {
     }
 
     function updateWeather() {
+        if (!active)
+            return;
+
         if (weatherProcess.running) {
             root.pendingRefresh = true;
             return;
@@ -619,5 +629,18 @@ QtObject {
         currentHour = now.getHours() + now.getMinutes() / 60;
         _initialized = true;
         updateWeather();
+    }
+
+    onActiveChanged: {
+        if (!active) {
+            retryTimer.stop();
+            pendingRefreshTimer.stop();
+            pendingRefresh = false;
+            isLoading = false;
+            wasCancelled = weatherProcess.running;
+            weatherProcess.running = false;
+        } else if (_initialized) {
+            updateWeather();
+        }
     }
 }

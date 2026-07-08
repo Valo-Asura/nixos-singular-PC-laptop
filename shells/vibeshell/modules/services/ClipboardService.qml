@@ -30,7 +30,7 @@ QtObject {
         interval: Math.min(30000, 1000 * Math.pow(2, Math.min(root._watcherRestartAttempts, 5)))
         repeat: false
         onTriggered: {
-            if (root._initialized) {
+            if (root._initialized && root.active) {
                 clipboardWatcher.running = true;
             }
         }
@@ -38,7 +38,7 @@ QtObject {
 
     // Clipboard watcher using custom script that monitors changes
     property Process clipboardWatcher: Process {
-        running: root._initialized
+        running: root._initialized && root.active
         command: [watchScriptPath, checkScriptPath, dbPath, insertScriptPath, binaryDataDir]
         
         stdout: SplitParser {
@@ -61,11 +61,22 @@ QtObject {
         
         onExited: function(code) {
             // Watcher should keep running, restart if it exits
-            if (root._initialized) {
+            if (root._initialized && root.active) {
                 root._watcherRestartAttempts++;
                 console.warn("ClipboardService: watcher exited with code:", code, "- restarting after", clipboardWatcherRestartTimer.interval, "ms");
                 clipboardWatcherRestartTimer.restart();
             }
+        }
+    }
+
+    onActiveChanged: {
+        if (!active) {
+            clipboardWatcherRestartTimer.stop();
+            clipboardWatcher.running = false;
+        } else if (_initialized) {
+            _watcherRestartAttempts = 0;
+            clipboardWatcher.running = true;
+            Qt.callLater(root.list);
         }
     }
 

@@ -1,7 +1,9 @@
 # Shared module: shell launcher/switcher limited to waybar, noctalia, and vibeshell.
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 let
+  hyprlandPackage = config.programs.hyprland.package;
+
   asuraSessionLock = pkgs.writeShellApplication {
     name = "asura-session-lock";
     runtimeInputs = with pkgs; [
@@ -154,7 +156,7 @@ let
             }
             ;;
           vibeshell)
-            if ! pgrep -u "$(id -u)" -f 'quickshell.*vibeshell|qs.*vibeshell' >/dev/null 2>&1; then
+            if ! pgrep -u "$(id -u)" -fi 'quickshell.*vibeshell|qs.*vibeshell' >/dev/null 2>&1; then
               nohup /run/current-system/sw/bin/asura-vibeshell >/tmp/asura-vibeshell.log 2>&1 &
             fi
             ;;
@@ -270,17 +272,122 @@ let
       esac
     '';
   };
+
+  asuraGameMode = pkgs.writeShellApplication {
+    name = "asura-game-mode";
+    runtimeInputs = with pkgs; [
+      coreutils
+      gnugrep
+      libnotify
+      procps
+      systemd
+      util-linux
+      hyprlandPackage
+    ];
+    text = ''
+      set -euo pipefail
+
+      uid="$(id -u)"
+      state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/asura-shell"
+      state_file="$state_dir/game-mode"
+      waybar_flag="$state_dir/game-mode-started-waybar"
+      mkdir -p "$state_dir"
+
+      notify() {
+        [ "''${ASURA_SHELL_QUIET:-0}" = 1 ] && return 0
+        notify-send -a asura-game-mode "$@" 2>/dev/null || true
+      }
+
+      hypr_keyword() {
+        hyprctl keyword "$@" >/dev/null 2>&1 || true
+      }
+
+      optimize_hyprland() {
+        hypr_keyword animations:enabled false
+        hypr_keyword decoration:blur:enabled false
+        hypr_keyword decoration:shadow:enabled false
+        hypr_keyword general:gaps_in 0
+        hypr_keyword general:gaps_out 0
+        hypr_keyword misc:vfr true
+        hypr_keyword misc:vrr 1
+      }
+
+      start_light_bar() {
+        if ! pgrep -u "$uid" -x waybar >/dev/null 2>&1; then
+          /run/current-system/sw/bin/asura-shell-switch waybar >/dev/null 2>&1 || true
+          printf '%s\n' yes > "$waybar_flag"
+        fi
+      }
+
+      stop_vibeshell() {
+        pkill -u "$uid" -fi 'quickshell.*vibeshell|qs.*vibeshell' >/dev/null 2>&1 || true
+      }
+
+      mode_on() {
+        printf '%s\n' on > "$state_file"
+        optimize_hyprland
+        ASURA_SHELL_QUIET=1 /run/current-system/sw/bin/asura-shell-switch caffeine-on >/dev/null 2>&1 || true
+        start_light_bar
+        notify "Game mode on" "Hyprland effects disabled, Waybar running, VibeShell will stop."
+        (
+          sleep 1
+          stop_vibeshell
+        ) >/dev/null 2>&1 &
+      }
+
+      mode_off() {
+        printf '%s\n' off > "$state_file"
+        ASURA_SHELL_QUIET=1 /run/current-system/sw/bin/asura-shell-switch caffeine-off >/dev/null 2>&1 || true
+        hyprctl reload >/dev/null 2>&1 || true
+        if [ -f "$waybar_flag" ]; then
+          pkill -u "$uid" -x waybar >/dev/null 2>&1 || true
+          rm -f "$waybar_flag"
+        fi
+        /run/current-system/sw/bin/asura-shell-switch vibeshell >/dev/null 2>&1 || true
+        notify "Game mode off" "Hyprland config reloaded and VibeShell started."
+      }
+
+      mode_status() {
+        printf '%s\n' "$(cat "$state_file" 2>/dev/null || printf off)"
+      }
+
+      case "''${1:-toggle}" in
+        on|enable)
+          mode_on
+          ;;
+        off|disable)
+          mode_off
+          ;;
+        toggle)
+          if [ "$(mode_status)" = "on" ]; then
+            mode_off
+          else
+            mode_on
+          fi
+          ;;
+        status)
+          mode_status
+          ;;
+        *)
+          printf 'usage: asura-game-mode [on|off|toggle|status]\n' >&2
+          exit 64
+          ;;
+      esac
+    '';
+  };
 in
 {
   environment.systemPackages = [
     asuraSessionLock
     asuraShellSwitch
     asuraShellLauncher
+    asuraGameMode
   ];
 
   home-manager.users.asura.home.packages = [
     asuraSessionLock
     asuraShellSwitch
     asuraShellLauncher
+    asuraGameMode
   ];
 }

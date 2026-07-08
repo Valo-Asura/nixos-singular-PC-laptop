@@ -13,6 +13,7 @@ Singleton {
     property var usageData: ({})
     property bool dataLoaded: false
     property bool fileReady: false
+    property bool active: true
     
     // Signal emitted when data is loaded
     signal usageDataReady()
@@ -79,6 +80,9 @@ Singleton {
 
     // Record that an app was used
     function recordUsage(appId) {
+        if (!active)
+            return;
+
         if (!appId) {
             console.warn("UsageTracker: recordUsage called with empty appId");
             return;

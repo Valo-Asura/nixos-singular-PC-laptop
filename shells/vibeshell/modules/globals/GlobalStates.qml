@@ -179,6 +179,9 @@ Singleton {
     property bool monitorVisible: false
     property bool resourcePreviewVisible: false
 
+    // Cheat sheet floating window state
+    property bool cheatSheetVisible: false
+
     // Screenshot Tool state
     property bool screenshotToolVisible: false
     // property string screenshotToolMode: "normal" // DEPRECATED

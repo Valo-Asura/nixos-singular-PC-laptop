@@ -553,6 +553,16 @@ PanelWindow {
                     Layout.alignment: Qt.AlignVCenter
                 }
 
+                Bar.GameModeButton {
+                    id: gameModeButton
+                    Layout.alignment: Qt.AlignVCenter
+                }
+
+                Bar.CheatSheetButton {
+                    id: cheatSheetButton
+                    Layout.alignment: Qt.AlignVCenter
+                }
+
                 Bar.NotesButton {
                     id: notesButton
                     visible: Config.bar?.showNotificationsModule ?? true
@@ -629,6 +639,16 @@ PanelWindow {
 
                 ToolsButton {
                     id: toolsButtonVert
+                    Layout.alignment: Qt.AlignHCenter
+                }
+
+                Bar.GameModeButton {
+                    id: gameModeButtonVert
+                    Layout.alignment: Qt.AlignHCenter
+                }
+
+                Bar.CheatSheetButton {
+                    id: cheatSheetButtonVert
                     Layout.alignment: Qt.AlignHCenter
                 }
 
