@@ -15,6 +15,14 @@ let
   ];
   hasEarlyNvidiaModule =
     modules: builtins.any (module: builtins.elem module earlyNvidiaModules) modules;
+  pinnedNvidiaPackage = config.boot.kernelPackages.nvidiaPackages.mkDriver {
+    version = "580.159.04";
+    sha256_64bit = "sha256-weZnYbCI0Xs632y2l53przi+JoTRArABoXbc+vq9yh4=";
+    sha256_aarch64 = "sha256-iRLyYjvHyDl2Xzb87j20o1MYNKLK/zql1JwSWbI3Kus=";
+    openSha256 = "sha256-zsNmjZW0cyZWPp3vDT3mNeqAo0hS0M7e9Tbvwvij+F4=";
+    settingsSha256 = "sha256-U0hics4gQeZWsD+ch9PBz42zfTOEVcKRVIqYZb3VOY8=";
+    persistencedSha256 = "sha256-vDawiy52GB8JABUKZDiQUc8uda8p/7jCFW7rTu6QMa4=";
+  };
 in
 {
   assertions = [
@@ -52,9 +60,9 @@ in
       nvidiaPersistenced = true;
       open = lib.mkForce false;
       nvidiaSettings = true;
-      # Pin the older 580 branch explicitly for stability instead of following
-      # the moving production/stable aliases, which currently resolve to 595.
-      package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
+      # Pin the validated 580 LTSB build instead of following the moving
+      # legacy_580 alias, which can force large proprietary downloads mid-update.
+      package = pinnedNvidiaPackage;
       prime = {
         offload = {
           enable = lib.mkForce true;

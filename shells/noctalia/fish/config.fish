@@ -33,4 +33,15 @@ alias cmt="codex-mem threads"
 alias cml="codex-mem logs"
 alias cms="codex-mem raw-search"
 
+# NixOS maintenance aliases. Noctalia owns fish/config.fish, so mirror the
+# Home Manager shell aliases here for the active terminal profile.
+alias rebuild="nixos-rebuild-safe switch --flake /etc/nixos#asura-xs15"
+alias lrb="nixos-rebuild-safe switch --flake /etc/nixos#asura-xs15"
+alias prb="nixos-rebuild-safe switch --flake /etc/nixos#asura-pc"
+alias update="nix flake update --flake /etc/nixos"
+alias lup="nix flake update --flake /etc/nixos && nixos-rebuild-safe switch --flake /etc/nixos#asura-xs15"
+alias pup="nix flake update --flake /etc/nixos && nixos-rebuild-safe switch --flake /etc/nixos#asura-pc"
+alias clean="/run/wrappers/bin/sudo nix-collect-garbage -d"
+alias clean-store="nix-storage-clean"
+
 # Start tmux explicitly with `tmux`. Avoid auto-exec so Foot opens instantly.

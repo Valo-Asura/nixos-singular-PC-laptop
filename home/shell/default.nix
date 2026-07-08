@@ -42,6 +42,19 @@
   programs.fzf = {
     enable = true;
     enableFishIntegration = true;
+    historyWidget.command = "";
+    # fd instead of stock find: parallel, respects .gitignore by default.
+    fileWidget.command = "fd --type f --hidden --exclude .git";
+    fileWidget.options = [ "--preview 'bat --color=always --style=numbers --line-range=:100 {}'" ];
+    changeDirWidget.command = "fd --type d --hidden --exclude .git";
+    changeDirWidget.options = [ "--preview 'eza --tree --icons --color=always {} | head -100'" ];
+  };
+
+  # New block — command-not-found tells you which nix package provides a
+  # missing binary instead of just failing.
+  programs.nix-index = {
+    enable = true;
+    enableFishIntegration = true;
   };
 
   programs.direnv = {
@@ -84,22 +97,29 @@
     '';
 
     interactiveShellInit = ''
-      # Tab: accept autosuggestion if available, else complete
+      # Tab: accept autosuggestion if one is showing, else complete
       function __tab_or_accept --description 'Accept autosuggestion or complete'
-        set -l sug (commandline -P)
-        if test -n "$sug"
-          accept-autosuggestion
+        if commandline --showing-suggestion
+          commandline -f accept-autosuggestion
         else
           commandline -f complete
         end
       end
       bind \t __tab_or_accept
+      bind -M insert \t __tab_or_accept
 
       # Vi-mode convenience bindings
       bind -M insert \cf accept-autosuggestion
       bind -M insert \ce end-of-line
-      bind -M insert \cr history-pager
       bind -M insert \cs pager-toggle-search
+      # ctrl-r intentionally left unbound here — atuin owns it (see Pitfalls
+      # if you actually want native history-pager instead).
+
+      function __auto_ls_on_cd --on-variable PWD --description 'List directory contents after changing directory'
+        if status is-interactive
+          eza --icons --group-directories-first
+        end
+      end
     '';
 
     shellAliases = {
@@ -129,12 +149,12 @@
       temp = "sensors | grep -E '(Core|Package)' | head -4";
 
       # ── NixOS ──────────────────────────────────────────────────────────────
-      rebuild = "/run/wrappers/bin/sudo nixos-rebuild switch --flake /etc/nixos#asura-xs15";
-      lrb = "/run/wrappers/bin/sudo nixos-rebuild switch --flake /etc/nixos#asura-xs15";
-      prb = "/run/wrappers/bin/sudo nixos-rebuild switch --flake /etc/nixos#asura-pc";
+      rebuild = "nixos-rebuild-safe switch --flake /etc/nixos#asura-xs15";
+      lrb = "nixos-rebuild-safe switch --flake /etc/nixos#asura-xs15";
+      prb = "nixos-rebuild-safe switch --flake /etc/nixos#asura-pc";
       update = "nix flake update --flake /etc/nixos";
-      lup = "nix flake update --flake /etc/nixos && /run/wrappers/bin/sudo nixos-rebuild switch --flake /etc/nixos#asura-xs15";
-      pup = "nix flake update --flake /etc/nixos && /run/wrappers/bin/sudo nixos-rebuild switch --flake /etc/nixos#asura-pc";
+      lup = "nix flake update --flake /etc/nixos && nixos-rebuild-safe switch --flake /etc/nixos#asura-xs15";
+      pup = "nix flake update --flake /etc/nixos && nixos-rebuild-safe switch --flake /etc/nixos#asura-pc";
       clean = "/run/wrappers/bin/sudo nix-collect-garbage -d";
       clean-store = "nix-storage-clean";
 
@@ -299,7 +319,29 @@
       add_newline = true;
       command_timeout = 1000; # ms — raised slightly to avoid false timeouts
 
-      format = "$username$hostname$directory$git_branch$git_status$direnv$cmd_duration$line_break$character";
+      format = "$username$hostname$directory$git_branch$git_status$direnv$line_break$character";
+      right_format = "$nix_shell$battery$cmd_duration";
+
+      nix_shell = {
+        disabled = false;
+        heuristic = true;
+        symbol = "❄️ ";
+        format = "via [$symbol$state]($style) ";
+        style = "bold fg:39";
+      };
+
+      battery = {
+        disabled = false;
+        full_symbol = "🔋";
+        charging_symbol = "⚡️";
+        discharging_symbol = "💀";
+        display = [
+          {
+            threshold = 100;
+            style = "bold green";
+          }
+        ];
+      };
 
       username = {
         show_always = true;
