@@ -17,7 +17,7 @@
 
   "group/top": {
     "orientation": "vertical",
-    "modules": ["custom/menu", "wlr/taskbar"]
+    "modules": ["custom/menu", "custom/vibeshell", "wlr/taskbar"]
   },
 
   "group/status": {
@@ -36,6 +36,13 @@
     "format": "",
     "tooltip": false,
     "on-click": "asura-shell-launcher"
+  },
+
+  "custom/vibeshell": {
+    "format": "󱄅",
+    "tooltip": true,
+    "tooltip-format": "Switch to VibeShell",
+    "on-click": "asura-game-mode off"
   },
 
   "wlr/taskbar": {

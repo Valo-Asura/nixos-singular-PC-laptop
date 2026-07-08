@@ -54,6 +54,7 @@ tooltip,
 }
 
 #custom-menu,
+#custom-vibeshell,
 #network,
 #bluetooth,
 #pulseaudio,
@@ -68,6 +69,12 @@ tooltip,
 
 #custom-menu {
   color: #95d66b;
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+
+#custom-vibeshell {
+  color: #38bdf8;
   font-size: 17px;
   margin-bottom: 6px;
 }
