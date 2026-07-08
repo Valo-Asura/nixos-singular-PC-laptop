@@ -213,6 +213,7 @@ FloatingWindow {
 
                 delegate: Rectangle {
                     required property var modelData
+                    required property int index
                     width: listView.width
                     height: Math.max(38, rowLayout.implicitHeight + 12)
                     color: index % 2 === 0 ? Qt.rgba(Colors.surfaceContainer.r, Colors.surfaceContainer.g, Colors.surfaceContainer.b, 0.58) : Qt.rgba(Colors.surfaceContainerHighest.r, Colors.surfaceContainerHighest.g, Colors.surfaceContainerHighest.b, 0.48)
@@ -226,7 +227,7 @@ FloatingWindow {
                         spacing: 10
 
                         Text {
-                            text: root.currentPage === 0 ? modelData.combo : modelData.name
+                            text: root.currentPage === 0 ? (modelData.combo ?? "") : (modelData.name ?? "")
                             font.family: Config.theme.monoFont
                             font.pixelSize: Styling.fontSize(-1)
                             font.weight: Font.DemiBold
@@ -237,7 +238,7 @@ FloatingWindow {
                         }
 
                         Text {
-                            text: root.currentPage === 0 ? modelData.action : modelData.command
+                            text: root.currentPage === 0 ? (modelData.action ?? "") : (modelData.command ?? "")
                             font.family: Config.theme.monoFont
                             font.pixelSize: Styling.fontSize(-2)
                             color: Colors.overBackground
@@ -250,7 +251,7 @@ FloatingWindow {
 
                         Text {
                             visible: root.currentPage === 0
-                            text: modelData.flags
+                            text: root.currentPage === 0 ? (modelData.flags ?? "") : ""
                             font.family: Config.theme.font
                             font.pixelSize: Styling.fontSize(-2)
                             color: Colors.outline
