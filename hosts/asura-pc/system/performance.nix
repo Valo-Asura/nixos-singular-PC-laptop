@@ -28,8 +28,8 @@
   boot.kernel.sysctl = {
     "vm.swappiness" = 5;
     "vm.vfs_cache_pressure" = 50;
-    "vm.dirty_background_ratio" = 5;
-    "vm.dirty_ratio" = 15;
+    "vm.dirty_background_bytes" = 16777216; # 16 MB
+    "vm.dirty_bytes" = 50331648; # 48 MB
     "vm.page-cluster" = 0;
     "vm.max_map_count" = 1048576;
     "vm.mglru_min_ttl_ms" = 1000;

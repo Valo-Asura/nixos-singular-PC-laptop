@@ -27,21 +27,36 @@ class SystemMonitor:
         self.gpu_count = 0
         self.detect_gpu()
 
-    def detect_gpu(self):
+    def detect_gpu(self) -> None:
         # Check for NVIDIA
         try:
             subprocess.run(
                 ["nvidia-smi"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
             self.gpu_vendor = "nvidia"
-            # Get count
+            # Get count and memory limit
             try:
                 out = subprocess.check_output(
-                    ["nvidia-smi", "--query-gpu=count", "--format=csv,noheader,nounits"]
+                    ["nvidia-smi", "--query-gpu=count,memory.total", "--format=csv,noheader,nounits"]
                 )
-                self.gpu_count = int(out.strip())
-            except:
-                self.gpu_count = 0
+                parts = out.decode("utf-8").strip().split(",")
+                self.gpu_count = int(parts[0].strip())
+                self.nvidia_mem_total = int(parts[1].strip()) * 1024 * 1024
+            except Exception:
+                self.gpu_count = 1
+                self.nvidia_mem_total = 4096 * 1024 * 1024
+
+            # Find NVIDIA PCI device paths to check runtime status without waking GPU
+            self.nvidia_pci_paths = []
+            pci_dir = "/sys/bus/pci/devices"
+            if os.path.exists(pci_dir):
+                for dev in os.listdir(pci_dir):
+                    try:
+                        with open(os.path.join(pci_dir, dev, "vendor"), "r") as f:
+                            if f.read().strip().lower() == "0x10de":
+                                self.nvidia_pci_paths.append(os.path.join(pci_dir, dev))
+                    except Exception:
+                        pass
             return
         except FileNotFoundError:
             pass
@@ -226,13 +241,40 @@ class SystemMonitor:
                 available_map[mount] = 0
         return usage_map, total_map, used_map, available_map
 
-    def get_gpu_stats(self):
-        usages = []
-        temps = []
-        memory_used = []
-        memory_total = []
+    def get_gpu_stats(self) -> tuple[list[float], list[int], list[int], list[int]]:
+        usages: list[float] = []
+        temps: list[int] = []
+        memory_used: list[int] = []
+        memory_total: list[int] = []
 
         if self.gpu_vendor == "nvidia" and self.gpu_count > 0:
+            # Check if all nvidia GPUs are suspended to avoid waking them up
+            all_suspended = True
+            if getattr(self, "nvidia_pci_paths", None):
+                for path in self.nvidia_pci_paths:
+                    status_path = os.path.join(path, "power/runtime_status")
+                    if os.path.exists(status_path):
+                        try:
+                            with open(status_path, "r") as f:
+                                if f.read().strip() != "suspended":
+                                    all_suspended = False
+                                    break
+                        except Exception:
+                            all_suspended = False
+                            break
+                    else:
+                        all_suspended = False
+                        break
+            else:
+                all_suspended = False
+
+            if all_suspended:
+                usages = [0.0] * self.gpu_count
+                temps = [-1] * self.gpu_count
+                memory_used = [0] * self.gpu_count
+                memory_total = [getattr(self, "nvidia_mem_total", 4096 * 1024 * 1024)] * self.gpu_count
+                return usages, temps, memory_used, memory_total
+
             try:
                 # Combined query is faster than two
                 out = subprocess.check_output(
@@ -251,16 +293,16 @@ class SystemMonitor:
                             temps.append(int(parts[1].strip()))
                             memory_used.append(int(parts[2].strip()) * 1024 * 1024)
                             memory_total.append(int(parts[3].strip()) * 1024 * 1024)
-                        except:
+                        except Exception:
                             usages.append(0.0)
                             temps.append(-1)
                             memory_used.append(0)
                             memory_total.append(0)
-            except:
+            except Exception:
                 usages = [0.0] * self.gpu_count
                 temps = [-1] * self.gpu_count
                 memory_used = [0] * self.gpu_count
-                memory_total = [0] * self.gpu_count
+                memory_total = [getattr(self, "nvidia_mem_total", 4096 * 1024 * 1024)] * self.gpu_count
 
         elif self.gpu_vendor == "amd" and self.gpu_count > 0:
             for card in self.amd_cards:

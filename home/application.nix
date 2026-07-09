@@ -68,7 +68,7 @@ let
     [Thumbnail]
     MaxExternalThumbnailFileSize=-1
     MaxThumbnailFileSize=4096
-    ShowThumbnails=false
+    ShowThumbnails=true
     ThumbnailLocalFilesOnly=true
 
     [Volume]
@@ -140,6 +140,8 @@ let
     // viewerDefaults
     // {
       "inode/directory" = filemanager;
+      "x-scheme-handler/file" = filemanager;
+      "x-scheme-handler/trash" = filemanager;
       "x-scheme-handler/steam" = "steam.desktop";
       "x-scheme-handler/steamlink" = "steam.desktop";
     };
@@ -195,6 +197,7 @@ in
       Categories=Utility;Core;FileManager;
       MimeType=inode/directory;application/x-gnome-saved-search;
       StartupWMClass=pcmanfm-qt
+      NoDisplay=true
     '';
   };
 
@@ -212,6 +215,7 @@ in
       StartupNotify=true
       Categories=Utility;Core;FileManager;
       StartupWMClass=pcmanfm-qt
+      NoDisplay=true
     '';
   };
 
@@ -228,6 +232,16 @@ in
       StartupNotify=true
       Categories=Qt;Utility;Core;FileManager;
       StartupWMClass=pcmanfm-qt
+    '';
+  };
+
+  xdg.dataFile."applications/xfce4-file-manager.desktop" = {
+    force = true;
+    text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=File Manager
+      NoDisplay=true
     '';
   };
 

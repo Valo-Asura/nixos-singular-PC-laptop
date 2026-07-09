@@ -56,7 +56,10 @@ in
     bluetooth.enable = true;
     nvidia = {
       modesetting.enable = lib.mkForce true;
-      powerManagement.enable = false;
+      powerManagement = {
+        enable = lib.mkForce true;
+        finegrained = lib.mkForce true;
+      };
       nvidiaPersistenced = true;
       open = lib.mkForce false;
       nvidiaSettings = true;

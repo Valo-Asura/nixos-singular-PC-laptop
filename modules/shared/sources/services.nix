@@ -29,7 +29,10 @@ in
   environment.systemPackages = [
     asuraBluetoothManager
     pkgs.blueman
+    pkgs.ffmpegthumbnailer
   ];
+
+  environment.pathsToLink = [ "/share/thumbnailers" ];
 
   # systemd-user can deadlock on this laptop when pam_systemd tries to open a
   # second logind session for the user manager. When it times out, boot waits
@@ -97,6 +100,7 @@ in
     fwupd.enable = false; # firmware updater — run manually when needed
     udisks2.enable = true;
     gvfs.enable = true;
+    tumbler.enable = true;
     upower.enable = true;
     ratbagd.enable = true;
     mongodb = {

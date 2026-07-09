@@ -1,5 +1,7 @@
 [Default Applications]
 inode/directory=pcmanfm-qt.desktop
+x-scheme-handler/file=pcmanfm-qt.desktop
+x-scheme-handler/trash=pcmanfm-qt.desktop
 x-scheme-handler/antigravity=antigravity-url-handler.desktop
 x-scheme-handler/antigravity-ide=antigravity-url-handler.desktop
 text/plain=cursor.desktop
