@@ -190,6 +190,8 @@ in
     };
   };
 
+  security.pam.services.greetd.enableGnomeKeyring = true;
+
   systemd.services.greetd.serviceConfig = {
     Type = "idle";
     StandardInput = "tty";

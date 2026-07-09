@@ -160,9 +160,9 @@ Item {
     readonly property color batteryStatusColor: Battery.lowWarningActive ? Colors.criticalRed : Colors.cyan
     readonly property bool showRecordingPill: ScreenRecorder.isRecording
     readonly property bool showFileTransferPill: FileTransferService.active
-    readonly property bool showPomodoroPill: PomodoroService.running
-    readonly property int activityPillCount: (showRecordingPill ? 1 : 0) + (showFileTransferPill ? 1 : 0) + (showPomodoroPill ? 1 : 0)
-    readonly property real activityPillWidth: (showRecordingPill ? 82 : 0) + (showFileTransferPill ? 88 : 0) + (showPomodoroPill ? 92 : 0) + (Math.max(0, activityPillCount - 1) * 4)
+    readonly property bool showPomodoroPill: false
+    readonly property int activityPillCount: (showRecordingPill ? 1 : 0) + (showFileTransferPill ? 1 : 0)
+    readonly property real activityPillWidth: (showRecordingPill ? 100 : 0) + (showFileTransferPill ? 88 : 0) + (Math.max(0, activityPillCount - 1) * 4)
     readonly property real activityPillGap: activityPillWidth > 0 ? 4 : 0
 
     property bool notchHovered: false
@@ -247,7 +247,7 @@ Item {
         }
     }
 
-    readonly property real mainRowContentWidth: 224 + beadSlotWidth + activityPillWidth + activityPillGap + separator2.width + notifIndicator.width + (mainRow.spacing * 3) + mainRowMargin
+    readonly property real mainRowContentWidth: 224 + beadSlotWidth + activityPillWidth + activityPillGap + separator2.width + notifIndicator.width + (mainRow.spacing * 3) + mainRowMargin + (PomodoroService.running ? 80 : 0)
     readonly property real mainRowHeight: Config.showBackground ? (Config.notchTheme === "island" ? 36 : 44) : (Config.notchTheme === "island" ? 36 : 40)
     readonly property real actionRailHeight: expandedState && !hasActiveNotifications ? 40 : 0
     readonly property real hoverRailWidth: 302
@@ -419,6 +419,66 @@ Item {
                             }
                         }
                     }
+
+                    MouseArea {
+                        id: inlinePomodoro
+                        width: inlineRow.width
+                        height: 28
+                        anchors.verticalCenter: parent.verticalCenter
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        visible: PomodoroService.running
+                        onClicked: root.togglePanel(4)
+
+                        Row {
+                            id: inlineRow
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 6
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "|"
+                                font.family: Config.theme.font
+                                font.pixelSize: Styling.fontSize(-3)
+                                color: Colors.outline
+                                opacity: 0.6
+                            }
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: PomodoroService.formatTime(PomodoroService.remainingSeconds)
+                                font.family: Config.theme.font
+                                font.pixelSize: Styling.fontSize(-3)
+                                font.weight: Font.Bold
+                                color: Colors.overBackground
+                                opacity: inlinePomodoro.containsMouse ? 1.0 : 0.8
+                            }
+
+                            Text {
+                                id: alarmIcon
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: Icons.alarm
+                                font.family: Icons.font
+                                font.pixelSize: 14
+                                color: Colors.red
+                                opacity: inlinePomodoro.containsMouse ? 1.0 : 0.8
+                                transform: Rotation {
+                                    id: alarmRotation
+                                    origin.x: alarmIcon.width / 2
+                                    origin.y: alarmIcon.height / 2
+                                    angle: 0
+                                }
+
+                                SequentialAnimation {
+                                    running: PomodoroService.running
+                                    loops: Animation.Infinite
+                                    NumberAnimation { target: alarmRotation; property: "angle"; to: -10; duration: 150; easing.type: Easing.InOutQuad }
+                                    NumberAnimation { target: alarmRotation; property: "angle"; to: 10; duration: 300; easing.type: Easing.InOutQuad }
+                                    NumberAnimation { target: alarmRotation; property: "angle"; to: 0; duration: 150; easing.type: Easing.InOutQuad }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -432,8 +492,9 @@ Item {
 
                 ActivityPill {
                     visible: root.showRecordingPill
-                    width: visible ? 82 : 0
+                    width: visible ? 100 : 0
                     icon: Icons.recordScreen
+                    secondaryIcon: Icons.waveform
                     text: ScreenRecorder.duration && ScreenRecorder.duration.length > 0 ? ScreenRecorder.duration.replace(/^\s+|\s+$/g, "") : "REC"
                     accent: Colors.red
                     active: ScreenRecorder.isRecording
@@ -964,6 +1025,7 @@ Item {
         id: pill
 
         property string icon: ""
+        property string secondaryIcon: ""
         property string text: ""
         property color accent: Colors.primary
         property bool active: false
@@ -1004,8 +1066,19 @@ Item {
             }
 
             Text {
+                id: pillSecondaryIcon
+                visible: pill.secondaryIcon !== ""
                 anchors.verticalCenter: parent.verticalCenter
-                width: Math.max(0, parent.width - pillIcon.width - parent.spacing)
+                text: pill.secondaryIcon
+                font.family: Icons.font
+                font.pixelSize: 12
+                color: pill.accent
+            }
+
+            Text {
+                visible: pill.text !== ""
+                anchors.verticalCenter: parent.verticalCenter
+                width: visible ? Math.max(0, pill.width - 10 - pillIcon.width - (pillSecondaryIcon.visible ? pillSecondaryIcon.width + parent.spacing : 0) - parent.spacing) : 0
                 text: pill.text
                 font.family: Config.theme.font
                 font.pixelSize: Styling.fontSize(-5)

@@ -247,6 +247,7 @@ let
             /wallpaper) exec /run/current-system/sw/bin/asura-vibeshell run dashboard-wallpapers ;;
             /session|/power) exec /run/current-system/sw/bin/asura-vibeshell run powermenu ;;
             /config) exec /run/current-system/sw/bin/asura-vibeshell run config ;;
+            /overview) exec /run/current-system/sw/bin/asura-vibeshell run overview ;;
             *) exec /run/current-system/sw/bin/asura-vibeshell run notch-launcher ;;
           esac
           ;;
@@ -259,6 +260,7 @@ let
             /wallpaper) exec /run/current-system/sw/bin/noctalia msg panel-toggle wallpaper ;;
             /session|/power) exec /run/current-system/sw/bin/noctalia msg panel-toggle session ;;
             /config) exec /run/current-system/sw/bin/noctalia msg panel-toggle control-center ;;
+            /overview) exec /run/current-system/sw/bin/noctalia msg panel-toggle launcher ;;
             *) exec /run/current-system/sw/bin/noctalia msg panel-toggle launcher ;;
           esac
           ;;

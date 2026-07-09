@@ -49,9 +49,9 @@
 
       if command -v tuned-adm >/dev/null 2>&1; then
         if acpi -a 2>/dev/null | grep -q "off-line"; then
-          sudo tuned-adm profile balanced-battery \
+          sudo tuned-adm profile asura-xs15-balanced-battery \
+            || sudo tuned-adm profile balanced-battery \
             || sudo tuned-adm profile powersave \
-            || sudo tuned-adm profile asura-xs15-balanced \
             || true
         else
           sudo tuned-adm profile asura-xs15-balanced \
@@ -63,4 +63,15 @@
       power-status
     '')
   ];
+
+  # Automatically trigger profile optimization on AC power connect/disconnect
+  services.udev.extraRules = ''
+    SUBSYSTEM=="power_supply", KERNEL=="AC", ACTION=="change", RUN+="${pkgs.writeShellScript "udev-power-change" ''
+      if grep -q 0 /sys/class/power_supply/AC/online 2>/dev/null; then
+        ${pkgs.tuned}/bin/tuned-adm profile asura-xs15-balanced-battery || ${pkgs.tuned}/bin/tuned-adm profile balanced-battery || ${pkgs.tuned}/bin/tuned-adm profile powersave || true
+      else
+        ${pkgs.tuned}/bin/tuned-adm profile asura-xs15-balanced || ${pkgs.tuned}/bin/tuned-adm profile balanced || true
+      fi
+    ''}"
+  '';
 }

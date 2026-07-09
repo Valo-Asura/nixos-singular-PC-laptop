@@ -48,7 +48,7 @@ in
         "SUPER, right, movefocus, r"
         "SUPER, up, movefocus, u"
         "SUPER, down, movefocus, d"
-        "ALT, Tab, cyclenext"
+        "ALT, Tab, exec, asura-shell-launcher /overview"
         "ALT SHIFT, Tab, cyclenext, prev"
         "SUPER, Tab, cyclenext"
         "SUPER SHIFT, Tab, submap, resize"

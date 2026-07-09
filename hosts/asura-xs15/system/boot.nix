@@ -3,7 +3,7 @@
 
 let
   linuxEspPartUuid = "ea0c3f00-a433-4db6-b494-b982ec40415b";
-  windowsEspPartUuid = "00000000-0000-0000-0000-000000000000";
+  windowsEspPartUuid = "ea0c3f00-a433-4db6-b494-b982ec40415b";
   circleHudPlymouth = pkgs.stdenvNoCC.mkDerivation {
     pname = "circle-hud-plymouth-theme";
     version = "local";
@@ -196,29 +196,43 @@ in
   '';
 
   system.activationScripts.syncWindowsBootEntry.text = ''
-        windows_esp="/dev/disk/by-partuuid/${windowsEspPartUuid}"
-        mount_dir="$(${pkgs.coreutils}/bin/mktemp -d)"
-
-        if [ -d /boot/loader/entries ]; then
-          ${pkgs.coreutils}/bin/rm -f /boot/loader/entries/*[Aa]tlas*.conf
-        fi
-
-        cleanup() {
-          ${pkgs.util-linux}/bin/umount "$mount_dir" >/dev/null 2>&1 || true
-          ${pkgs.coreutils}/bin/rmdir "$mount_dir" >/dev/null 2>&1 || true
-        }
-        trap cleanup EXIT
-
-        if [ -e "$windows_esp" ] && ${pkgs.util-linux}/bin/mount -o ro "$windows_esp" "$mount_dir" >/dev/null 2>&1; then
-          if [ -f "$mount_dir/EFI/Microsoft/Boot/bootmgfw.efi" ]; then
-            ${pkgs.coreutils}/bin/mkdir -p /boot/EFI/Microsoft /boot/loader/entries
-            ${pkgs.coreutils}/bin/rm -rf /boot/EFI/Microsoft/Boot
-            ${pkgs.coreutils}/bin/cp -a "$mount_dir/EFI/Microsoft/Boot" /boot/EFI/Microsoft/Boot
+        if [ "${windowsEspPartUuid}" = "${linuxEspPartUuid}" ]; then
+          if [ -d /boot/loader/entries ]; then
+            ${pkgs.coreutils}/bin/rm -f /boot/loader/entries/*[Aa]tlas*.conf
+          fi
+          if [ -f /boot/EFI/Microsoft/Boot/bootmgfw.efi ]; then
+            ${pkgs.coreutils}/bin/mkdir -p /boot/loader/entries
             ${pkgs.coreutils}/bin/cat > /boot/loader/entries/windows.conf <<'EOF'
+title Windows Boot Manager
+efi /EFI/Microsoft/Boot/bootmgfw.efi
+sort-key z_windows
+EOF
+          fi
+        else
+          windows_esp="/dev/disk/by-partuuid/${windowsEspPartUuid}"
+          mount_dir="$(${pkgs.coreutils}/bin/mktemp -d)"
+
+          if [ -d /boot/loader/entries ]; then
+            ${pkgs.coreutils}/bin/rm -f /boot/loader/entries/*[Aa]tlas*.conf
+          fi
+
+          cleanup() {
+            ${pkgs.util-linux}/bin/umount "$mount_dir" >/dev/null 2>&1 || true
+            ${pkgs.coreutils}/bin/rmdir "$mount_dir" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          if [ -e "$windows_esp" ] && ${pkgs.util-linux}/bin/mount -o ro "$windows_esp" "$mount_dir" >/dev/null 2>&1; then
+            if [ -f "$mount_dir/EFI/Microsoft/Boot/bootmgfw.efi" ]; then
+              ${pkgs.coreutils}/bin/mkdir -p /boot/EFI/Microsoft /boot/loader/entries
+              ${pkgs.coreutils}/bin/rm -rf /boot/EFI/Microsoft/Boot
+              ${pkgs.coreutils}/bin/cp -a "$mount_dir/EFI/Microsoft/Boot" /boot/EFI/Microsoft/Boot
+              ${pkgs.coreutils}/bin/cat > /boot/loader/entries/windows.conf <<'EOF'
     title Windows Boot Manager
     efi /EFI/Microsoft/Boot/bootmgfw.efi
     sort-key z_windows
     EOF
+            fi
           fi
         fi
   '';

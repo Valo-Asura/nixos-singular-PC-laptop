@@ -81,6 +81,7 @@ in
     git            # Version control system; used for nix config tracking and software dev
     gh             # GitHub CLI; used by super-productivity-bridge and dev scripts
     codex          # AI terminal assistant; used by user for local shell AI tasks
+    ollama         # Ollama CLI for running local LLMs
     jq             # JSON parser CLI; used by asuraScreenshot and super-productivity-bridge
     ripgrep        # Ripgrep search engine; used by Neovim, VSCode, and search widgets
     nixfmt         # Nix formatter; used by editors to clean Nix files

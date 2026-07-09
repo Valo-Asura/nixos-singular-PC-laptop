@@ -180,7 +180,7 @@ in
       ];
 
       windowrule = [
-        "float title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$, center title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$, size 1100 720 title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$, suppress_event maximize title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$"
+        "float title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$, center title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$, size 1400 840 title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$, suppress_event maximize title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$"
         "float title:^(.*(Authentication Required|PolicyKit1).*)$, center title:^(.*(Authentication Required|PolicyKit1).*)$, size 500 400 title:^(.*(Authentication Required|PolicyKit1).*)$"
         "float class:^(polkit-gnome-authentication-agent-1|hyprpolkitagent|polkit-kde-authentication-agent-1)$, center class:^(polkit-gnome-authentication-agent-1|hyprpolkitagent|polkit-kde-authentication-agent-1)$, size 500 400 class:^(polkit-gnome-authentication-agent-1|hyprpolkitagent|polkit-kde-authentication-agent-1)$"
         "float class:^(org\\.kde\\.ark|ark|file-roller|org\\.gnome\\.FileRoller|xarchiver)$, center class:^(org\\.kde\\.ark|ark|file-roller|org\\.gnome\\.FileRoller|xarchiver)$, size 860 620 class:^(org\\.kde\\.ark|ark|file-roller|org\\.gnome\\.FileRoller|xarchiver)$"
@@ -191,7 +191,7 @@ in
         "float class:^(asura-display-manager|nwg-displays|wdisplays)$, center class:^(asura-display-manager|nwg-displays|wdisplays)$, size 1040 720 class:^(asura-display-manager|nwg-displays|wdisplays)$"
         "float class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$, center class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$, size 760 940 class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$, suppress_event maximize class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$"
         "float title:^(Cloudflare Warp|Warp Taskbar|Warp)$, center title:^(Cloudflare Warp|Warp Taskbar|Warp)$, size 760 940 title:^(Cloudflare Warp|Warp Taskbar|Warp)$, suppress_event maximize title:^(Cloudflare Warp|Warp Taskbar|Warp)$"
-        "float class:^(xdg-desktop-portal-.*)$, center class:^(xdg-desktop-portal-.*)$, size 1100 720 class:^(xdg-desktop-portal-.*)$, suppress_event maximize class:^(xdg-desktop-portal-.*)$"
+        "float class:^(xdg-desktop-portal-.*)$, center class:^(xdg-desktop-portal-.*)$, size 1400 840 class:^(xdg-desktop-portal-.*)$, suppress_event maximize class:^(xdg-desktop-portal-.*)$"
       ];
 
       layerrule = [
