@@ -100,7 +100,7 @@ in
     fwupd.enable = false; # firmware updater — run manually when needed
     udisks2.enable = true;
     gvfs.enable = true;
-    tumbler.enable = true;
+    tumbler.enable = lib.mkForce true;
     upower.enable = true;
     ratbagd.enable = true;
     mongodb = {
