@@ -252,7 +252,7 @@ in
       "rd.udev.log_level=3"
       "udev.log_level=3"
       "vt.global_cursor_default=0"
-      "video=HDMI-A-1:1920x1080@144"
+      "video=DP-1:1920x1080@165"
       "nvidia-drm.modeset=1"
       "nvidia-drm.fbdev=1"
       "nowatchdog"

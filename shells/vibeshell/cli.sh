@@ -46,11 +46,11 @@ Commands:
 
 Examples:
     vibeshell brightness 75              Set all monitors to 75%
-    vibeshell brightness 50 HDMI-A-1     Set HDMI-A-1 to 50%
+    vibeshell brightness 50 DP-1     Set DP-1 to 50%
     vibeshell brightness +10             Increase brightness by 10%
-    vibeshell brightness -5 HDMI-A-1     Decrease HDMI-A-1 brightness by 5%
+    vibeshell brightness -5 DP-1     Decrease DP-1 brightness by 5%
     vibeshell brightness 10 -s           Save current, then set all to 10%
-    vibeshell brightness -s HDMI-A-1     Save current brightness of HDMI-A-1
+    vibeshell brightness -s DP-1     Save current brightness of DP-1
     vibeshell brightness -r              Restore saved brightness
 
 EOF
