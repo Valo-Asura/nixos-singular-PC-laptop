@@ -46,9 +46,9 @@ QtObject {
                 if (dir === "") {
                     dir = Quickshell.env("HOME") + "/Videos";
                 }
-                root.videosDir = dir + "/Recordings";
+                root.videosDir = dir + "/Screenrecords";
             } else {
-                root.videosDir = Quickshell.env("HOME") + "/Videos/Recordings";
+                root.videosDir = Quickshell.env("HOME") + "/Videos/Screenrecords";
             }
         }
     }

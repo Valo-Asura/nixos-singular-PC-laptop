@@ -114,7 +114,7 @@ ActionGrid {
             
             root.itemSelected();
         } else if (action.tooltip === "Open Recordings") {
-            var cmd = "dir=\"$(xdg-user-dir VIDEOS)/Recordings\"; mkdir -p \"$dir\"; nohup xdg-open \"$dir\" > /dev/null 2>&1 &";
+            var cmd = "dir=\"$(xdg-user-dir VIDEOS)/Screenrecords\"; mkdir -p \"$dir\"; nohup xdg-open \"$dir\" > /dev/null 2>&1 &";
             
             openFolderProc.command = ["bash", "-c", cmd];
             openFolderProc.running = true;
