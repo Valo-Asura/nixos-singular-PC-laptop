@@ -1,6 +1,11 @@
 # Theming configuration
 # Stylix owns the base theme. We add a few desktop-specific keys on top.
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   qtMaterialDarkColors = ''
@@ -32,6 +37,8 @@ in
     gtk4.theme = config.gtk.theme;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
   };
+
+  home.pointerCursor.enable = true;
 
   home.sessionVariables = {
     GTK_THEME = "adw-gtk3-dark";

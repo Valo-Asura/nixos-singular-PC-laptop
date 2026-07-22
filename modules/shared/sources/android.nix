@@ -5,7 +5,7 @@
   environment.systemPackages = with pkgs; [
     android-tools # adb, fastboot, logcat
     heimdall # Samsung download-mode flashing/recovery utility
-    jmtpfs # FUSE MTP mount helper
+    simple-mtpfs # FUSE MTP mount helper
     mtpfs # alternate MTP mount helper
     scrcpy # Android screen/control bridge over adb
   ];

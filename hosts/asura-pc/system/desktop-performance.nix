@@ -25,8 +25,10 @@ let
     "start-hyprland"
   ];
   interactiveProcesses = [
+    ".antigravity-wrapped"
     ".cursor-wrapped"
     ".kiro-wrapped"
+    "antigravity"
     "brave"
     "brave-browser"
     "chrome"
