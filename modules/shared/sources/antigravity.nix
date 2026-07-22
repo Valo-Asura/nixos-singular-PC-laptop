@@ -1,8 +1,14 @@
-{ lib, pkgs, ... }:
+# Antigravity IDE wrapper with Playwright browser automation support.
+{
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 
 pkgs.symlinkJoin {
   name = "antigravity-with-playwright";
-  paths = [ pkgs.antigravity ];
+  paths = [ inputs.antigravity.packages.${pkgs.system}.default ];
   nativeBuildInputs = [ pkgs.makeWrapper ];
   postBuild = ''
     playwright_browsers="${
@@ -12,7 +18,9 @@ pkgs.symlinkJoin {
       }
     }"
     rm "$out/bin/antigravity"
-    makeWrapper ${pkgs.antigravity}/bin/antigravity "$out/bin/antigravity" \
+    makeWrapper ${
+      inputs.antigravity.packages.${pkgs.system}.default
+    }/bin/antigravity "$out/bin/antigravity" \
       --prefix PATH : ${
         lib.makeBinPath [
           pkgs.playwright-test
