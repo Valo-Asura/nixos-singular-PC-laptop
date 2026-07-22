@@ -152,7 +152,11 @@ let
 
     case "''${1:-}" in
       --restore)
-        hyprctl reload >/dev/null 2>&1 || true
+        if hyprctl config full-reload >/dev/null 2>&1; then
+          :
+        else
+          hyprctl reload >/dev/null 2>&1 || true
+        fi
         noctalia msg config-reload >/dev/null 2>&1 || true
         ;;
       --daemon|"")

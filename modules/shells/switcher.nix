@@ -340,7 +340,11 @@ let
       mode_off() {
         printf '%s\n' off > "$state_file"
         ASURA_SHELL_QUIET=1 /run/current-system/sw/bin/asura-shell-switch caffeine-off >/dev/null 2>&1 || true
-        hyprctl reload >/dev/null 2>&1 || true
+        if hyprctl config full-reload >/dev/null 2>&1; then
+          :
+        else
+          hyprctl reload >/dev/null 2>&1 || true
+        fi
         if [ -f "$waybar_flag" ]; then
           pkill -u "$uid" -x waybar >/dev/null 2>&1 || true
           rm -f "$waybar_flag"

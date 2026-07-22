@@ -101,7 +101,8 @@ in
       "exec-once" = startupCommands;
 
       cursor = {
-        no_hardware_cursors = 1;
+        # 0.56 default is auto (2): disable HW cursors only when needed.
+        no_hardware_cursors = 2;
         inactive_timeout = 0;
         enable_hyprcursor = true;
         sync_gsettings_theme = true;
@@ -121,6 +122,10 @@ in
         inactive_opacity = inactive-opacity;
         rounding = rounding;
         shadow.enabled = false;
+        motion_blur = {
+          enabled = false;
+          samples = 7;
+        };
         blur = {
           enabled = blur;
           size = 3;
@@ -129,10 +134,17 @@ in
         };
       };
 
+      group = {
+        groupbar = {
+          disable_when_only = true;
+        };
+      };
+
       master = {
         new_status = "master";
         allow_small_split = true;
         mfact = 0.5;
+        focus_master_on_close = true;
       };
 
       dwindle = {
@@ -156,7 +168,10 @@ in
         swallow_regex = "";
       };
 
-      render.direct_scanout = 0;
+      render = {
+        direct_scanout = 2;
+        cm_auto_hdr = 1;
+      };
 
       input = {
         kb_layout = keyboardLayout;
@@ -192,6 +207,8 @@ in
         "float class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$, center class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$, size 760 940 class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$, suppress_event maximize class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$"
         "float title:^(Cloudflare Warp|Warp Taskbar|Warp)$, center title:^(Cloudflare Warp|Warp Taskbar|Warp)$, size 760 940 title:^(Cloudflare Warp|Warp Taskbar|Warp)$, suppress_event maximize title:^(Cloudflare Warp|Warp Taskbar|Warp)$"
         "float class:^(xdg-desktop-portal-.*)$, center class:^(xdg-desktop-portal-.*)$, size 1400 840 class:^(xdg-desktop-portal-.*)$, suppress_event maximize class:^(xdg-desktop-portal-.*)$"
+        "no_auto_hdr 1, class:^(mpv|obs|gamescope)$"
+        "no_auto_hdr 1, title:^(.*Steam.*)$"
       ];
 
       layerrule = [

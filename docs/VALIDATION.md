@@ -32,6 +32,7 @@ nix eval /etc/nixos#nixosConfigurations.asura-xs15.config.boot.initrd.kernelModu
 test -f /etc/asura-shell/active-shell
 command -v xdman
 command -v xdm-open
+command -v codex
 command -v asura-screen-record-toggle
 asura-screen-record-toggle status
 command -v asura-screenshot
@@ -62,6 +63,16 @@ systemctl --user is-active xdman.service || true
 test -d /opt/xdman/chrome-extension
 grep -R -- '--load-extension=/opt/xdman/chrome-extension' \
   ~/.local/share/applications ~/.config/BraveSoftware ~/.config/google-chrome ~/.config/chromium
+grep -n 'plugins."github@openai-curated"' ~/.codex/config.toml
+grep -n 'plugins."notion@openai-curated"' ~/.codex/config.toml
+grep -n 'ai-memory-files' ~/.codex/config.toml
+! grep -n 'mcp_servers.ai-memory-sqlite' ~/.codex/config.toml
+ai-memory-mcp-status
+test -f ~/.config/ai-unified-memory/mcp/config.sqlite-opt-in.json
+hyprctl version | rg -q 'Hyprland 0\.56'
+hyprctl getoption cursor:no_hardware_cursors | rg -q 'int: 2'
+hyprctl getoption render:direct_scanout | rg -q 'int: 2'
+hyprctl getoption decoration:motion_blur:enabled | rg -q 'int: 0'
 systemctl --user is-enabled asura-video-wallpaper-battery-guard.timer
 systemctl is-enabled libvirtd.service || true
 systemctl is-enabled libvirt-guests.service || true
@@ -99,6 +110,7 @@ Expected values:
 | GNOME color scheme | `prefer-dark` |
 | Hyprland config type | `"hyprlang"` |
 | Hyprland version | `0.56.0` or newer from the Hyprland flake input |
+| Hyprland 0.56 options | `cursor:no_hardware_cursors=2`, `render:direct_scanout=2`, `decoration:motion_blur:enabled=0` |
 | Kernel version | `7.0.11` |
 | NVIDIA initrd preload | no `nvidia*` modules in `boot.initrd.kernelModules` |
 | NVIDIA boot params | no local `nvidia-drm.modeset` or `nvidia-drm.fbdev` in `boot.kernelParams` |
@@ -112,7 +124,11 @@ Expected values:
 | KDE Connect remote input | `kdeconnectd` starts from Hyprland; `hypr-kdeconnect-portal` exists; `org.freedesktop.impl.portal.RemoteDesktop` is routed to `hypr-kdeconnect`; phone touchpad can move the laptop pointer |
 | Android recovery tools | `adb`, `fastboot`, `heimdall`, `scrcpy`, `simple-mtpfs`, and `mtpfs` are installed; USB device ACLs are handled by systemd uaccess |
 | NetworkManager panel | NetworkManager is active and `noctalia-networkmanager-refresh.service` refreshes Noctalia after NetworkManager restarts |
-| Antigravity Nix extension | removed with local AI stack |
+| Antigravity Nix extension | latest `jnoortheen.nix-ide` is not force-symlinked into Antigravity; auto-update is disabled there so an older compatible manual install can stay pinned |
+| Codex CLI | `/run/current-system/sw/bin/codex` exists after rebuild |
+| Codex plugins | generated `~/.codex/config.toml` keeps GitHub and Notion plugin blocks |
+| AI memory MCP | default editor config includes `ai-memory-files`; SQLite MCP is only in opt-in config |
+| Local LLM stack | `ollama` and `open-webui` services are disabled; no `ollama` binary in system packages |
 | Video wallpaper battery guard | user timer enabled; `mpvpaper` is suspended on battery |
 | Video renderer ownership | applying a video wallpaper stops `hyprpaper.service`/`hyprpaper` before starting `mpvpaper`; restoring an image stops `mpvpaper` |
 | VM stack | `libvirtd.service` and `libvirt-guests.service` are not enabled; libvirt sockets are enabled for on-demand VM use |
