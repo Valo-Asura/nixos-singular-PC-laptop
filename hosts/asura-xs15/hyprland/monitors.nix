@@ -9,6 +9,8 @@
       ",preferred,auto,1"
     ];
 
-    cursor.default_monitor = "eDP-1";
+    cursor = {
+      default_monitor = "eDP-1";
+    };
   };
 }

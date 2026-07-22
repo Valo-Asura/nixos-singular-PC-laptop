@@ -9,6 +9,8 @@
       ",preferred,auto,1"
     ];
 
-    cursor.default_monitor = "DP-1";
+    cursor = {
+      default_monitor = "DP-1";
+    };
   };
 }

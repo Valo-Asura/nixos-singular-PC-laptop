@@ -16,7 +16,12 @@ let
     if mods == "" then
       key
     else
-      lib.replaceStrings [ "," ] [ "" ] mods + " + " + key;
+      let
+        cleanedMods = lib.replaceStrings [ "," ] [ "" ] mods;
+        splitMods = lib.splitString " " cleanedMods;
+        nonEmptyMods = builtins.filter (s: s != "") splitMods;
+      in
+      lib.concatStringsSep " + " (nonEmptyMods ++ [ key ]);
 
   dsp = expr: mkLuaInline expr;
 
@@ -42,6 +47,26 @@ let
       _args = [ key val ];
     };
 
+  mkMonitorLine =
+    line:
+    let
+      parts = lib.splitString "," line;
+      output = builtins.elemAt parts 0;
+      mode = builtins.elemAt parts 1;
+      position = builtins.elemAt parts 2;
+      scale = builtins.fromJSON (builtins.elemAt parts 3);
+    in
+    {
+      _args = [
+        {
+          output = output;
+          mode = mode;
+          position = position;
+          scale = scale;
+        }
+      ];
+    };
+
   mkMonitor =
     output: mode: position: scale:
     {
@@ -60,7 +85,7 @@ let
     let
       parts = lib.splitString ", " line;
       name = builtins.head parts;
-      coords = map lib.toFloat (lib.drop 1 parts);
+      coords = map builtins.fromJSON (lib.drop 1 parts);
     in
     {
       _args = [
@@ -88,7 +113,7 @@ let
         ({
           leaf = leaf;
           enabled = enabled;
-          speed = lib.toFloat speed;
+          speed = builtins.fromJSON speed;
           bezier = bezier;
         }
         // lib.optionalAttrs (style != null) {
@@ -246,6 +271,7 @@ in
     mkExecBind
     mkEnv
     mkMonitor
+    mkMonitorLine
     mkCurve
     mkAnimation
     mkGesture

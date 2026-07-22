@@ -16,15 +16,12 @@ let
       "6"
     else
       "3";
-
-  mkAnimation =
-    leaf: enabled: speed: bezier: style:
-    "${leaf}, ${if enabled then "1" else "0"}, ${speed}, ${bezier}"
-    + (if style == null then "" else ", ${style}");
 in
 {
   wayland.windowManager.hyprland.settings = {
-    animations.enabled = true;
+    animations = {
+      enabled = true;
+    };
 
     bezier = [
       "linear, 0, 0, 1, 1"
@@ -44,17 +41,17 @@ in
     ];
 
     animation = [
-      (mkAnimation "windows" true animationDuration "md3_decel" "popin 60%")
-      (mkAnimation "windowsIn" true animationDuration "md3_decel" "popin 60%")
-      (mkAnimation "windowsOut" true animationDuration "md3_accel" "popin 60%")
-      (mkAnimation "border" true borderDuration "default" null)
-      (mkAnimation "fade" true animationDuration "md3_decel" null)
-      (mkAnimation "layersIn" true animationDuration "menu_decel" "slide")
-      (mkAnimation "layersOut" true animationDuration "menu_accel" null)
-      (mkAnimation "fadeLayersIn" true animationDuration "menu_decel" null)
-      (mkAnimation "fadeLayersOut" true animationDuration "menu_accel" null)
-      (mkAnimation "workspaces" true animationDuration "menu_decel" "slide")
-      (mkAnimation "specialWorkspace" true animationDuration "md3_decel" "slidevert")
+      "windows, 1, ${animationDuration}, md3_decel, popin 60%"
+      "windowsIn, 1, ${animationDuration}, md3_decel, popin 60%"
+      "windowsOut, 1, ${animationDuration}, md3_accel, popin 60%"
+      "border, 1, ${borderDuration}, default"
+      "fade, 1, ${animationDuration}, md3_decel"
+      "layersIn, 1, ${animationDuration}, menu_decel, slide"
+      "layersOut, 1, ${animationDuration}, menu_accel"
+      "fadeLayersIn, 1, ${animationDuration}, menu_decel"
+      "fadeLayersOut, 1, ${animationDuration}, menu_accel"
+      "workspaces, 1, ${animationDuration}, menu_decel, slide"
+      "specialWorkspace, 1, ${animationDuration}, md3_decel, slidevert"
     ];
   };
 }

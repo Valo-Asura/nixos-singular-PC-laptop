@@ -2,9 +2,6 @@
 { lib, pkgs, ... }:
 
 {
-  wayland.windowManager.hyprland.settings."exec-once" = lib.mkAfter [
-    "systemctl --user start hyprpolkitagent"
-  ];
 
   systemd.user.services.hyprpolkitagent = {
     Unit = {

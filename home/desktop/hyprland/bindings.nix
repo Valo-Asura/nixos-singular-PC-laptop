@@ -1,181 +1,123 @@
 # Shared Home Manager module: common Hyprland keybindings.
 { pkgs, lib, ... }:
 let
-  inherit (import ./lib.nix { inherit lib; }) mkBind mkExecBind;
-
   terminal = "${pkgs.foot}/bin/foot";
   browser = "${pkgs.brave}/bin/brave";
   editor = "code --ozone-platform=wayland";
   lock = "/run/current-system/sw/bin/asura-session-lock";
 
-  workspaceBinds =
-    builtins.concatLists (
-      builtins.genList (
-        i:
-        let
-          ws = i + 1;
-          key = toString ws;
-        in
-        [
-          (mkBind "SUPER" key "hl.dsp.focus({ workspace = ${toString ws} })" { })
-          (mkBind "SUPER SHIFT" key "hl.dsp.window.move({ workspace = ${toString ws} })" { })
-        ]
-      ) 9
-    )
-    ++ [
-      (mkBind "SUPER" "0" "hl.dsp.focus({ workspace = 10 })" { })
-      (mkBind "SUPER SHIFT" "0" "hl.dsp.window.move({ workspace = 10 })" { })
-    ];
+  workspaceBinds = builtins.concatLists (
+    builtins.genList (
+      i:
+      let
+        ws = i + 1;
+        key = toString ws;
+      in
+      [
+        "SUPER, ${key}, workspace, ${toString ws}"
+        "SUPER SHIFT, ${key}, movetoworkspace, ${toString ws}"
+      ]
+    ) 9
+  ) ++ [
+    "SUPER, 0, workspace, 10"
+    "SUPER SHIFT, 0, movetoworkspace, 10"
+  ];
 in
 {
   wayland.windowManager.hyprland = {
     settings = {
-      bind =
-        [
-          (mkBind "SUPER" "Q" "hl.dsp.window.close()" { })
-          (mkBind "SUPER" "H" "hl.dsp.exit()" { })
-          (mkExecBind "SUPER" "F" ''asura-file-manager "$HOME"'' { })
-          (mkBind "SUPER" "G" ''hl.dsp.window.float({ action = "toggle" })'' { })
-          (mkBind "SUPER" "J" ''hl.dsp.layout("togglesplit")'' { })
-          (mkExecBind "SUPER" "B" browser { })
-          (mkExecBind "SUPER" "T" terminal { })
-          (mkExecBind "SUPER" "C" editor { })
-          (mkExecBind "SUPER" "E" "${pkgs.telegram-desktop}/bin/telegram-desktop" { })
-          (mkExecBind "SUPER" "W" "skwd-wall" { })
-          (mkExecBind "SUPER" "P" "asura-display-manager" { })
-          (mkExecBind "SUPER SHIFT" "P" "asura-monitor-guard --restore" { })
-          (mkExecBind "CTRL" "L" lock { })
-          (mkExecBind "SUPER" "L" lock { })
-          (mkExecBind "SUPER" "V" "asura-shell-launcher /clipboard" { })
-          (mkBind "SUPER SHIFT" "V" ''hl.dsp.window.float({ action = "toggle" })'' { })
-          (mkExecBind "SUPER SHIFT" "C" "asura-shell-launcher /clipboard" { })
-          (mkExecBind "SUPER SHIFT" "E" "asura-shell-launcher /emo" { })
-          (mkExecBind "SUPER SHIFT" "S" "asura-screenshot region" { })
-          (mkExecBind "SUPER SHIFT" "W" "skwd-wall" { })
-          (mkExecBind "SUPER SHIFT" "R" "/run/current-system/sw/bin/asura-screen-record-toggle" { })
-          (mkExecBind "SUPER SHIFT" "X" "asura-screenshot region-edit" { })
-          (mkExecBind "SUPER" "F2" "night-shift" { })
-          (mkExecBind "SUPER" "N" "asura-shell-launcher /notes" { })
-          (mkExecBind "SUPER" "D" "asura-shell-launcher /dashboard" { })
-          (mkExecBind "SUPER" "S" "asura-shell-launcher /config" { })
-          (mkExecBind "CTRL ALT" "Delete" "asura-shell-launcher /session" { })
-          (mkExecBind "SUPER" "BackSpace" "asura-shell-launcher /session" { })
-          (mkExecBind "SUPER" "Period" "asura-shell-launcher /emo" { })
-          (mkExecBind "CTRL SUPER" "R" "asura-shell-switch reload" { })
-          (mkExecBind "" "Print" "asura-screenshot full" { })
-          (mkExecBind "SHIFT" "Print" "asura-screenshot region" { })
-          (mkExecBind "SUPER" "Print" "asura-screenshot output" { })
-          (mkExecBind "SUPER SHIFT" "Print" "asura-screenshot region-edit" { })
-          (mkBind "SUPER" "left" ''hl.dsp.focus({ direction = "left" })'' { })
-          (mkBind "SUPER" "right" ''hl.dsp.focus({ direction = "right" })'' { })
-          (mkBind "SUPER" "up" ''hl.dsp.focus({ direction = "up" })'' { })
-          (mkBind "SUPER" "down" ''hl.dsp.focus({ direction = "down" })'' { })
-          (mkExecBind "ALT" "Tab" "asura-shell-launcher /overview" { })
-          (mkBind "ALT SHIFT" "Tab" ''hl.dsp.window.cycle_next({ direction = "prev" })'' { })
-          (mkBind "SUPER" "Tab" "hl.dsp.window.cycle_next()" { })
-          (mkBind "SUPER SHIFT" "Tab" ''hl.dsp.submap("resize")'' { })
-        ]
-        ++ workspaceBinds;
+      bind = [
+        "SUPER, Q, killactive"
+        "SUPER, H, exit"
+        "SUPER, F, exec, asura-file-manager \"$HOME\""
+        "SUPER, G, togglefloating"
+        "SUPER, J, layoutmsg, togglesplit"
+        "SUPER, B, exec, ${browser}"
+        "SUPER, T, exec, ${terminal}"
+        "SUPER, C, exec, ${editor}"
+        "SUPER, E, exec, ${pkgs.telegram-desktop}/bin/telegram-desktop"
+        "SUPER, W, exec, skwd-wall"
+        "SUPER, P, exec, asura-display-manager"
+        "SUPER SHIFT, P, exec, asura-monitor-guard --restore"
+        "CTRL, L, exec, ${lock}"
+        "SUPER, L, exec, ${lock}"
+        "SUPER, V, exec, asura-shell-launcher /clipboard"
+        "SUPER SHIFT, V, togglefloating"
+        "SUPER SHIFT, C, exec, asura-shell-launcher /clipboard"
+        "SUPER SHIFT, E, exec, asura-shell-launcher /emo"
+        "SUPER SHIFT, S, exec, asura-screenshot region"
+        "SUPER SHIFT, W, exec, skwd-wall"
+        "SUPER SHIFT, R, exec, /run/current-system/sw/bin/asura-screen-record-toggle"
+        "SUPER SHIFT, X, exec, asura-screenshot region-edit"
+        "SUPER, F2, exec, night-shift"
+        "SUPER, N, exec, asura-shell-launcher /notes"
+        "SUPER, D, exec, asura-shell-launcher /dashboard"
+        "SUPER, S, exec, asura-shell-launcher /config"
+        "CTRL ALT, Delete, exec, asura-shell-launcher /session"
+        "SUPER, BackSpace, exec, asura-shell-launcher /session"
+        "SUPER, Period, exec, asura-shell-launcher /emo"
+        "CTRL SUPER, R, exec, asura-shell-switch reload"
+        ", Print, exec, asura-screenshot full"
+        "SHIFT, Print, exec, asura-screenshot region"
+        "SUPER, Print, exec, asura-screenshot output"
+        "SUPER SHIFT, Print, exec, asura-screenshot region-edit"
+        "SUPER, left, movefocus, l"
+        "SUPER, right, movefocus, r"
+        "SUPER, up, movefocus, u"
+        "SUPER, down, movefocus, d"
+        "ALT, Tab, exec, asura-shell-launcher /overview"
+        "ALT SHIFT, Tab, cyclenext, prev"
+        "SUPER, Tab, cyclenext"
+        "SUPER SHIFT, Tab, submap, resize"
+      ] ++ workspaceBinds;
 
       bindm = [
-        (mkBind "SUPER" "mouse:272" "hl.dsp.window.drag()" { mouse = true; })
-        (mkBind "SUPER" "mouse:273" "hl.dsp.window.resize()" { mouse = true; })
+        "SUPER, mouse:272, movewindow"
+        "SUPER, mouse:273, resizewindow"
       ];
 
       bindr = [
-        (mkExecBind "SUPER" "SUPER_L" "asura-shell-launcher" { release = true; })
-        (mkExecBind "SUPER" "SUPER_R" "asura-shell-launcher" { release = true; })
+        "SUPER, SUPER_L, exec, asura-shell-launcher"
+        "SUPER, SUPER_R, exec, asura-shell-launcher"
       ];
 
       bindl = [
-        (mkExecBind "" "XF86AudioMute" "sound-toggle" { locked = true; })
-        (mkExecBind "" "XF86AudioPlay" "${pkgs.playerctl}/bin/playerctl play-pause" { locked = true; })
-        (mkExecBind "" "XF86AudioNext" "${pkgs.playerctl}/bin/playerctl next" { locked = true; })
-        (mkExecBind "" "XF86AudioPrev" "${pkgs.playerctl}/bin/playerctl previous" { locked = true; })
-        (mkExecBind "" "switch:Lid Switch" lock { locked = true; })
-        (mkExecBind "" "F3" "sound-toggle" { locked = true; })
-        (mkExecBind "" "F5" "sound-down" { locked = true; })
-        (mkExecBind "" "F6" "sound-up" { locked = true; })
-        (mkExecBind "" "F8" "brightness-down" { locked = true; })
-        (mkExecBind "" "F9" "brightness-up" { locked = true; })
-        (mkExecBind "" "F10" "asura-camera-app" { locked = true; })
-        (mkExecBind "" "F11" "asura-airplane-toggle" { locked = true; })
-        (mkExecBind "" "F12" "night-shift" { locked = true; })
+        ", XF86AudioMute, exec, sound-toggle"
+        ", XF86AudioPlay, exec, ${pkgs.playerctl}/bin/playerctl play-pause"
+        ", XF86AudioNext, exec, ${pkgs.playerctl}/bin/playerctl next"
+        ", XF86AudioPrev, exec, ${pkgs.playerctl}/bin/playerctl previous"
+        ", switch:Lid Switch, exec, ${lock}"
+        ", F3, exec, sound-toggle"
+        ", F5, exec, sound-down"
+        ", F6, exec, sound-up"
+        ", F8, exec, brightness-down"
+        ", F9, exec, brightness-up"
+        ", F10, exec, asura-camera-app"
+        ", F11, exec, asura-airplane-toggle"
+        ", F12, exec, night-shift"
       ];
 
       bindle = [
-        (mkExecBind "" "XF86AudioRaiseVolume" "sound-up" {
-          locked = true;
-          repeating = true;
-        })
-        (mkExecBind "" "XF86AudioLowerVolume" "sound-down" {
-          locked = true;
-          repeating = true;
-        })
-        (mkExecBind "" "XF86MonBrightnessUp" "brightness-up" {
-          locked = true;
-          repeating = true;
-        })
-        (mkExecBind "" "XF86MonBrightnessDown" "brightness-down" {
-          locked = true;
-          repeating = true;
-        })
+        ", XF86AudioRaiseVolume, exec, sound-up"
+        ", XF86AudioLowerVolume, exec, sound-down"
+        ", XF86MonBrightnessUp, exec, brightness-up"
+        ", XF86MonBrightnessDown, exec, brightness-down"
       ];
-    };
 
-    submaps.resize.settings = {
-      binde = [
-        {
-          _args = [
-            "right"
-            (lib.generators.mkLuaInline "hl.dsp.window.resize({ x = 30, y = 0, relative = true })")
-            {
-              repeating = true;
-            }
+      submap = {
+        resize = {
+          binde = [
+            ", right, resizeactive, 30 0"
+            ", left, resizeactive, -30 0"
+            ", up, resizeactive, 0 -30"
+            ", down, resizeactive, 0 30"
           ];
-        }
-        {
-          _args = [
-            "left"
-            (lib.generators.mkLuaInline "hl.dsp.window.resize({ x = -30, y = 0, relative = true })")
-            {
-              repeating = true;
-            }
+          bind = [
+            ", escape, submap, reset"
+            "SUPER SHIFT, Tab, submap, reset"
           ];
-        }
-        {
-          _args = [
-            "up"
-            (lib.generators.mkLuaInline "hl.dsp.window.resize({ x = 0, y = -30, relative = true })")
-            {
-              repeating = true;
-            }
-          ];
-        }
-        {
-          _args = [
-            "down"
-            (lib.generators.mkLuaInline "hl.dsp.window.resize({ x = 0, y = 30, relative = true })")
-            {
-              repeating = true;
-            }
-          ];
-        }
-      ];
-      bind = [
-        {
-          _args = [
-            "escape"
-            (lib.generators.mkLuaInline ''hl.dsp.submap("reset")'')
-          ];
-        }
-        {
-          _args = [
-            "SUPER SHIFT + Tab"
-            (lib.generators.mkLuaInline ''hl.dsp.submap("reset")'')
-          ];
-        }
-      ];
+        };
+      };
     };
   };
 }
