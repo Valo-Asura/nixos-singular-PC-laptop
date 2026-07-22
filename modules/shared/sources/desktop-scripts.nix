@@ -10,6 +10,8 @@ let
         pkgs.procps
         pkgs.wf-recorder
         pkgs.libnotify
+        pkgs.pulseaudio
+        pkgs.slurp
       ]
     }:$PATH"
 
@@ -90,13 +92,55 @@ let
       fi
       cleanup_state
 
+      audio_out=false
+      audio_in=false
+      geometry=""
+
+      while [[ $# -gt 0 ]]; do
+        case "$1" in
+          --audio-out|--audio|--speaker)
+            audio_out=true
+            shift
+            ;;
+          --audio-in|--mic)
+            audio_in=true
+            shift
+            ;;
+          -g|--geometry|--region)
+            geometry="''${2:-}"
+            shift 2
+            ;;
+          *)
+            shift
+            ;;
+        esac
+      done
+
       file="$out_dir/recording-$(date +%Y%m%d-%H%M%S).mp4"
-      wf-recorder -f "$file" >"$logfile" 2>&1 &
+      cmd=("wf-recorder" "-f" "$file" "-c" "libx264" "-p" "pix_fmt=yuv420p")
+
+      if [ "$audio_out" = true ]; then
+        def_sink="$(pactl get-default-sink 2>/dev/null || true)"
+        if [ -n "$def_sink" ]; then
+          cmd+=("-a" "$def_sink.monitor")
+        fi
+      elif [ "$audio_in" = true ]; then
+        def_src="$(pactl get-default-source 2>/dev/null || true)"
+        if [ -n "$def_src" ]; then
+          cmd+=("-a" "$def_src")
+        fi
+      fi
+
+      if [ -n "$geometry" ]; then
+        cmd+=("-g" "$geometry")
+      fi
+
+      "''${cmd[@]}" >"$logfile" 2>&1 &
       pid="$!"
       printf '%s\n' "$pid" > "$pidfile"
       printf '%s\n' "$(date +%s)" > "$startfile"
       printf '%s\n' "$file" > "$filefile"
-      sleep 0.25
+      sleep 0.3
 
       if ! kill -0 "$pid" 2>/dev/null; then
         message="$(tail -n 5 "$logfile" 2>/dev/null || true)"
@@ -120,10 +164,13 @@ let
       file="$(cat "$filefile" 2>/dev/null || printf '%s' "$out_dir")"
       kill -CONT "$pid" 2>/dev/null || true
       kill -INT "$pid" 2>/dev/null || true
-      for _ in $(seq 1 50); do
+      for _ in $(seq 1 100); do
         kill -0 "$pid" 2>/dev/null || break
         sleep 0.1
       done
+      if [ -f "$file" ]; then
+        sync "$file" 2>/dev/null || true
+      fi
       cleanup_state
       notify "Screen recording saved" "Duration: $elapsed"$'\n'"$file"
     }
@@ -156,8 +203,11 @@ let
       notify "Screen recording resumed" "Recording is currently ON - $(format_elapsed "$(elapsed_seconds)")"
     }
 
-    case "''${1:-toggle}" in
-      start) start_recording ;;
+    action="''${1:-toggle}"
+    shift || true
+
+    case "$action" in
+      start) start_recording "$@" ;;
       stop) stop_recording ;;
       pause) pause_recording ;;
       resume) resume_recording ;;
@@ -173,11 +223,11 @@ let
         if is_running; then
           stop_recording
         else
-          start_recording
+          start_recording "$@"
         fi
         ;;
       *)
-        printf 'usage: asura-screen-record-toggle [toggle|start|stop|pause|resume|toggle-pause|status]\n' >&2
+        printf 'usage: asura-screen-record-toggle [toggle|start|stop|pause|resume|toggle-pause|status] [options]\n' >&2
         exit 64
         ;;
     esac

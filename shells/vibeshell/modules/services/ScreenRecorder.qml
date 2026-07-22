@@ -131,7 +131,15 @@ QtObject {
         root.currentOutputDir = outputDir;
         root.lastRecordingFile = "";
         root.lastError = "";
-        startProcess.command = ["asura-screen-record-toggle", "start"];
+        
+        var cmd = ["asura-screen-record-toggle", "start"];
+        if (recordAudioOutput) cmd.push("--audio-out");
+        if (recordAudioInput) cmd.push("--audio-in");
+        if (regionStr && regionStr !== "") {
+            cmd.push("--geometry");
+            cmd.push(regionStr);
+        }
+        startProcess.command = cmd;
         
         prepareProcess.running = true;
     }
