@@ -37,10 +37,10 @@ PanelWindow {
     readonly property int configuredLength: Config.bar?.width ?? 0
     readonly property int availableLength: orientation === "horizontal" ? Math.max(width - barMargin * 2, 1) : Math.max(height - barMargin * 2, 1)
     readonly property int barLength: configuredLength > 0 ? clampInt(configuredLength, Math.min(200, availableLength), availableLength) : availableLength
-    readonly property bool motionEnabled: (Config.animDuration ?? 0) > 0
-    readonly property int motionDuration: motionEnabled ? clampInt(Config.animDuration, 80, 220) : 0
-    readonly property int quickMotionDuration: motionEnabled ? Math.max(60, Math.round(motionDuration * 0.45)) : 0
-    readonly property int feedbackMotionDuration: motionEnabled ? Math.max(70, Math.round(motionDuration * 0.5)) : 0
+    readonly property bool motionEnabled: (Config.animDuration ?? 180) > 0
+    readonly property int motionDuration: motionEnabled ? clampInt(Config.animDuration ?? 180, 120, 320) : 0
+    readonly property int quickMotionDuration: motionEnabled ? Math.max(80, Math.round(motionDuration * 0.5)) : 0
+    readonly property int feedbackMotionDuration: motionEnabled ? Math.max(80, Math.round(motionDuration * 0.5)) : 0
 
     function clampInt(value, minValue, maxValue) {
         return Math.max(minValue, Math.min(maxValue, Math.round(value)));
@@ -111,7 +111,7 @@ PanelWindow {
     // Timer to delay hiding the bar after mouse leaves
     Timer {
         id: hideDelayTimer
-        interval: 1000
+        interval: 350
         repeat: false
         onTriggered: {
             if (!panel.isMouseOverBar) {
@@ -189,7 +189,7 @@ PanelWindow {
         Visibilities.unregisterBarPanel(screen.name);
     }
 
-    // MouseArea for hover detection - contains bar content (like Dock)
+    // MouseArea for hover detection & bar container
     MouseArea {
         id: barMouseArea
         hoverEnabled: true
@@ -200,10 +200,10 @@ PanelWindow {
                 when: panel.barPosition === "top"
                 PropertyChanges {
                     target: barMouseArea
-                    x: panel.reveal ? panel.horizontalAlignedOffset : 0
+                    x: panel.horizontalAlignedOffset
                     y: 0
-                    width: panel.reveal ? panel.barLength : panel.width
-                    height: panel.reveal ? (bar.height + panel.barMargin) : Math.max(Config.bar?.hoverRegionHeight ?? 8, 4)
+                    width: panel.barLength
+                    height: panel.reveal ? (panel.barThickness + panel.barMargin * 2) : Math.max(Config.bar?.hoverRegionHeight ?? 12, 8)
                 }
             },
             State {
@@ -211,10 +211,10 @@ PanelWindow {
                 when: panel.barPosition === "bottom"
                 PropertyChanges {
                     target: barMouseArea
-                    x: panel.reveal ? panel.horizontalAlignedOffset : 0
-                    y: panel.reveal ? (panel.height - bar.height - panel.barMargin) : (panel.height - Math.max(Config.bar?.hoverRegionHeight ?? 8, 4))
-                    width: panel.reveal ? panel.barLength : panel.width
-                    height: panel.reveal ? (bar.height + panel.barMargin) : Math.max(Config.bar?.hoverRegionHeight ?? 8, 4)
+                    x: panel.horizontalAlignedOffset
+                    y: panel.reveal ? (panel.height - panel.barThickness - panel.barMargin * 2) : (panel.height - Math.max(Config.bar?.hoverRegionHeight ?? 12, 8))
+                    width: panel.barLength
+                    height: panel.reveal ? (panel.barThickness + panel.barMargin * 2) : Math.max(Config.bar?.hoverRegionHeight ?? 12, 8)
                 }
             },
             State {
@@ -223,9 +223,9 @@ PanelWindow {
                 PropertyChanges {
                     target: barMouseArea
                     x: 0
-                    y: panel.reveal ? panel.verticalAlignedOffset : 0
-                    width: panel.reveal ? (bar.width + panel.barMargin) : Math.max(Config.bar?.hoverRegionHeight ?? 8, 4)
-                    height: panel.reveal ? panel.barLength : panel.height
+                    y: panel.verticalAlignedOffset
+                    width: panel.reveal ? (panel.barThickness + panel.barMargin * 2) : Math.max(Config.bar?.hoverRegionHeight ?? 12, 8)
+                    height: panel.barLength
                 }
             },
             State {
@@ -233,10 +233,10 @@ PanelWindow {
                 when: panel.barPosition === "right"
                 PropertyChanges {
                     target: barMouseArea
-                    x: panel.reveal ? (panel.width - bar.width - panel.barMargin) : (panel.width - Math.max(Config.bar?.hoverRegionHeight ?? 8, 4))
-                    y: panel.reveal ? panel.verticalAlignedOffset : 0
-                    width: panel.reveal ? (bar.width + panel.barMargin) : Math.max(Config.bar?.hoverRegionHeight ?? 8, 4)
-                    height: panel.reveal ? panel.barLength : panel.height
+                    x: panel.reveal ? (panel.width - panel.barThickness - panel.barMargin * 2) : (panel.width - Math.max(Config.bar?.hoverRegionHeight ?? 12, 8))
+                    y: panel.verticalAlignedOffset
+                    width: panel.reveal ? (panel.barThickness + panel.barMargin * 2) : Math.max(Config.bar?.hoverRegionHeight ?? 12, 8)
+                    height: panel.barLength
                 }
             }
         ]
@@ -244,29 +244,29 @@ PanelWindow {
         Behavior on width {
             enabled: panel.motionEnabled && panel.shouldAutoHide && panel.orientation === "vertical"
             NumberAnimation {
-                duration: panel.quickMotionDuration
-                easing.type: Easing.OutQuart
+                duration: panel.motionDuration
+                easing.type: Easing.OutCubic
             }
         }
         Behavior on height {
             enabled: panel.motionEnabled && panel.shouldAutoHide && panel.orientation === "horizontal"
             NumberAnimation {
-                duration: panel.quickMotionDuration
-                easing.type: Easing.OutQuart
+                duration: panel.motionDuration
+                easing.type: Easing.OutCubic
             }
         }
         Behavior on y {
             enabled: panel.motionEnabled && panel.shouldAutoHide && panel.barPosition === "bottom"
             NumberAnimation {
-                duration: panel.quickMotionDuration
-                easing.type: Easing.OutQuart
+                duration: panel.motionDuration
+                easing.type: Easing.OutCubic
             }
         }
         Behavior on x {
             enabled: panel.motionEnabled && panel.shouldAutoHide && panel.barPosition === "right"
             NumberAnimation {
-                duration: panel.quickMotionDuration
-                easing.type: Easing.OutQuart
+                duration: panel.motionDuration
+                easing.type: Easing.OutCubic
             }
         }
 
@@ -277,48 +277,48 @@ PanelWindow {
             layer.enabled: false
             layer.effect: Shadow {}
 
-            // Opacity animation
+            // Smooth opacity animation
             opacity: panel.reveal ? 1 : 0
             Behavior on opacity {
                 enabled: panel.motionEnabled && panel.shouldAutoHide
                 NumberAnimation {
                     duration: panel.motionDuration
-                    easing.type: Easing.OutQuart
+                    easing.type: Easing.OutCubic
                 }
             }
 
-            // Slide animation
+            // Smooth slide animation
             transform: Translate {
                 x: {
                     if (!panel.shouldAutoHide)
                         return 0;
                     if (panel.barPosition === "left")
-                        return panel.reveal ? 0 : -(bar.width + panel.barMargin);
+                        return panel.reveal ? 0 : -(panel.barThickness + panel.barMargin * 2 + 10);
                     if (panel.barPosition === "right")
-                        return panel.reveal ? 0 : (bar.width + panel.barMargin);
+                        return panel.reveal ? 0 : (panel.barThickness + panel.barMargin * 2 + 10);
                     return 0;
                 }
                 y: {
                     if (!panel.shouldAutoHide)
                         return 0;
                     if (panel.barPosition === "top")
-                        return panel.reveal ? 0 : -(bar.height + panel.barMargin);
+                        return panel.reveal ? 0 : -(panel.barThickness + panel.barMargin * 2 + 10);
                     if (panel.barPosition === "bottom")
-                        return panel.reveal ? 0 : (bar.height + panel.barMargin);
+                        return panel.reveal ? 0 : (panel.barThickness + panel.barMargin * 2 + 10);
                     return 0;
                 }
                 Behavior on x {
                     enabled: panel.motionEnabled && panel.shouldAutoHide
                     NumberAnimation {
                         duration: panel.motionDuration
-                        easing.type: Easing.OutQuart
+                        easing.type: Easing.OutCubic
                     }
                 }
                 Behavior on y {
                     enabled: panel.motionEnabled && panel.shouldAutoHide
                     NumberAnimation {
                         duration: panel.motionDuration
-                        easing.type: Easing.OutQuart
+                        easing.type: Easing.OutCubic
                     }
                 }
             }
@@ -327,17 +327,10 @@ PanelWindow {
                 State {
                     name: "top"
                     when: panel.barPosition === "top"
-                    AnchorChanges {
-                        target: bar
-                        anchors.left: undefined
-                        anchors.right: undefined
-                        anchors.top: parent.top
-                        anchors.bottom: undefined
-                    }
                     PropertyChanges {
                         target: bar
-                        anchors.topMargin: panel.barMargin
-                        x: panel.reveal ? 0 : panel.horizontalAlignedOffset
+                        x: 0
+                        y: panel.barMargin
                         width: panel.barLength
                         height: panel.barThickness
                     }
@@ -345,17 +338,10 @@ PanelWindow {
                 State {
                     name: "bottom"
                     when: panel.barPosition === "bottom"
-                    AnchorChanges {
-                        target: bar
-                        anchors.left: undefined
-                        anchors.right: undefined
-                        anchors.top: undefined
-                        anchors.bottom: parent.bottom
-                    }
                     PropertyChanges {
                         target: bar
-                        anchors.bottomMargin: panel.barMargin
-                        x: panel.reveal ? 0 : panel.horizontalAlignedOffset
+                        x: 0
+                        y: panel.barMargin
                         width: panel.barLength
                         height: panel.barThickness
                     }
@@ -363,17 +349,10 @@ PanelWindow {
                 State {
                     name: "left"
                     when: panel.barPosition === "left"
-                    AnchorChanges {
-                        target: bar
-                        anchors.left: parent.left
-                        anchors.right: undefined
-                        anchors.top: undefined
-                        anchors.bottom: undefined
-                    }
                     PropertyChanges {
                         target: bar
-                        anchors.leftMargin: panel.barMargin
-                        y: panel.reveal ? 0 : panel.verticalAlignedOffset
+                        x: panel.barMargin
+                        y: 0
                         width: panel.barThickness
                         height: panel.barLength
                     }
@@ -381,17 +360,10 @@ PanelWindow {
                 State {
                     name: "right"
                     when: panel.barPosition === "right"
-                    AnchorChanges {
-                        target: bar
-                        anchors.left: undefined
-                        anchors.right: parent.right
-                        anchors.top: undefined
-                        anchors.bottom: undefined
-                    }
                     PropertyChanges {
                         target: bar
-                        anchors.rightMargin: panel.barMargin
-                        y: panel.reveal ? 0 : panel.verticalAlignedOffset
+                        x: panel.barMargin
+                        y: 0
                         width: panel.barThickness
                         height: panel.barLength
                     }
