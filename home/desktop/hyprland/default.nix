@@ -5,6 +5,14 @@
   ...
 }:
 let
+  inherit (import ./lib.nix { inherit lib; })
+    mkEnv
+    mkGesture
+    mkLayerRule
+    mkStartupHook
+    mkWindowRule
+    ;
+
   border-size = 1;
   gaps-in = 4;
   gaps-out = 8;
@@ -15,27 +23,19 @@ let
   keyboardLayout = "us";
   border-color = "rgb(b4befe)";
 
+  filePickerTitle = "^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$";
+
   startupCommands = [
     "dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE XDG_SESSION_CLASS XDG_SESSION_ID XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS"
     "systemctl --user start skwd-daemon.service"
     "asura-apply-cursor-theme"
     "asura-monitor-guard --daemon"
     "asura-shell-switch autostart"
+    "systemctl --user start hyprpolkitagent"
   ];
 
-  # Old hand-written Lua config paths. These are not active config; Home
-  # Manager removes stale store symlinks so Hyprland reads hyprland.conf.
-  staleLuaFiles = [
-    "hyprland.lua"
-    "hyprland-gui.lua"
-    "noctalia.lua"
-    "configs/animations.lua"
-    "configs/env.lua"
-    "configs/general.lua"
-    "configs/hyprexpo.lua"
-    "configs/keybinds.lua"
-    "configs/monitors.lua"
-    "configs/rules.lua"
+  staleHyprlangFiles = [
+    "hyprland.conf"
   ];
 in
 {
@@ -56,8 +56,7 @@ in
 
   wayland.windowManager.hyprland = {
     enable = true;
-    configType = "hyprlang";
-    # Reuse the package pair from the NixOS module so Hyprland and XDPH stay in sync.
+    configType = "lua";
     package = null;
     portalPackage = null;
     plugins = [ ];
@@ -79,7 +78,98 @@ in
     };
 
     settings = {
-      env = [
+      on = [ (mkStartupHook startupCommands) ];
+
+      config = {
+        cursor = {
+          no_hardware_cursors = 2;
+          inactive_timeout = 0;
+          enable_hyprcursor = true;
+          sync_gsettings_theme = true;
+        };
+
+        general = {
+          resize_on_border = true;
+          gaps_in = gaps-in;
+          gaps_out = gaps-out;
+          border_size = border-size;
+          layout = "dwindle";
+          col.active_border = border-color;
+        };
+
+        decoration = {
+          active_opacity = active-opacity;
+          inactive_opacity = inactive-opacity;
+          rounding = rounding;
+          shadow.enabled = false;
+          motion_blur = {
+            enabled = false;
+            samples = 7;
+          };
+          blur = {
+            enabled = blur;
+            size = 3;
+            passes = 1;
+            new_optimizations = true;
+          };
+        };
+
+        group = {
+          groupbar = {
+            disable_when_only = true;
+          };
+        };
+
+        master = {
+          new_status = "master";
+          allow_small_split = true;
+          mfact = 0.5;
+          focus_master_on_close = true;
+        };
+
+        dwindle = {
+          force_split = 2;
+          preserve_split = true;
+          smart_split = false;
+          smart_resizing = true;
+        };
+
+        debug.vfr = true;
+
+        misc = {
+          vrr = 1;
+          animate_manual_resizes = false;
+          animate_mouse_windowdragging = false;
+          disable_hyprland_logo = true;
+          disable_splash_rendering = true;
+          force_default_wallpaper = 0;
+          focus_on_activate = true;
+          enable_swallow = false;
+          swallow_regex = "";
+        };
+
+        render = {
+          direct_scanout = 2;
+          cm_auto_hdr = 1;
+        };
+
+        input = {
+          kb_layout = keyboardLayout;
+          kb_options = "caps:escape";
+          follow_mouse = 1;
+          sensitivity = 0.5;
+          repeat_delay = 300;
+          repeat_rate = 50;
+          numlock_by_default = true;
+          touchpad = {
+            natural_scroll = true;
+            tap_button_map = "lrm";
+            clickfinger_behavior = false;
+          };
+        };
+      };
+
+      env = map mkEnv [
         "XDG_SESSION_TYPE,wayland"
         "XDG_CURRENT_DESKTOP,Hyprland"
         "XDG_SESSION_DESKTOP,Hyprland"
@@ -89,7 +179,6 @@ in
         "QT_QPA_PLATFORM,wayland;xcb"
         "QT_WAYLAND_DISABLE_WINDOWDECORATION,1"
         "ELECTRON_OZONE_PLATFORM_HINT,auto"
-        # NVIDIA/EGL/GBM vendor vars intentionally stay out of compositor env.
         "SDL_VIDEODRIVER,wayland,x11"
         "CLUTTER_BACKEND,wayland"
         "XCURSOR_SIZE,24"
@@ -98,135 +187,140 @@ in
         "HYPRCURSOR_THEME,Bibata-Modern-Amber"
       ];
 
-      "exec-once" = startupCommands;
-
-      cursor = {
-        # 0.56 default is auto (2): disable HW cursors only when needed.
-        no_hardware_cursors = 2;
-        inactive_timeout = 0;
-        enable_hyprcursor = true;
-        sync_gsettings_theme = true;
-      };
-
-      general = {
-        resize_on_border = true;
-        gaps_in = gaps-in;
-        gaps_out = gaps-out;
-        border_size = border-size;
-        layout = "dwindle";
-        "col.active_border" = border-color;
-      };
-
-      decoration = {
-        active_opacity = active-opacity;
-        inactive_opacity = inactive-opacity;
-        rounding = rounding;
-        shadow.enabled = false;
-        motion_blur = {
-          enabled = false;
-          samples = 7;
-        };
-        blur = {
-          enabled = blur;
-          size = 3;
-          passes = 1;
-          new_optimizations = true;
-        };
-      };
-
-      group = {
-        groupbar = {
-          disable_when_only = true;
-        };
-      };
-
-      master = {
-        new_status = "master";
-        allow_small_split = true;
-        mfact = 0.5;
-        focus_master_on_close = true;
-      };
-
-      dwindle = {
-        force_split = 2;
-        preserve_split = true;
-        smart_split = false;
-        smart_resizing = true;
-      };
-
-      debug.vfr = true;
-
-      misc = {
-        vrr = 1;
-        animate_manual_resizes = false;
-        animate_mouse_windowdragging = false;
-        disable_hyprland_logo = true;
-        disable_splash_rendering = true;
-        force_default_wallpaper = 0;
-        focus_on_activate = true;
-        enable_swallow = false;
-        swallow_regex = "";
-      };
-
-      render = {
-        direct_scanout = 2;
-        cm_auto_hdr = 1;
-      };
-
-      input = {
-        kb_layout = keyboardLayout;
-        kb_options = "caps:escape";
-        follow_mouse = 1;
-        sensitivity = 0.5;
-        repeat_delay = 300;
-        repeat_rate = 50;
-        numlock_by_default = true;
-
-        touchpad = {
-          natural_scroll = true;
-          tap_button_map = "lrm";
-          clickfinger_behavior = false;
-        };
-      };
-
       gesture = [
-        "3, horizontal, workspace"
-        "4, horizontal, workspace"
+        (mkGesture 3 "horizontal" "workspace")
+        (mkGesture 4 "horizontal" "workspace")
       ];
 
-      windowrule = [
-        "float title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$, center title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$, size 1400 840 title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$, suppress_event maximize title:^(.*(Open File|Open Folder|Choose Files|Choose Folder|File Upload|Save As|Select.*(File|Folder|Directory|extension directory)|Browse.*(File|Folder|Directory)|Library).*)$"
-        "float title:^(.*(Authentication Required|PolicyKit1).*)$, center title:^(.*(Authentication Required|PolicyKit1).*)$, size 500 400 title:^(.*(Authentication Required|PolicyKit1).*)$"
-        "float class:^(polkit-gnome-authentication-agent-1|hyprpolkitagent|polkit-kde-authentication-agent-1)$, center class:^(polkit-gnome-authentication-agent-1|hyprpolkitagent|polkit-kde-authentication-agent-1)$, size 500 400 class:^(polkit-gnome-authentication-agent-1|hyprpolkitagent|polkit-kde-authentication-agent-1)$"
-        "float class:^(org\\.kde\\.ark|ark|file-roller|org\\.gnome\\.FileRoller|xarchiver)$, center class:^(org\\.kde\\.ark|ark|file-roller|org\\.gnome\\.FileRoller|xarchiver)$, size 860 620 class:^(org\\.kde\\.ark|ark|file-roller|org\\.gnome\\.FileRoller|xarchiver)$"
-        "float class:^(pcmanfm-qt|Pcmanfm-qt|org\\.gnome\\.Nautilus|nautilus)$, center class:^(pcmanfm-qt|Pcmanfm-qt|org\\.gnome\\.Nautilus|nautilus)$, size 1100 740 class:^(pcmanfm-qt|Pcmanfm-qt|org\\.gnome\\.Nautilus|nautilus)$, suppress_event maximize class:^(pcmanfm-qt|Pcmanfm-qt|org\\.gnome\\.Nautilus|nautilus)$"
-        "float class:^(org\\.gnome\\.Loupe|loupe|org\\.kde\\.gwenview|Gwenview)$, center class:^(org\\.gnome\\.Loupe|loupe|org\\.kde\\.gwenview|Gwenview)$, size 980 720 class:^(org\\.gnome\\.Loupe|loupe|org\\.kde\\.gwenview|Gwenview)$"
-        "float class:^(org\\.gnome\\.NautilusPreviewer|sushi)$, center class:^(org\\.gnome\\.NautilusPreviewer|sushi)$, size 900 640 class:^(org\\.gnome\\.NautilusPreviewer|sushi)$"
-        "float class:^(asura-system-monitor|io\\.missioncenter\\.MissionCenter)$, center class:^(asura-system-monitor|io\\.missioncenter\\.MissionCenter)$, size 980 720 class:^(asura-system-monitor|io\\.missioncenter\\.MissionCenter)$"
-        "float class:^(asura-display-manager|nwg-displays|wdisplays)$, center class:^(asura-display-manager|nwg-displays|wdisplays)$, size 1040 720 class:^(asura-display-manager|nwg-displays|wdisplays)$"
-        "float class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$, center class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$, size 760 940 class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$, suppress_event maximize class:^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$"
-        "float title:^(Cloudflare Warp|Warp Taskbar|Warp)$, center title:^(Cloudflare Warp|Warp Taskbar|Warp)$, size 760 940 title:^(Cloudflare Warp|Warp Taskbar|Warp)$, suppress_event maximize title:^(Cloudflare Warp|Warp Taskbar|Warp)$"
-        "float class:^(xdg-desktop-portal-.*)$, center class:^(xdg-desktop-portal-.*)$, size 1400 840 class:^(xdg-desktop-portal-.*)$, suppress_event maximize class:^(xdg-desktop-portal-.*)$"
-        "no_auto_hdr 1, class:^(mpv|obs|gamescope)$"
-        "no_auto_hdr 1, title:^(.*Steam.*)$"
+      window_rule = [
+        (mkWindowRule "file-picker" { title = filePickerTitle; } {
+          float = true;
+          center = true;
+          size = "1400 840";
+          suppress_event = "maximize";
+        })
+        (mkWindowRule "auth-dialog" { title = "^(.*(Authentication Required|PolicyKit1).*)$"; } {
+          float = true;
+          center = true;
+          size = "500 400";
+        })
+        (mkWindowRule "polkit-agent" {
+          class = "^(polkit-gnome-authentication-agent-1|hyprpolkitagent|polkit-kde-authentication-agent-1)$";
+        } {
+          float = true;
+          center = true;
+          size = "500 400";
+        })
+        (mkWindowRule "archive-ui" {
+          class = "^(org\\.kde\\.ark|ark|file-roller|org\\.gnome\\.FileRoller|xarchiver)$";
+        } {
+          float = true;
+          center = true;
+          size = "860 620";
+        })
+        (mkWindowRule "file-manager" {
+          class = "^(pcmanfm-qt|Pcmanfm-qt|org\\.gnome\\.Nautilus|nautilus)$";
+        } {
+          float = true;
+          center = true;
+          size = "1100 740";
+          suppress_event = "maximize";
+        })
+        (mkWindowRule "image-viewer" {
+          class = "^(org\\.gnome\\.Loupe|loupe|org\\.kde\\.gwenview|Gwenview)$";
+        } {
+          float = true;
+          center = true;
+          size = "980 720";
+        })
+        (mkWindowRule "nautilus-preview" {
+          class = "^(org\\.gnome\\.NautilusPreviewer|sushi)$";
+        } {
+          float = true;
+          center = true;
+          size = "900 640";
+        })
+        (mkWindowRule "system-monitor" {
+          class = "^(asura-system-monitor|io\\.missioncenter\\.MissionCenter)$";
+        } {
+          float = true;
+          center = true;
+          size = "980 720";
+        })
+        (mkWindowRule "display-manager" {
+          class = "^(asura-display-manager|nwg-displays|wdisplays)$";
+        } {
+          float = true;
+          center = true;
+          size = "1040 720";
+        })
+        (mkWindowRule "cloudflare-warp-class" {
+          class = "^(Cloudflare Warp|cloudflare-warp|warp-taskbar|Warp)$";
+        } {
+          float = true;
+          center = true;
+          size = "760 940";
+          suppress_event = "maximize";
+        })
+        (mkWindowRule "cloudflare-warp-title" {
+          title = "^(Cloudflare Warp|Warp Taskbar|Warp)$";
+        } {
+          float = true;
+          center = true;
+          size = "760 940";
+          suppress_event = "maximize";
+        })
+        (mkWindowRule "xdg-portal" {
+          class = "^(xdg-desktop-portal-.*)$";
+        } {
+          float = true;
+          center = true;
+          size = "1400 840";
+          suppress_event = "maximize";
+        })
+        (mkWindowRule "no-auto-hdr-media" {
+          class = "^(mpv|obs|gamescope)$";
+        } {
+          no_auto_hdr = true;
+        })
+        (mkWindowRule "no-auto-hdr-steam" {
+          title = "^(.*Steam.*)$";
+        } {
+          no_auto_hdr = true;
+        })
       ];
 
-      layerrule = [
-        "match:namespace notifications, no_anim 1, ignore_alpha 0.69"
-        "match:namespace control-center, no_anim 1, ignore_alpha 0.5"
-        "match:namespace launcher, no_anim 1, ignore_alpha 0.5"
-        "match:namespace overview, no_anim 1"
-        "match:namespace session, no_anim 1"
-        "match:namespace ^ags-.*$, no_anim 1"
+      layer_rule = [
+        (mkLayerRule "notifications" "notifications" {
+          no_anim = true;
+          ignore_alpha = 0.69;
+        })
+        (mkLayerRule "control-center" "control-center" {
+          no_anim = true;
+          ignore_alpha = 0.5;
+        })
+        (mkLayerRule "launcher" "launcher" {
+          no_anim = true;
+          ignore_alpha = 0.5;
+        })
+        (mkLayerRule "overview" "overview" {
+          no_anim = true;
+        })
+        (mkLayerRule "session" "session" {
+          no_anim = true;
+        })
+        (mkLayerRule "ags-shell" "^ags-.*$" {
+          no_anim = true;
+        })
       ];
     };
   };
 
   services.hyprpaper.enable = false;
 
-  home.activation.removeStaleHyprlandLua = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+  home.activation.removeStaleHyprlandConf = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
     for stale in ${
-      lib.concatMapStringsSep " " (name: ''"$HOME/.config/hypr/${name}"'') staleLuaFiles
+      lib.concatMapStringsSep " " (name: ''"$HOME/.config/hypr/${name}"'') staleHyprlangFiles
     }; do
       if [ -L "$stale" ] && ${pkgs.coreutils}/bin/readlink "$stale" | ${pkgs.gnugrep}/bin/grep -q '^/nix/store/'; then
         ${pkgs.coreutils}/bin/rm -f "$stale"
