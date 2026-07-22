@@ -87,8 +87,6 @@ in
         enable = true;
         defaultApplications = lib.mkForce {
           "inode/directory" = "pcmanfm-qt.desktop";
-          "x-scheme-handler/antigravity" = "antigravity-url-handler.desktop";
-          "x-scheme-handler/antigravity-ide" = "antigravity-url-handler.desktop";
           "text/plain" = "cursor.desktop";
           "application/zip" = "xarchiver.desktop";
           "application/x-7z-compressed" = "xarchiver.desktop";

@@ -117,21 +117,6 @@ in
               cacheSizeGB: 0.25
       '';
     };
-    ollama = {
-      enable = true;
-      package = pkgs.ollama-cuda;
-    };
-    open-webui = {
-      enable = true;
-      port = 8080;
-      host = "127.0.0.1";
-      environment = {
-        OLLAMA_API_BASE_URL = "http://127.0.0.1:11434/api";
-        ANONYMIZED_TELEMETRY = "False";
-        DO_NOT_TRACK = "True";
-        SCARF_NO_ANALYTICS = "True";
-      };
-    };
     printing.enable = false; # no printer — removes CUPS daemon
   };
 

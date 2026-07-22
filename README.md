@@ -9,7 +9,7 @@ Single `/etc/nixos` flake for the laptop and desktop.
 | Repo | `Valo-Asura/nixos-singular-PC-laptop` |
 | Hosts | `asura-xs15`, `asura-pc` |
 | NixOS input | `nixos-unstable` / `26.11.20260616.567a49d` |
-| Hyprland | stable `v0.55.4` from the official Hyprland flake |
+| Hyprland | stable `v0.56.0` from the official Hyprland flake |
 | Kernel | CachyOS kernel `7.1.1` from `nix-cachyos-kernel/release` |
 | Default shell | `vibeshell` on both hosts |
 | Shell choices | `waybar`, `noctalia`, `vibeshell` |

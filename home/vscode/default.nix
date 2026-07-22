@@ -62,8 +62,8 @@ let
   ];
 in
 {
-  home.activation.repairEditorCodexSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    for editor in Code Kiro Cursor Antigravity; do
+  home.activation.repairEditorSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    for editor in Code Kiro Cursor; do
       settings="$HOME/.config/$editor/User/settings.json"
       if [ -f "$settings" ]; then
         tmp="$(${pkgs.coreutils}/bin/mktemp)"
@@ -73,27 +73,12 @@ in
           "$settings" > "$tmp"
         ${pkgs.coreutils}/bin/mv "$tmp" "$settings"
       fi
-      if [ "$editor" = Antigravity ] && [ -f "$settings" ]; then
-        tmp="$(${pkgs.coreutils}/bin/mktemp)"
-        ${pkgs.jq}/bin/jq \
-          '.["extensions.autoUpdate"] = false
-           | .["extensions.autoCheckUpdates"] = false' \
-          "$settings" > "$tmp"
-        ${pkgs.coreutils}/bin/mv "$tmp" "$settings"
-      fi
-
-      if [ "$editor" != Cursor ] && [ "$editor" != Antigravity ] && [ -f "$settings" ] && ${pkgs.jq}/bin/jq -e '.["chatgpt.cliExecutable"] == "/run/current-system/sw/bin/codex"' "$settings" >/dev/null 2>&1; then
-        tmp="$(${pkgs.coreutils}/bin/mktemp)"
-        ${pkgs.jq}/bin/jq 'del(.["chatgpt.cliExecutable"])' "$settings" > "$tmp"
-        ${pkgs.coreutils}/bin/mv "$tmp" "$settings"
-      fi
 
       extensions_dir=""
       case "$editor" in
         Code) extensions_dir="$HOME/.vscode/extensions" ;;
         Kiro) extensions_dir="$HOME/.kiro/extensions" ;;
         Cursor) extensions_dir="$HOME/.cursor/extensions" ;;
-        Antigravity) extensions_dir="$HOME/.antigravity/extensions" ;;
       esac
       ${pkgs.coreutils}/bin/mkdir -p "$extensions_dir"
 
@@ -123,13 +108,7 @@ in
       ${pkgs.coreutils}/bin/ln -sfn ${gitlensExtension} "$extensions_dir/eamodio.gitlens"
       ${pkgs.coreutils}/bin/ln -sfn ${githubThemeExtension} "$extensions_dir/github.github-vscode-theme"
       ${pkgs.coreutils}/bin/ln -sfn ${catppuccinIconsExtension} "$extensions_dir/catppuccin.catppuccin-vsc-icons"
-      if [ "$editor" = Antigravity ]; then
-        if [ -L "$extensions_dir/jnoortheen.nix-ide" ]; then
-          ${pkgs.coreutils}/bin/rm -f "$extensions_dir/jnoortheen.nix-ide"
-        fi
-      else
-        ${pkgs.coreutils}/bin/ln -sfn ${nixIdeExtension} "$extensions_dir/jnoortheen.nix-ide"
-      fi
+      ${pkgs.coreutils}/bin/ln -sfn ${nixIdeExtension} "$extensions_dir/jnoortheen.nix-ide"
       ${pkgs.coreutils}/bin/ln -sfn ${pythonExtension} "$extensions_dir/ms-python.python"
 
       # VS Code caches extension locations here. Removing it clears stale

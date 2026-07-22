@@ -26,10 +26,8 @@ let
     "skwd-daemon"
   ];
   interactiveProcesses = [
-    ".antigravity-wrapped"
     ".cursor-wrapped"
     ".kiro-wrapped"
-    "antigravity"
     "brave"
     "brave-browser"
     "chrome"
