@@ -26,7 +26,7 @@
     hyprpaper.url = "github:hyprwm/hyprpaper";
     hyprpolkitagent.url = "github:hyprwm/hyprpolkitagent";
     hyprland = {
-      url = "github:hyprwm/Hyprland/v0.55.4";
+      url = "github:hyprwm/Hyprland/v0.56.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
