@@ -60,7 +60,7 @@ Singleton {
 
     // Open EasyEffects app
     function openApp() {
-        Quickshell.execDetached(["env", "LANG=C.UTF-8", "LC_ALL=C.UTF-8", "easyeffects"]);
+        Quickshell.execDetached(["bash", "-c", "pkill -f 'easyeffects.*service-mode' 2>/dev/null || true; env LANG=C.UTF-8 LC_ALL=C.UTF-8 easyeffects &"]);
     }
 
     // Check if easyeffects is available
@@ -180,9 +180,11 @@ Singleton {
                         inputList = parts[1].trim().split(",").map(p => p.trim()).filter(p => p);
                     }
                 } else if (trimmed && !trimmed.includes(":")) {
-                    // Preset name on its own line
-                    if (isOutput) outputList.push(trimmed);
-                    else if (isInput) inputList.push(trimmed);
+                    const name = trimmed.replace(/^[0-9]+\s+/, '').trim();
+                    if (name) {
+                        if (isOutput) outputList.push(name);
+                        else if (isInput) inputList.push(name);
+                    }
                 }
             }
             

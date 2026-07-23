@@ -382,7 +382,9 @@ if __name__ == "__main__":
             i += 1
 
     if not disks_to_monitor:
-        disks_to_monitor = ["/"]
+        disks_to_monitor = ["/", "/nix"]
+    elif "/nix" not in disks_to_monitor and os.path.exists("/nix"):
+        disks_to_monitor.append("/nix")
 
     # Main loop
     try:

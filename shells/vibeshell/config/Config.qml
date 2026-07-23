@@ -1053,7 +1053,7 @@ Singleton {
         }
 
         adapter: JsonAdapter {
-            property list<string> disks: ["/"]
+            property list<string> disks: ["/", "/nix"]
             property bool debugLogging: false
             property JsonObject idle: JsonObject {
                 property JsonObject general: JsonObject {
