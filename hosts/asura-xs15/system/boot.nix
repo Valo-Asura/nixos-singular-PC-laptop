@@ -228,10 +228,10 @@ EOF
               ${pkgs.coreutils}/bin/rm -rf /boot/EFI/Microsoft/Boot
               ${pkgs.coreutils}/bin/cp -a "$mount_dir/EFI/Microsoft/Boot" /boot/EFI/Microsoft/Boot
               ${pkgs.coreutils}/bin/cat > /boot/loader/entries/windows.conf <<'EOF'
-    title Windows Boot Manager
-    efi /EFI/Microsoft/Boot/bootmgfw.efi
-    sort-key z_windows
-    EOF
+title Windows Boot Manager
+efi /EFI/Microsoft/Boot/bootmgfw.efi
+sort-key z_windows
+EOF
             fi
           fi
         fi

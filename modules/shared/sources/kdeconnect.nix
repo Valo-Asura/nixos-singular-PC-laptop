@@ -66,7 +66,9 @@ in
 {
   programs.kdeconnect = {
     enable = true;
-    package = kdeconnectManual;
+    # Win over plasma6's kdeconnect package so we keep the stripped
+    # autostart desktop entry for Hyprland-first setups.
+    package = lib.mkForce kdeconnectManual;
   };
 
   environment.systemPackages = [
