@@ -209,9 +209,18 @@ Singleton {
             }
         }
 
-        // Ensure at least "/" is present
+        // Ensure at least "/" is present and prioritize "/nix" on NixOS at the top
         if (newValidDisks.length === 0) {
-            newValidDisks = ["/"];
+            newValidDisks = ["/nix", "/"];
+        }
+        if (newValidDisks.indexOf("/nix") === -1) {
+            newValidDisks.unshift("/nix");
+        } else {
+            const idx = newValidDisks.indexOf("/nix");
+            if (idx > 0) {
+                newValidDisks.splice(idx, 1);
+                newValidDisks.unshift("/nix");
+            }
         }
         
         // Assign the new array to trigger onValidDisksChanged

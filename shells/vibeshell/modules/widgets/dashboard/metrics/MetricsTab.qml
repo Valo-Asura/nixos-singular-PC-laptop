@@ -263,8 +263,8 @@ Rectangle {
                     // User avatar
                     StyledRect {
                         id: avatarContainer
-                        Layout.preferredWidth: 96
-                        Layout.preferredHeight: 96
+                        Layout.preferredWidth: 64
+                        Layout.preferredHeight: 64
                         radius: Config.roundness > 0 ? (height / 2) * (Config.roundness / 16) : 0
                         variant: "primary"
 
@@ -297,7 +297,7 @@ Rectangle {
                             anchors.centerIn: parent
                             text: Icons.user
                             font.family: Icons.font
-                            font.pixelSize: 48
+                            font.pixelSize: 32
                             color: Colors.overSurfaceVariant
                             visible: userAvatar.status !== Image.Ready
                         }
@@ -419,7 +419,7 @@ Rectangle {
                     Column {
                         id: resourcesColumn
                         width: parent.width
-                        spacing: 12
+                        spacing: 6
 
                         // CPU
                         Column {

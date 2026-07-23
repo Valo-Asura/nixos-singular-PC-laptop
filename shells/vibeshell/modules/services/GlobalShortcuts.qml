@@ -132,6 +132,9 @@ Item {
         case "config":
             GlobalStates.settingsVisible = !GlobalStates.settingsVisible;
             break;
+        case "monitor":
+            GlobalStates.monitorVisible = !GlobalStates.monitorVisible;
+            break;
         case "screenshot":
             GlobalStates.screenshotToolVisible = true;
             break;
