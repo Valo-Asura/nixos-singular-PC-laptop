@@ -150,3 +150,69 @@ Clickable repo map. Each linked node opens the matching file or folder.
 - Laptop config remains the source of truth for shared wiring.
 - Do not reintroduce removed shell experiments unless explicitly requested.
 - Do not commit raw secrets, tokens, private keys, browser profiles, or local memory databases.
+
+---
+
+## Asura XS15 (Colorful XS) Laptop Tweaks, Workarounds & Inventory
+
+Host: **Colorful X15 AT 22 / XS 22** (`asura-xs15`). Laptop-specific configs live in [hosts/asura-xs15/](hosts/asura-xs15/).
+
+### 1. Fan & Thermal Control Stack
+- **NBFC Stack**: Pinned `nbfc-linux` 0.5.2 and custom `nbfc-gtk` 0.4.1 wrapped with `GI_TYPELIB_PATH` to prevent GTK typelib launch failures (`docs/VALIDATION.md`).
+- **Declarative EC Map (`/etc/nbfc/Colorful X15 AT 22.json`)**: 2 fans configured:
+  - **CPU Fan**: Read register `207`, Write register `231`.
+  - **GPU Fan**: Read register `208`, Write register `232`.
+  - `MaxSpeed=255`, `CriticalTemp=72`, manual override write `Register=44 Value=8`.
+- **Sensor Quirk**: Both fans use `@CPU` sensors only because NBFC-Linux exposes no `@GPU` hwmon sensor on this laptop EC.
+- **GPU Fan Readback Quirk**: EC register `208` readback is unreliable (stays low/negative live); verification tools check Target Fan Speed + physical airflow.
+- **EC Access & State Cleanup**: `ec_sys` kernel module with `write_support=1`; debugfs mounted in `nbfc` preStart. Wipes `/var/lib/nbfc/state.json` if fan count ≠ 2 to prevent stale state bugs.
+- **Emergency Thermal Guard (`asura-thermal-guard`)**: Forces 100% fan speed if coretemp max reaches `≥88°C`, returning to auto curve at `≤72°C`.
+- **Thermals & tuned**: `thermald` enabled with `coretemp` and `acpi_enforce_resources=lax`. TLP, `auto-cpufreq`, and `power-profiles-daemon` are force-disabled to avoid split ownership. Custom TuneD profiles:
+  - `asura-xs15-balanced`: EPP `balance_power`.
+  - `asura-xs15-performance`: EPP `balance_performance`.
+  - `asura-xs15-balanced-battery`: EPP `balance_power`, boost disabled on battery, panel power savings.
+
+### 2. NVIDIA Hybrid Graphics & Power Optimizations
+- **PRIME Offload Mode**: Intel iGPU (`PCI:0:2:0`) handles internal display panel; dGPU (NVIDIA RTX 3050 Laptop `PCI:1:0:0`) runs on demand via `enableOffloadCmd`.
+- **Runtime Power Management & Deep Sleep (RTD3)**: `powerManagement.enable = true` and `hardware.nvidia.powerManagement.finegrained = true` enable RTD3 power gating so the RTX 3050 sleeps when unused.
+- **System Monitor dGPU Wake Fix**: `shells/vibeshell/scripts/system_monitor.py` discovers NVIDIA PCI paths dynamically and bypasses `nvidia-smi` queries when the GPU is suspended. Prevents micro-stutter and allows Intel CPU cores to drop to deep C10 sleep.
+- **No Early NVIDIA Load / Boot Hang Prevention**: NVIDIA modules strictly forbidden in initrd (`boot.initrd.kernelModules`) and early kernel modules. Declarative empty stubs placed at `/etc/modules-load.d/nvidia*.conf` to prevent early load boot hangs.
+- **Delayed Persistenced Service**: `nvidiaPersistenced = true` enabled for NVML/monitor compatibility, but `wantedBy = []` removed. Started 12s after boot via `nvidia-persistenced-delayed.timer` to avoid blocking `graphical.target`.
+- **Rescue Specialisation (`rescue-no-nvidia`)**: Dedicated boot entry in systemd-boot blacklisting NVIDIA modules, booting multi-user target without Plymouth.
+- **Polkit & App GPU Pinning**: `hyprpolkitagent` configured with `VK_LOADER_DRIVERS_DISABLE=*nvidia*` and Mesa drivers to avoid dGPU wakeups. WhatsApp Web wrapper forces `DRI_PRIME=0`, `__NV_PRIME_RENDER_OFFLOAD=0`, Mesa EGL + Intel Vulkan ICD, and disables WebGPU/Vulkan to keep dGPU asleep. X11 fallback terminal greeter also pinned to iGPU.
+
+### 3. Boot, Dual-Boot Hygiene & Secure Boot
+- **Systemd-Boot Choice**: Declarative systemd-boot forced (`timeout=12`, `editor=false`, `consoleMode=max`, `configLimit=7`). Lanzaboote removed; PC uses Limine+SB while laptop uses systemd-boot with `sbctl` helper.
+- **Windows Dual-Boot Sync**: Shares ESP PARTUUID `ea0c3f00-a433-4db6-b494-b982ec40415b`. `windowsEspPartUuid` set matching Linux. Declaratively chainloads `/EFI/Microsoft/Boot/bootmgfw.efi` without remounting ESP. `rebootForBitlocker = false`. Auto-cleans stale Limine/Atlas boot entries.
+- **Secure Boot & TPM**: `sbctl`, `efibootmgr`, and `tpm2-tools` included; optional key generation script triggered by `/etc/nixos/enable-sbctl-auto-create`.
+- **Kernel Boot Parameters**: Quiet splash, `loglevel=0` (or `loglevel=4` with explicit unit status), `video=eDP-1:1920x1080@144`, `nowatchdog`, `nmi_watchdog=0`, `split_lock_detect=off`, `cryptomgr.notests` for low latency and panel mode initialization. Plymouth `circle_hud` boot theme.
+
+### 4. Power & Battery Optimizations
+- **Auto Profile Switching**: Udev rule on `AC` state change (`KERNEL=="AC"`) automatically switches TuneD profile (`asura-xs15-balanced` on AC vs `asura-xs15-balanced-battery` on battery).
+- **Video Wallpaper Battery Guard**: Timer and startup check suspend video wallpapers (`mpvpaper` / live wallpapers) when running on battery to save power and heat.
+- **Storage & RAM Tuning**: zram compressed swap sized to 25% of 16GB RAM with zstd compression. NVMe queue settings (`read_ahead_kb=128`, `nr_requests=1024`, `noatime`, `lazytime`) to reduce write latency and SSD wear.
+
+### 5. Audio, Input & Display Quirks
+- **Audio Mic Quirk**: Kernel module option `snd-hda-intel model=dell-headset-multi` to fix ALC256 pin-sensing for internal and headset combo jacks.
+- **EasyEffects Background Service**: Systemd user service running in background mode (`--service-mode --hide-window`) bound to PipeWire/WirePlumber to eliminate GUI footprint on boot.
+- **144Hz Panel & Touchpad UX**: Internal 144Hz panel forced via kernel params and Hyprland config (`eDP-1:1920x1080@144`). Wayland 3/4-finger workspace gestures, touchpad natural scroll on Wayland, DWT off on X11 fallback, `caps:escape` mapping in XKB.
+- **OBS Virtual Camera**: `v4l2loopback` configured with `video_nr=9` as "OBS Virtual Camera".
+
+### 6. Networking, Wi-Fi & Systemd Session Deadlock Tweaks
+- **Intel Alder Lake-P Wi-Fi**: `wpa_supplicant` backend forced for Intel Wi-Fi NIC with `powersave = false`, permanent MAC address, and disabled scan rand MAC to prevent drops. `NetworkManager-wait-online` disabled to eliminate boot delay. Activation script auto-pins 5GHz band on dual-band SSIDs.
+- **Systemd User Session Deadlock Fix**: Set `security.pam.services.systemd-user.startSession = false` and explicitly set `XDG_RUNTIME_DIR=/run/user/%i` to prevent systemd-user from deadlocking when `pam_systemd` opens duplicate logind sessions (fixing 90s boot stalls and broken rebuild reloads). `user@.service` `TimeoutStartSec=25s`.
+- **Noctalia NetworkManager Refresh**: Oneshot service `noctalia-networkmanager-refresh` runs post-NetworkManager restart to refresh network status for Noctalia shell UI.
+
+### 7. Desktop Shell, Apps & Low-Idle Optimizations
+- **VibeShell / Quickshell Idle Fix**: Disabled continuous QML charging battery animations while notch is collapsed. Drops CPU usage from 25–29% down to 2.7–2.9% at idle. Clamped bar height, 16MB QML heap, 3s file-transfer check interval.
+- **Window Rules & File Managers**: GTK/portal file pickers aligned to 1100x720 geometry. PCManFM-Qt is primary file manager; Xarchiver is default archive handler for zip/tar/7z/zstd.
+- **Super Productivity Bridge**: VibeShell dashboard Super Productivity strip integration with automated notes exporter (`vibeshell-notes-export.json/.md`).
+- **Screenshots**: Independent `asura-screenshot` helper (`grim`+`slurp`+`wl-copy`) bypasses shell IPC so screenshots capture full UI across Noctalia, Waybar, and VibeShell setups.
+- **XDM & Phone Link**: Fixed XDM GTK wrapper with GDK pixbuf librsvg loader export for SVG icon rendering without crashing. KDE Connect paired with `hypr-kdeconnect-fix` portal bridge for Wayland phone-to-laptop remote cursor control.
+
+### 8. Planned & Future Laptop Enhancements
+- **Durable AI Memory Sync**: Maintain system facts in `/etc/nixos/home/aimemory.nix` and `docs/XS15-HARDWARE.md`.
+- **Dynamic Fan Profile Selector**: Future VibeShell/Noctalia desktop widget to toggle NBFC modes (Silent, Balanced, Turbo) without terminal editing.
+- **Enhanced Thermal OSD**: Visual desktop notifications when `asura-thermal-guard` engages emergency 100% fan override.
+- **Local AI Image Gen (RTX 3050 4GB)**: Continued optimization of Forge WebUI (SD1.5 / Realistic Vision) and `stable-diffusion.cpp` (z_image_turbo + Qwen3-4B text encoder) scripts for sub-15s generations within 4GB VRAM limit.
+
