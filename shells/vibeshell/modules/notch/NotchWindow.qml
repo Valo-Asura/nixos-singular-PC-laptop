@@ -236,6 +236,18 @@ PanelWindow {
         focusCurrentView();
     }
 
+    Timer {
+        id: focusGrabGraceTimer
+        // Super-release open can clear focus grab once before the layer owns input.
+        interval: 500
+        repeat: false
+    }
+
+    onScreenNotchOpenChanged: {
+        if (screenNotchOpen)
+            focusGrabGraceTimer.restart();
+    }
+
     HyprlandFocusGrab {
         id: focusGrab
         windows: {
@@ -248,8 +260,18 @@ PanelWindow {
         }
         active: notchPanel.screenNotchOpen
 
+        onActiveChanged: {
+            if (active)
+                focusGrabGraceTimer.restart();
+        }
+
         onCleared: {
+            // Ignore the spurious clear that fires right as Super is released
+            // and the launcher is still grabbing focus.
+            if (focusGrabGraceTimer.running || !notchPanel.screenNotchOpen)
+                return;
             Visibilities.setActiveModule("");
+            GlobalStates.clearLauncherState();
         }
     }
 

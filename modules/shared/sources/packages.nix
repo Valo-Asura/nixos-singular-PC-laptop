@@ -121,4 +121,14 @@ in
       ]
     ))
   ];
+
+  fonts = {
+    enableDefaultPackages = true;
+    packages = with pkgs; [
+      (import ../../../packages/vibeshell/phosphor-icons.nix { inherit pkgs; })
+      nerd-fonts.jetbrains-mono
+      nerd-fonts.symbols-only
+      inter
+    ];
+  };
 }

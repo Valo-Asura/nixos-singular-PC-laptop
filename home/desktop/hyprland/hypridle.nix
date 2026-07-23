@@ -10,8 +10,8 @@
         ignore_dbus_inhibit = false;
         ignore_systemd_inhibit = false;
         lock_cmd = "/run/current-system/sw/bin/asura-session-lock";
-        before_sleep_cmd = "/run/current-system/sw/bin/asura-session-lock";
-        after_sleep_cmd = "hyprctl dispatch dpms on";
+        before_sleep_cmd = "loginctl lock-session";
+        after_sleep_cmd = "hyprctl dispatch dpms on && /run/current-system/sw/bin/asura-shell-switch autostart";
       };
 
       listener = [

@@ -208,7 +208,7 @@ Item {
     function toggleNotchLauncher() {
         const isActive = Visibilities.currentActiveModule === "launcher";
 
-        if (isActive && GlobalStates.launcherSearchText === "") {
+        if (isActive) {
             Visibilities.setActiveModule("");
             GlobalStates.clearLauncherState();
             return;
@@ -217,10 +217,7 @@ Item {
         GlobalStates.launcherSearchText = "";
         GlobalStates.launcherSelectedIndex = -1;
         GlobalStates.launcherCurrentTab = 0;
-
-        if (!isActive) {
-            Visibilities.setActiveModule("launcher");
-        }
+        Visibilities.setActiveModule("launcher");
     }
 
     function toggleLauncherWithPrefix(prefix) {

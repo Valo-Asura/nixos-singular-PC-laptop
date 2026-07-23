@@ -191,6 +191,7 @@ in
   };
 
   security.pam.services.greetd.enableGnomeKeyring = true;
+  security.pam.services.hyprlock = {};
 
   systemd.services.greetd.serviceConfig = {
     Type = "idle";

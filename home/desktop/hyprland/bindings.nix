@@ -1,27 +1,29 @@
 # Shared Home Manager module: common Hyprland keybindings.
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 let
   terminal = "${pkgs.foot}/bin/foot";
   browser = "${pkgs.brave}/bin/brave";
   editor = "code --ozone-platform=wayland";
   lock = "/run/current-system/sw/bin/asura-session-lock";
 
-  workspaceBinds = builtins.concatLists (
-    builtins.genList (
-      i:
-      let
-        ws = i + 1;
-        key = toString ws;
-      in
-      [
-        "SUPER, ${key}, workspace, ${toString ws}"
-        "SUPER SHIFT, ${key}, movetoworkspace, ${toString ws}"
-      ]
-    ) 9
-  ) ++ [
-    "SUPER, 0, workspace, 10"
-    "SUPER SHIFT, 0, movetoworkspace, 10"
-  ];
+  workspaceBinds =
+    builtins.concatLists (
+      builtins.genList (
+        i:
+        let
+          ws = i + 1;
+          key = toString ws;
+        in
+        [
+          "SUPER, ${key}, workspace, ${toString ws}"
+          "SUPER SHIFT, ${key}, movetoworkspace, ${toString ws}"
+        ]
+      ) 9
+    )
+    ++ [
+      "SUPER, 0, workspace, 10"
+      "SUPER SHIFT, 0, movetoworkspace, 10"
+    ];
 in
 {
   wayland.windowManager.hyprland = {
@@ -69,13 +71,16 @@ in
         "ALT SHIFT, Tab, cyclenext, prev"
         "SUPER, Tab, cyclenext"
         "SUPER SHIFT, Tab, submap, resize"
-      ] ++ workspaceBinds;
+      ]
+      ++ workspaceBinds;
 
       bindm = [
         "SUPER, mouse:272, movewindow"
         "SUPER, mouse:273, resizewindow"
       ];
 
+      # Open launcher only on Super alone (release). Do not also bind Super_L
+      # from VibeShell as a press bind — that double-toggles and closes instantly.
       bindr = [
         "SUPER, SUPER_L, exec, asura-shell-launcher"
         "SUPER, SUPER_R, exec, asura-shell-launcher"
@@ -103,21 +108,19 @@ in
         ", XF86MonBrightnessUp, exec, brightness-up"
         ", XF86MonBrightnessDown, exec, brightness-down"
       ];
+    };
 
-      submap = {
-        resize = {
-          binde = [
-            ", right, resizeactive, 30 0"
-            ", left, resizeactive, -30 0"
-            ", up, resizeactive, 0 -30"
-            ", down, resizeactive, 0 30"
-          ];
-          bind = [
-            ", escape, submap, reset"
-            "SUPER SHIFT, Tab, submap, reset"
-          ];
-        };
-      };
+    submaps.resize.settings = {
+      binde = [
+        ", right, resizeactive, 30 0"
+        ", left, resizeactive, -30 0"
+        ", up, resizeactive, 0 -30"
+        ", down, resizeactive, 0 30"
+      ];
+      bind = [
+        ", escape, submap, reset"
+        "SUPER SHIFT, Tab, submap, reset"
+      ];
     };
   };
 }

@@ -37,17 +37,18 @@ Item {
     function refreshApps() {
         const allApps = AppSearch.getAllApps();
         totalApps = allApps.length;
-        const source = searchText.length > 0 ? AppSearch.fuzzyQuery(searchText) : allApps.slice(0, 12);
+        const source = searchText.length > 0 ? AppSearch.fuzzyQuery(searchText) : allApps;
         const nextById = {};
 
         appsModel.clear();
         for (let i = 0; i < source.length; i++) {
             const app = source[i];
+            if (!app || !app.id) continue;
             nextById[app.id] = app;
             appsModel.append({
                 appId: app.id,
-                appName: app.name,
-                appIcon: app.icon,
+                appName: app.name || "",
+                appIcon: app.icon || "application-x-executable",
                 appComment: app.comment || "",
                 appExecString: app.execString || ""
             });
@@ -75,7 +76,11 @@ Item {
         if (!app || !app.execute)
             return;
 
-        app.execute();
+        try {
+            app.execute();
+        } catch (e) {
+            console.warn("Error launching app:", e);
+        }
         UsageTracker.recordUsage(appId);
         closeLauncher();
     }
@@ -105,6 +110,13 @@ Item {
     }
 
     onSearchTextChanged: refreshApps()
+
+    Connections {
+        target: AppSearch
+        function onAppsChanged() {
+            root.refreshApps();
+        }
+    }
 
     Connections {
         target: GlobalStates
@@ -328,7 +340,7 @@ Item {
                 if (currentIndex < 0)
                     return;
 
-                const itemHeight = 54;
+                const itemHeight = 45;
                 const itemTop = currentIndex * itemHeight;
                 const itemBottom = itemTop + itemHeight;
                 if (itemTop < contentY) {

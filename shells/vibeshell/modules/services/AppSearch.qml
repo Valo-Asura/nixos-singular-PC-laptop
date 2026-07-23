@@ -151,18 +151,27 @@ Singleton {
 
 
     
-    readonly property list<DesktopEntry> list: Array.from(DesktopEntries.applications.values)
-        .sort((a, b) => a.name.localeCompare(b.name))
+    signal appsChanged()
+
+    function getRawApps() {
+        const raw = DesktopEntries.applications ? DesktopEntries.applications.values : null;
+        if (!raw) return [];
+        const arr = Array.from(raw);
+        arr.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        return arr;
+    }
     
     // Index structure: [{ name: "lower", command: "lower", keywords: ["lower"], original: appObject }, ...]
     property var searchIndex: []
     
     function buildIndex() {
+        const apps = getRawApps();
         const newIndex = [];
-        for (let i = 0; i < list.length; i++) {
-            const app = list[i];
+        for (let i = 0; i < apps.length; i++) {
+            const app = apps[i];
+            if (!app) continue;
             newIndex.push({
-                name: app.name.toLowerCase(),
+                name: (app.name || "").toLowerCase(),
                 command: (app.command && app.command.length > 0) ? app.command.join(' ').toLowerCase() : "",
                 executable: (app.command && app.command.length > 0) ? app.command[0].toLowerCase() : "",
                 comment: (app.comment || "").toLowerCase(),
@@ -180,26 +189,29 @@ Singleton {
         allAppsCache = null;
     }
 
-    onListChanged: {
-        allAppsCache = null;
-        buildIndex();
+    Connections {
+        target: DesktopEntries.applications
+        function onValuesChanged() {
+            root.allAppsCache = null;
+            root.buildIndex();
+            root.appsChanged();
+        }
     }
     
     Component.onCompleted: {
         buildIndex();
-        // Pre-build cache in background if possible, or just wait for first access
     }
     
     function getAllApps() {
         if (allAppsCache) return allAppsCache;
 
+        const rawApps = getRawApps();
         const results = [];
         
-        for (let i = 0; i < list.length; i++) {
-            const app = list[i];
+        for (let i = 0; i < rawApps.length; i++) {
+            const app = rawApps[i];
+            if (!app) continue;
             const usageScore = UsageTracker.getUsageScore(app.id);
-            // Use getCachedIcon which uses iconCache, but we want a simpler validater here maybe?
-            // validateIcon is "safer" but slower. Let's cache the validation result too.
             
             let iconToUse = app.icon || "application-x-executable";
             if (iconCache[iconToUse]) {
@@ -211,10 +223,10 @@ Singleton {
             }
 
             results.push({
-                name: app.name,
+                name: app.name || "",
                 icon: iconToUse,
                 id: app.id,
-                execString: app.execString,
+                execString: app.execString || "",
                 comment: app.comment || "",
                 categories: app.categories || [],
                 runInTerminal: app.runInTerminal || false,
@@ -230,7 +242,7 @@ Singleton {
             if (a.usageScore !== b.usageScore) {
                 return b.usageScore - a.usageScore;
             }
-            return a.name.localeCompare(b.name);
+            return (a.name || "").localeCompare(b.name || "");
         });
         
         allAppsCache = results;
@@ -238,13 +250,14 @@ Singleton {
     }
     
     function fuzzyQuery(search) {
-        if (!search || search.length === 0) return [];
+        if (!search || search.length === 0) return getAllApps();
         
         const searchLower = search.toLowerCase();
         const results = [];
         
+        const apps = getRawApps();
         // Ensure index exists
-        if (searchIndex.length === 0 && list.length > 0) buildIndex();
+        if (searchIndex.length === 0 && apps.length > 0) buildIndex();
         
         for (let i = 0; i < searchIndex.length; i++) {
             const entry = searchIndex[i];
@@ -311,11 +324,11 @@ Singleton {
                 }
                 
                 results.push({
-                    name: app.name,
+                    name: app.name || "",
                     icon: iconToUse,
                     score: score,
                     id: app.id,
-                    execString: app.execString,
+                    execString: app.execString || "",
                     comment: app.comment || "",
                     categories: app.categories || [],
                     runInTerminal: app.runInTerminal || false,
@@ -339,6 +352,6 @@ Singleton {
             return (a.name || "").localeCompare(b.name || "");
         });
         
-        return results.slice(0, 10); // Limit results
+        return results.slice(0, 30); // Return top 30 matching results
     }
 }

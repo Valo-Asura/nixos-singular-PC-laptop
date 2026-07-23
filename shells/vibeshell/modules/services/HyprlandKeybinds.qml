@@ -299,6 +299,10 @@ QtObject {
         unbindCommands.push(createUnbindCommand(dashboard.wallpapers));
         unbindCommands.push(createUnbindCommand(dashboard.notes));
 
+        // Always drop leftover Super solo press binds; launcher is Hyprland bindr.
+        unbindCommands.push(`eval hl.unbind(${luaString("SUPER_L")})`);
+        unbindCommands.push(`eval hl.unbind(${luaString("SUPER_R")})`);
+
         batchCommands.push(createBindCommand(dashboard.widgets, dashboard.widgets.flags || ""));
         batchCommands.push(createBindCommand(dashboard.clipboard, dashboard.clipboard.flags || ""));
         batchCommands.push(createBindCommand(dashboard.emoji, dashboard.emoji.flags || ""));

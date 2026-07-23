@@ -48,10 +48,10 @@
       },
       "widgets": {
         "modifiers": [],
-        "key": "SUPER_L",
+        "key": "",
         "dispatcher": "exec",
         "argument": "asura-shell-launcher",
-        "flags": ""
+        "flags": "r"
       }
     },
     "system": {

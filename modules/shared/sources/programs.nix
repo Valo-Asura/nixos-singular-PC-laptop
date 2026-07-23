@@ -27,6 +27,9 @@ in
       ];
     };
 
+    # Enable hyprlock PAM and binary at system level
+    hyprlock.enable = true;
+
     # Track Hyprland's latest stable release package pair explicitly.
     hyprland = {
       enable = true;

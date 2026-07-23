@@ -1277,6 +1277,15 @@ Singleton {
                 }
             }
 
+            // Super alone is owned by Hyprland bindr. Clear any leftover Super_L
+            // press bind so release does not open-then-close the launcher.
+            const widgetsBind = current.vibeshell.dashboard.widgets;
+            if (widgetsBind && widgetsBind.key === "SUPER_L") {
+                console.log("Clearing conflicting Super_L widgets press bind");
+                current.vibeshell.dashboard.widgets = createCleanBind(adapter.vibeshell.dashboard.widgets);
+                needsUpdate = true;
+            }
+
             // Check system binds
             const systemKeys = ["overview", "powermenu", "config", "lockscreen", "tools", "screenshot", "screenrecord", "lens", "reload", "quit"];
             for (const key of systemKeys) {
@@ -1429,11 +1438,14 @@ Singleton {
                         property string argument: "skwd-wall"
                     }
                     property JsonObject widgets: JsonObject {
+                        // Owned by Hyprland bindr (SUPER release) in
+                        // home/desktop/hyprland/bindings.nix. Empty key avoids a
+                        // press bind that would open then immediately close.
                         property list<string> modifiers: []
-                        property string key: "SUPER_L"
+                        property string key: ""
                         property string dispatcher: "exec"
                         property string argument: "asura-shell-launcher"
-                        property string flags: ""
+                        property string flags: "r"
                     }
                 }
                 property JsonObject system: JsonObject {
@@ -1517,7 +1529,7 @@ Singleton {
                     "notes": { "modifiers": ["SUPER"], "key": "N", "dispatcher": "exec", "argument": "vibeshell run dashboard-notes", "flags": "" },
                     "tmux": { "modifiers": ["SUPER"], "key": "T", "dispatcher": "exec", "argument": "vibeshell run dashboard-tmux", "flags": "" },
                     "wallpapers": { "modifiers": ["SUPER"], "key": "W", "dispatcher": "exec", "argument": "skwd-wall", "flags": "" },
-                    "widgets": { "modifiers": [], "key": "SUPER_L", "dispatcher": "exec", "argument": "asura-shell-launcher", "flags": "" }
+                    "widgets": { "modifiers": [], "key": "", "dispatcher": "exec", "argument": "asura-shell-launcher", "flags": "r" }
                 },
                 "system": {
                     "config": { "modifiers": ["SUPER"], "key": "S", "dispatcher": "exec", "argument": "vibeshell run config", "flags": "" },

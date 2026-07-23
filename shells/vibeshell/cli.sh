@@ -60,7 +60,7 @@ find_vibeshell_pid() {
 	# Find a real QuickShell process running Vibeshell's shell.qml. Use ps/awk
 	# instead of broad pgrep patterns so reload does not match its own shell.
 	ps -eo pid=,args= | awk '
-		/\/(qs|quickshell)( |$)/ && /shell\.qml/ {
+		/\/(qs|quickshell)( |$)/ && /[Vv]ibeshell/ && /shell\.qml/ {
 			print $1
 			exit
 		}
@@ -116,9 +116,14 @@ prepare_launch_log() {
 prepare_stable_shell_path() {
 	local config_home="${XDG_CONFIG_HOME:-$HOME/.config}/Vibeshell"
 	local stable_shell_dir="$config_home/runtime-shell"
+	local source_dir="$SCRIPT_DIR"
+
+	if [ -f "/etc/nixos/shells/vibeshell/shell.qml" ]; then
+		source_dir="/etc/nixos/shells/vibeshell"
+	fi
 
 	mkdir -p "$config_home"
-	ln -sfn "$SCRIPT_DIR" "$stable_shell_dir"
+	ln -sfn "$source_dir" "$stable_shell_dir"
 	printf '%s\n' "$stable_shell_dir/shell.qml"
 }
 
