@@ -11,6 +11,9 @@ Singleton {
     property bool available: false
     readonly property var utf8Environment: ({ LANG: "C.UTF-8", LC_ALL: "C.UTF-8" })
     
+    // Whether the EasyEffects systemd user service is running
+    property bool serviceActive: false
+    
     // Bypass state: false = effects active, true = bypassed
     property bool bypassed: false
     
@@ -24,23 +27,27 @@ Singleton {
 
     // Toggle bypass state
     function toggleBypass() {
+        if (!serviceActive) return;
         bypassToggleProcess.command = ["easyeffects", "-b", bypassed ? "2" : "1"];
         bypassToggleProcess.running = true;
     }
     
     function setBypass(enable: bool) {
+        if (!serviceActive) return;
         bypassToggleProcess.command = ["easyeffects", "-b", enable ? "1" : "2"];
         bypassToggleProcess.running = true;
     }
 
     // Load a preset (optimistic update)
     function loadOutputPreset(name: string) {
+        if (!serviceActive) return;
         root.activeOutputPreset = name;  // Optimistic update
         loadPresetProcess.command = ["easyeffects", "-l", name];
         loadPresetProcess.running = true;
     }
 
     function loadInputPreset(name: string) {
+        if (!serviceActive) return;
         root.activeInputPreset = name;  // Optimistic update
         loadPresetProcess.command = ["easyeffects", "-l", name];
         loadPresetProcess.running = true;
@@ -48,6 +55,7 @@ Singleton {
 
     // Legacy function for compatibility
     function loadPreset(name: string) {
+        if (!serviceActive) return;
         loadPresetProcess.command = ["easyeffects", "-l", name];
         loadPresetProcess.running = true;
     }
@@ -63,7 +71,36 @@ Singleton {
         Quickshell.execDetached(["bash", "-c", "pkill -f 'easyeffects.*service-mode' 2>/dev/null || true; env LANG=C.UTF-8 LC_ALL=C.UTF-8 easyeffects &"]);
     }
 
-    // Check if easyeffects is available
+    // Check if easyeffects systemd service is active
+    Process {
+        id: checkServiceActiveProcess
+        command: ["systemctl", "--user", "is-active", "--quiet", "easyeffects"]
+        running: false
+        onExited: (exitCode, exitStatus) => {
+            const active = (exitCode === 0);
+            if (active !== root.serviceActive) {
+                root.serviceActive = active;
+                if (active) {
+                    // Fetch initial state when service becomes active
+                    presetsProcess.running = false;
+                    presetsProcess.running = true;
+                } else {
+                    root.outputPresets = [];
+                    root.inputPresets = [];
+                    root.activeOutputPreset = "";
+                    root.activeInputPreset = "";
+                }
+            }
+            if (active) {
+                bypassStateProcess.running = false;
+                activePresetsProcess.running = false;
+                bypassStateProcess.running = true;
+                activePresetsProcess.running = true;
+            }
+        }
+    }
+
+    // Check if easyeffects is available in PATH
     Process {
         id: checkAvailableProcess
         command: ["bash", "-lc", "command -v easyeffects >/dev/null 2>&1"]
@@ -71,14 +108,9 @@ Singleton {
         onExited: (exitCode, exitStatus) => {
             root.available = (exitCode === 0);
             if (root.available) {
-                // Fetch initial state
-                bypassStateProcess.running = false;
-                presetsProcess.running = false;
-                activePresetsProcess.running = false;
-                bypassStateProcess.running = true;
-                presetsProcess.running = true;
-                activePresetsProcess.running = true;
+                checkServiceActiveProcess.running = true;
             } else {
+                root.serviceActive = false;
                 root.outputPresets = [];
                 root.inputPresets = [];
                 root.activeOutputPreset = "";
@@ -243,8 +275,8 @@ Singleton {
         running: root.available
         repeat: true
         onTriggered: {
-            bypassStateProcess.running = true;
-            activePresetsProcess.running = true;
+            checkServiceActiveProcess.running = false;
+            checkServiceActiveProcess.running = true;
         }
     }
 }

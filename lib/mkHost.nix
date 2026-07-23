@@ -5,6 +5,7 @@
   hostName,
   modules,
   homeModules,
+  hardwareModules ? [ ],
   username ? "asura",
 }:
 
@@ -17,10 +18,9 @@ inputs.nixpkgs.lib.nixosSystem {
   };
   modules = [
     inputs.stylix.nixosModules.stylix
-    inputs.nixos-hardware.nixosModules.common-pc
-    inputs.nixos-hardware.nixosModules.common-cpu-intel
     inputs.sops-nix.nixosModules.sops
   ]
+  ++ hardwareModules
   ++ modules
   ++ [
     inputs.home-manager.nixosModules.home-manager

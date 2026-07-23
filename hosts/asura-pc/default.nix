@@ -2,27 +2,17 @@
 { inputs, system, ... }:
 
 let
-  username = "asura";
-  hostName = "asura-pc";
+  mkHost = import ../../lib/mkHost.nix { inherit inputs system; };
 in
-inputs.nixpkgs.lib.nixosSystem {
-  inherit system;
-  specialArgs = {
-    inherit
-      inputs
-      system
-      username
-      hostName
-      ;
-    hostname = hostName;
-  };
+mkHost {
+  hostName = "asura-pc";
 
-  modules = [
-    inputs.stylix.nixosModules.stylix
+  hardwareModules = [
     inputs.nixos-hardware.nixosModules.common-pc
     inputs.nixos-hardware.nixosModules.common-cpu-amd
-    inputs.sops-nix.nixosModules.sops
+  ];
 
+  modules = [
     ./hardware-configuration.nix
 
     ../../modules/shared/nix.nix
@@ -56,38 +46,20 @@ inputs.nixpkgs.lib.nixosSystem {
     ../../modules/shells/switcher.nix
 
     ./system/boot.nix
-    ./system/kernel.nix
+    ../../modules/shared/kernel.nix
     ./system/display.nix
     ./system/hardware.nix
-    ./system/performance.nix
-    ./system/desktop-performance.nix
+    ../../modules/shared/performance.nix
+    ../../modules/shared/desktop-performance.nix
     ./system/filesystems.nix
     ./system/windows-mount-helper.nix
     ./system/thermal.nix
     ./system/power.nix
     ./system/secrets.nix
-    ./shell/active-shell.nix
+  ];
 
-    inputs.home-manager.nixosModules.home-manager
-    {
-      home-manager = {
-        extraSpecialArgs = {
-          inherit
-            inputs
-            system
-            username
-            hostName
-            ;
-          hostname = hostName;
-        };
-        useGlobalPkgs = true;
-        useUserPackages = true;
-        backupFileExtension = "backup";
-        users.${username}.imports = [
-          ../../home
-          ./home/default.nix
-        ];
-      };
-    }
+  homeModules = [
+    ../../home
+    ./home/default.nix
   ];
 }

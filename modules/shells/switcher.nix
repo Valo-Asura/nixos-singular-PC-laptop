@@ -1,5 +1,4 @@
-# Shared module: shell launcher/switcher limited to waybar, noctalia, and vibeshell.
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   hyprlandPackage = config.programs.hyprland.package;
@@ -383,17 +382,26 @@ let
   };
 in
 {
-  environment.systemPackages = [
-    asuraSessionLock
-    asuraShellSwitch
-    asuraShellLauncher
-    asuraGameMode
-  ];
+  options.asura.shell.active = lib.mkOption {
+    type = lib.types.enum [
+      "waybar"
+      "noctalia"
+      "vibeshell"
+    ];
+    default = "vibeshell";
+    description = "Active desktop shell for this host. Supported: waybar, noctalia, vibeshell.";
+  };
 
-  home-manager.users.asura.home.packages = [
-    asuraSessionLock
-    asuraShellSwitch
-    asuraShellLauncher
-    asuraGameMode
-  ];
+  config = {
+    environment.systemPackages = [
+      asuraSessionLock
+      asuraShellSwitch
+      asuraShellLauncher
+      asuraGameMode
+    ];
+
+    environment.etc."asura-shell/active-shell".text = ''
+      ${config.asura.shell.active}
+    '';
+  };
 }

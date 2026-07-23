@@ -21,6 +21,10 @@ let
       state_dir="/tmp"
     fi
 
+    export XDG_CURRENT_DESKTOP=Hyprland
+    export XDG_SESSION_DESKTOP=Hyprland
+    export XDG_SESSION_TYPE=wayland
+
     exec ${config.programs.hyprland.package}/bin/start-hyprland >>"$state_dir/session.log" 2>&1
   '';
 
@@ -65,6 +69,10 @@ let
       lib
       pkgs
       ;
+  };
+
+  plasmaSession = import ../sessions/plasma {
+    inherit pkgs;
   };
 
   xorgConfig = pkgs.writeText "asura-xorg-fallback.conf" ''
@@ -168,7 +176,7 @@ let
 in
 {
   # Shared login/session menu for laptop and PC. Hyprland remains the default,
-  # BSPWM/Qtile are X11 fallbacks, and Sway is an experimental Wayland option.
+  # Plasma/Sway are Wayland options, BSPWM/Qtile are X11 fallbacks.
 
   environment.etc."asura-wayland-sessions/noctalia-hyprland.desktop".text = ''
     [Desktop Entry]
@@ -179,8 +187,17 @@ in
   '';
 
   environment.etc."asura-wayland-sessions/noctalia-sway.desktop".text = swaySession.desktopEntry;
+  environment.etc."asura-wayland-sessions/plasma.desktop".text = plasmaSession.desktopEntry;
   environment.etc."asura-xsessions/bspwm.desktop".text = bspwmSession.desktopEntry;
   environment.etc."asura-xsessions/qtile.desktop".text = qtileSession.desktopEntry;
+
+  # Full Plasma 6 desktop; selectable from tuigreet. Hyprland stays the
+  # greeter default via tuigreet --cmd.
+  services.desktopManager.plasma6.enable = true;
+  # Keep greetd; do not pull in SDDM.
+  services.displayManager.sddm.enable = lib.mkForce false;
+  # Avoid orca autostart noise when Plasma is only an alternate session.
+  services.orca.enable = lib.mkForce false;
 
   services.greetd = {
     enable = true;
@@ -191,6 +208,10 @@ in
   };
 
   security.pam.services.greetd.enableGnomeKeyring = true;
+  security.pam.services.greetd.kwallet = {
+    enable = true;
+    package = pkgs.kdePackages.kwallet-pam;
+  };
   security.pam.services.hyprlock = {};
 
   systemd.services.greetd.serviceConfig = {
@@ -220,5 +241,6 @@ in
   ]
   ++ bspwmSession.packages
   ++ qtileSession.packages
-  ++ swaySession.packages;
+  ++ swaySession.packages
+  ++ plasmaSession.packages;
 }

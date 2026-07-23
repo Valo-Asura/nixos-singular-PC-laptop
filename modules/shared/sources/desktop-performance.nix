@@ -1,4 +1,4 @@
-# Laptop-specific module: XS15 interactive desktop performance warmers and latency tuning.
+# Shared module: interactive desktop performance warmers and latency tuning.
 { lib, pkgs, ... }:
 
 let
@@ -19,6 +19,7 @@ let
     "hyprland"
     "nautilus"
     "nbfc-gtk"
+    "nautilus"
     "noctalia"
     "start-hyprland"
     "skwd"

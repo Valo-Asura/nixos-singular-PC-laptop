@@ -41,9 +41,9 @@ Item {
                     width: root.contentWidth
                     anchors.horizontalCenter: parent.horizontalCenter
                     title: "EasyEffects"
-                    statusText: !EasyEffectsService.available ? "Unavailable" : (EasyEffectsService.bypassed ? "Bypassed" : "Ready")
+                    statusText: !EasyEffectsService.available ? "Unavailable" : (!EasyEffectsService.serviceActive ? "Stopped" : (EasyEffectsService.bypassed ? "Bypassed" : "Ready"))
                     statusColor: Colors.error
-                    showToggle: EasyEffectsService.available
+                    showToggle: EasyEffectsService.available && EasyEffectsService.serviceActive
                     toggleChecked: !EasyEffectsService.bypassed
 
                     actions: EasyEffectsService.available ? [

@@ -1,4 +1,4 @@
-# PC-specific module: CachyOS kernel for Ryzen 5 5600G class hardware.
+# Shared module: CachyOS kernel integration.
 {
   inputs,
   lib,
@@ -7,6 +7,8 @@
 }:
 
 {
+  # Use the pinned overlay so the selected CachyOS kernel matches the upstream
+  # binary cache. x86_64-v3 is the correct cached target here.
   nixpkgs.overlays = [
     inputs.nix-cachyos-kernel.overlays.pinned
   ];

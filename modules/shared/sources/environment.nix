@@ -17,9 +17,9 @@ in
       GDK_BACKEND = "wayland,x11";
       GTK_THEME = "adw-gtk3-dark";
       CLUTTER_BACKEND = "wayland";
-      XDG_CURRENT_DESKTOP = "Hyprland";
+      # Leave XDG_CURRENT_DESKTOP / XDG_SESSION_DESKTOP unset globally so
+      # Hyprland, Plasma, and other greeter sessions can own their identity.
       XDG_SESSION_TYPE = "wayland";
-      XDG_SESSION_DESKTOP = "Hyprland";
       XDG_SESSION_CLASS = "user";
       NO_AT_BRIDGE = "0";
       PLAYWRIGHT_BROWSERS_PATH = "${playwrightBrowsers}";

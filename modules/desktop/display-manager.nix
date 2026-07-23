@@ -1,4 +1,4 @@
-# Shared module: greetd display manager, Hyprland entry, and X11 fallback sessions.
+# Shared module: greetd display manager, Hyprland default, Plasma/Sway/X11 sessions.
 { ... }:
 
 {

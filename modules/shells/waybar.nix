@@ -54,10 +54,4 @@ in
   ];
 
   environment.etc."xdg/waybar-asura".source = waybarRoot;
-
-  home-manager.users.asura.home.packages = [
-    asuraWaybar
-    asuraWaybarSysbar
-    asuraWaybarWorkspaces
-  ];
 }

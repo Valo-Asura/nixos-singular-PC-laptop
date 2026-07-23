@@ -132,11 +132,5 @@ in
         }
       )
     ];
-
-    home.packages = [
-      asuraVibeshell
-      vibeshellCli
-      vibeshellSafeLock
-    ];
   };
 }

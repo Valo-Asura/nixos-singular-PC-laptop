@@ -1,4 +1,4 @@
-# Laptop-specific module: XS15 low-level performance and memory pressure tuning.
+# Shared module: system performance and memory pressure tuning.
 { ... }:
 
 {

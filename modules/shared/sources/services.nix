@@ -129,6 +129,10 @@ in
       "hyprland"
       "gtk"
     ];
+    config.KDE.default = [
+      "kde"
+      "gtk"
+    ];
     config.qtile.default = [
       "gtk"
     ];

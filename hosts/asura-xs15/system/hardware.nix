@@ -83,6 +83,7 @@ in
   ];
   boot.extraModprobeConfig = ''
     options v4l2loopback devices=1 video_nr=9 card_label="OBS Virtual Camera" exclusive_caps=1
+    options snd-hda-intel model=dell-headset-multi
   '';
   # Keep only Intel KMS in the initrd. The previous CachyOS setup on this exact
   # hybrid laptop hung when NVIDIA was forced into early initramfs loading.

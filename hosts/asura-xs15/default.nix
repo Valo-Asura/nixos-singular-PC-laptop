@@ -7,6 +7,11 @@ in
 mkHost {
   hostName = "asura-xs15";
 
+  hardwareModules = [
+    inputs.nixos-hardware.nixosModules.common-pc
+    inputs.nixos-hardware.nixosModules.common-cpu-intel
+  ];
+
   modules = [
     ./hardware-configuration.nix
 
@@ -41,11 +46,11 @@ mkHost {
     ../../modules/shells/switcher.nix
 
     ./system/boot.nix
-    ./system/kernel.nix
+    ../../modules/shared/kernel.nix
     ./system/display.nix
     ./system/hardware.nix
-    ./system/performance.nix
-    ./system/desktop-performance.nix
+    ../../modules/shared/performance.nix
+    ../../modules/shared/desktop-performance.nix
     ./system/filesystems.nix
     ./system/windows-mount-helper.nix
     ./system/thermal.nix
@@ -53,7 +58,6 @@ mkHost {
     ./system/power.nix
     ./system/vpn.nix
     ./system/secrets.nix
-    ./shell/active-shell.nix
   ];
 
   homeModules = [
