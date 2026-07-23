@@ -65,7 +65,29 @@ Singleton {
     Process {
         id: bindsProcess
         running: false
-        command: ["hyprctl", "binds", "-j"]
+        command: [
+            "python3",
+            "-c",
+            [
+                "import json, subprocess",
+                "res = subprocess.run(['hyprctl', 'binds'], capture_output=True, text=True)",
+                "blocks = res.stdout.split('\\n\\nbind')",
+                "binds = []",
+                "for block in blocks:",
+                "    item = {}",
+                "    for line in block.splitlines():",
+                "        if ':' in line:",
+                "            k, v = line.strip().split(':', 1)",
+                "            item[k.strip()] = v.strip()",
+                "    if item:",
+                "        try:",
+                "            item['modmask'] = int(item.get('modmask', 0))",
+                "        except:",
+                "            item['modmask'] = 0",
+                "        binds.append(item)",
+                "print(json.dumps(binds))"
+            ].join("\n")
+        ]
         stdout: StdioCollector {
             waitForEnd: true
             onStreamFinished: {
