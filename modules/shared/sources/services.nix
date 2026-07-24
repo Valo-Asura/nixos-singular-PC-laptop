@@ -125,23 +125,16 @@ in
     extraPortals = [
       pkgs.xdg-desktop-portal-gtk
     ];
-    config.common.default = [
-      "hyprland"
-      "gtk"
-    ];
-    config.KDE.default = [
-      "kde"
-      "gtk"
-    ];
-    config.qtile.default = [
-      "gtk"
-    ];
-    config.bspwm.default = [
-      "gtk"
-    ];
-    config.labwc.default = [
-      "gtk"
-    ];
+    config = {
+      common.default = [
+        "hyprland"
+        "gtk"
+      ];
+      KDE.default = [
+        "kde"
+        "gtk"
+      ];
+    };
   };
 
   security.wrappers."gpu-screen-recorder" = {

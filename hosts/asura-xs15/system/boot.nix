@@ -159,6 +159,7 @@ in
       "udev.log_level=3"
       "vt.global_cursor_default=0"
       "video=eDP-1:1920x1080@144"
+      "pcie_aspm=force"
       "nowatchdog"
       "nmi_watchdog=0"
       "split_lock_detect=off"
