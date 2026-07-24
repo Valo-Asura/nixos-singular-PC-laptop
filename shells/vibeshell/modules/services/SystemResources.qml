@@ -209,21 +209,24 @@ Singleton {
             }
         }
 
-        // Ensure at least "/" is present and prioritize "/nix" on NixOS at the top
+        // Ensure at least "/" is present; deduplicate entries
         if (newValidDisks.length === 0) {
-            newValidDisks = ["/nix", "/"];
-        }
-        if (newValidDisks.indexOf("/nix") === -1) {
-            newValidDisks.unshift("/nix");
+            newValidDisks = ["/"];
         } else {
-            const idx = newValidDisks.indexOf("/nix");
-            if (idx > 0) {
-                newValidDisks.splice(idx, 1);
-                newValidDisks.unshift("/nix");
+            let uniqueDisks = [];
+            for (let i = 0; i < newValidDisks.length; i++) {
+                if (uniqueDisks.indexOf(newValidDisks[i]) === -1) {
+                    uniqueDisks.push(newValidDisks[i]);
+                }
             }
+            newValidDisks = uniqueDisks;
         }
-        
-        // Assign the new array to trigger onValidDisksChanged
+
+        // If "/" is present and "/nix" points to same root partition, monitor "/" only
+        if (newValidDisks.indexOf("/") !== -1 && newValidDisks.indexOf("/nix") !== -1) {
+            newValidDisks = newValidDisks.filter(d => d !== "/nix");
+        }
+
         validDisks = newValidDisks;
     }
 

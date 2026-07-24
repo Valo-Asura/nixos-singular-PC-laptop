@@ -382,9 +382,22 @@ if __name__ == "__main__":
             i += 1
 
     if not disks_to_monitor:
-        disks_to_monitor = ["/", "/nix"]
-    elif "/nix" not in disks_to_monitor and os.path.exists("/nix"):
-        disks_to_monitor.append("/nix")
+        disks_to_monitor = ["/"]
+
+    unique_disks = []
+    seen_totals = set()
+    for d in disks_to_monitor:
+        try:
+            st = os.statvfs(d)
+            key = (st.f_blocks, st.f_frsize)
+            if key not in seen_totals:
+                seen_totals.add(key)
+                unique_disks.append(d)
+        except Exception:
+            if d not in unique_disks:
+                unique_disks.append(d)
+
+    disks_to_monitor = unique_disks if unique_disks else ["/"]
 
     # Main loop
     try:

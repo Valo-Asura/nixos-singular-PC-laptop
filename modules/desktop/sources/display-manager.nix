@@ -1,6 +1,7 @@
 # Shared module: greetd display manager and session registration.
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -27,12 +28,20 @@ let
     exec ${config.programs.hyprland.package}/bin/start-hyprland >>"$state_dir/session.log" 2>&1
   '';
 
+  labwcSession = import ../sessions/labwc {
+    inherit
+      inputs
+      lib
+      pkgs
+      ;
+  };
+
   plasmaSession = import ../sessions/plasma {
     inherit pkgs;
   };
 in
 {
-  # Registered sessions in greetd tuigreet menu: Hyprland (Quickshell/VibeShell) & Plasma 6.
+  # Registered sessions in greetd tuigreet menu: Hyprland (Quickshell/VibeShell), Labwc & Plasma 6.
   environment.etc."asura-wayland-sessions/hyprland.desktop".text = ''
     [Desktop Entry]
     Name=Hyprland (Quickshell / VibeShell)
@@ -41,6 +50,7 @@ in
     Type=Application
   '';
 
+  environment.etc."asura-wayland-sessions/labwc.desktop".text = labwcSession.desktopEntry;
   environment.etc."asura-wayland-sessions/plasma.desktop".text = plasmaSession.desktopEntry;
 
   # Full Plasma 6 desktop; selectable from tuigreet. Hyprland is the greeter default.
@@ -79,5 +89,5 @@ in
 
   systemd.settings.Manager.DefaultTimeoutStopSec = "10s";
 
-  environment.systemPackages = plasmaSession.packages;
+  environment.systemPackages = plasmaSession.packages ++ labwcSession.packages;
 }
