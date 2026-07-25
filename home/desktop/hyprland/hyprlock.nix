@@ -15,7 +15,7 @@
       background = [
         {
           monitor = "";
-          path = "/etc/nixos/assets/she.jpg";
+          path = "${../../../assets/she.jpg}";
           blur_passes = 2;
           blur_size = 4;
           noise = 0.0117;
